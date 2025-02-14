@@ -1,0 +1,62 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for Radarr
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ radarr_config }}"
+    - "{{ media_data_path }}"
+
+- name: Deploy Radarr container
+  docker_container:
+    name: radarr
+    image: lscr.io/linuxserver/radarr:latest
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "GB"
+    volumes:
+      - "{{ radarr_config }}:/config"
+      - "{{ media_data_path }}:/data"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "radarr"
+      traefik.enable: "true"
+      traefik.http.routers.radarr-secure.entrypoints: "https"
+      traefik.http.routers.radarr-secure.rule: "Host(`radarr.shajalslab.top`)"
+      traefik.http.routers.radarr-secure.tls: "true"
+      traefik.http.routers.radarr.service: "radarr"
+      traefik.http.services.radarr.loadbalancer.server.port: "7878"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "radarr"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "7878"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Fix folder ownership
+  shell: "sudo docker exec -it radarr chown abc:users {{ item }}"
+  loop:
+    - "/data"
+
+- name: Radarr deployed
+  debug:
+    msg: "Radarr is running successfully"

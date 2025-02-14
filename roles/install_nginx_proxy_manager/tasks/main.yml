@@ -1,0 +1,36 @@
+---
+- name: Create Nginx Proxy Manager directory
+  file:
+    path: "{{ nginx_directory }}"
+    state: directory
+    mode: '0755'
+
+# - name: Deploy docker-compose.yml for Nginx Proxy Manager
+#   template:
+#     src: docker-compose.yml.j2
+#     dest: "{{ nginx_directory }}docker-compose.yml"
+
+- name: Deploy docker-compose.yml for Nginx Proxy Manager
+  template:
+    src: docker-compose-v2.yml.j2
+    dest: "{{ nginx_directory }}docker-compose.yml"
+
+- name: Create Nginx config file from template
+  template:
+    src: templates/nginx.conf.j2
+    dest: "{{ nginx_directory }}nginx.conf"
+
+- name: Check if Nginx container is running
+  shell: docker ps -q --filter "name=nginx_proxy_1"
+  register: nginx_running
+  changed_when: false
+
+- name: Start Nginx with Docker Compose
+  command: docker-compose up -d
+  args:
+    chdir: "{{ nginx_directory }}"
+  when: nginx_running.stdout == ""
+
+- name: Display success message
+  debug:
+    msg: "Nginx has been successfully deployed!"

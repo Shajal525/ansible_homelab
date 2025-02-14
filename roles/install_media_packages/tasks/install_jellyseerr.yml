@@ -1,0 +1,53 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for Jellyseerr
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ jellyseerr_config }}"
+
+- name: Deploy Jellyseerr container
+  docker_container:
+    name: jellyseerr
+    image: fallenbagel/jellyseerr:latest
+    env:
+      LOG_LEVEL: "debug"
+      TZ: "GB"
+    volumes:
+      - "{{ jellyseerr_config }}:/config"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "jellyseerr"
+      traefik.enable: "true"
+      traefik.http.routers.jellyseerr-secure.entrypoints: "https"
+      traefik.http.routers.jellyseerr-secure.rule: "Host(`jellyseerr.shajalslab.top`)"
+      traefik.http.routers.jellyseerr-secure.tls: "true"
+      traefik.http.routers.jellyseerr.service: "jellyseerr"
+      traefik.http.services.jellyseerr.loadbalancer.server.port: "5055"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "jellyseerr"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "5055"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Jellyseerr deployed
+  debug:
+    msg: "Jellyseerr is running successfully"

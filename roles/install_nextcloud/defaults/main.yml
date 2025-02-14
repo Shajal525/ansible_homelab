@@ -1,0 +1,15 @@
+---
+nextcloud_version: "25.0.0"
+nextcloud_base_directory: "{{ base_storage_path }}/nextcloud"
+nextcloud_data_directory: "{{ nextcloud_base_directory }}/data"
+nextcloud_db_data_directory: "{{ nextcloud_base_directory }}/db_data"
+db_root_password: "{{ vm_password }}"
+db_user: "{{ vm_username }}"
+db_password: "{{ vm_password }}"
+db_name: "nextcloud"
+redis_password: "{{ vm_password }}"
+ssl_cert_dir: "/etc/ssl/openssl/certs/"
+domain: nextcloud.shajalslab.top
+domain2: nextcloud.tail41c751.ts.net
+nextcloud_username: "{{ vm_username }}"
+nextcloud_password: "{{ vm_password }}"

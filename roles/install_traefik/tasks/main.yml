@@ -1,0 +1,100 @@
+---
+- name: Create proxy network if it does not exist
+  docker_network:
+    name: traefik_proxy
+    state: present
+
+- name: Create Traefik directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ traefik_base_path }}"
+    - "{{ traefik_config }}"
+    - "{{ traefik_certs }}"
+
+- name: Create Traefik config file from template
+  template:
+    src: templates/traefik.yaml.j2
+    dest: "{{ traefik_config }}/traefik.yaml"
+
+- name: Install apache2-utils
+  package:
+    name: apache2-utils
+    state: present
+
+- name: Generate password hash using htpasswd
+  command:
+    cmd: "htpasswd -bnBC 10 'shajal' {{ traefik_dashboard_password }}"
+  register: htpasswd_hash
+  changed_when: false
+
+- name: Display the generated password hash
+  debug:
+    msg: "Generated hash: {{ htpasswd_hash.stdout }}"
+
+- name: Deploy Traefik container
+  docker_container:
+    name: traefik
+    image: traefik:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    env:
+      TRAEFIK_DASHBOARD_CREDENTIALS: "{{ htpasswd_hash.stdout }}"
+      # CF_API_EMAIL: your@email.com # Cloudflare email
+      CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}" # Cloudflare API Token
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ traefik_config }}/traefik.yaml:/etc/traefik/traefik.yaml:ro"
+      - "{{ traefik_config }}:/etc/traefik/conf/"
+      - "{{ traefik_certs }}:/etc/traefik/certs/"
+    labels:
+      com.docker.compose.project: "traefik_stack"
+      com.docker.compose.service: "traefik"
+
+      traefik.enable: "true"
+      traefik.http.routers.traefik.entrypoints: "http"
+      traefik.http.routers.traefik.rule: "Host(`traefik.shajalslab.top`)"
+      traefik.http.middlewares.traefik-auth.basicauth.users: "{{ htpasswd_hash.stdout }}"
+      traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
+      traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: "https"
+      traefik.http.routers.traefik.middlewares: "traefik-https-redirect"
+      traefik.http.routers.traefik-secure.entrypoints: "https"
+      traefik.http.routers.traefik-secure.rule: "Host(`traefik.shajalslab.top`)"
+      traefik.http.routers.traefik-secure.middlewares: "traefik-auth"
+      traefik.http.routers.traefik-secure.tls: "true"
+      traefik.http.routers.traefik-secure.tls.certresolver: "cloudflare"
+      traefik.http.routers.traefik-secure.tls.domains[0].main: "shajalslab.top"
+      traefik.http.routers.traefik-secure.tls.domains[0].sans: "*.shajalslab.top"
+      traefik.http.routers.traefik-secure.service: "api@internal"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Traefik deployed
+  debug:
+    msg: "Traefik is running successfully"
+
+
+
+# required
+# traefik.http.routers.syncthing-secure.entrypoints: "https"
+# traefik.http.routers.syncthing-secure.rule: "Host(`syncthing.shajalslab.top`)"
+# traefik.http.routers.syncthing-secure.tls: "true"
+
+
+# optional
+# traefik.http.routers.syncthing.entrypoints: "http"
+# traefik.http.routers.syncthing.rule: "Host(`syncthing.shajalslab.top`)"
+# traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
+# traefik.http.routers.syncthing-secure.middlewares: "traefik-https-redirect"
+# traefik.http.routers.syncthing-secure.service: "syncthing"
+# traefik.http.services.syncthing.loadbalancer.server.port: "8384"
+# traefik.docker.network: "traefik_proxy"
+# traefik.http.routers.syncthing-secure.tls.certresolver: "cloudflare"

@@ -1,0 +1,26 @@
+ssl_cert_dir: "/etc/ssl/openssl/certs"
+ip_address: "{{ vm_ip_address }}"
+
+media_base_path: "{{ base_storage_path }}/media"
+media_data_path: "{{ media_base_path }}/data"
+config_path: "{{ media_base_path }}/config"
+
+jellyfin_config: "{{ config_path }}/jellyfin"
+
+sonarr_config: "{{ config_path }}/sonarr"
+
+radarr_config: "{{ config_path }}/radarr"
+
+prowlarr_config: "{{ config_path }}/prowlarr"
+jellyseerr_config: "{{ config_path }}/jellyseerr"
+aria_config: "{{ config_path }}/aria"
+aria_downloads: "{{ media_data_path }}/downloads/aria"
+aria_secret_key: "{{ vm_password }}"
+
+nzbget_config: "{{ config_path }}/nzbget"
+nzbget_username: "{{ vm_username }}"
+nzbget_password: "{{ vm_password }}"
+
+qbittorrent_config: "{{ config_path }}/qbittorrent"
+
+

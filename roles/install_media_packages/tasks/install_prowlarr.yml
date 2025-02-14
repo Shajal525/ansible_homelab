@@ -1,0 +1,54 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for Prowlarr
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ prowlarr_config }}"
+
+- name: Deploy Prowlarr container
+  docker_container:
+    name: prowlarr
+    image: lscr.io/linuxserver/prowlarr:latest
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "GB"
+    volumes:
+      - "{{ prowlarr_config }}:/config"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "prowlarr"
+      traefik.enable: "true"
+      traefik.http.routers.prowlarr-secure.entrypoints: "https"
+      traefik.http.routers.prowlarr-secure.rule: "Host(`prowlarr.shajalslab.top`)"
+      traefik.http.routers.prowlarr-secure.tls: "true"
+      traefik.http.routers.prowlarr.service: "prowlarr"
+      traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "prowlarr"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "9696"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Prowlarr deployed
+  debug:
+    msg: "Prowlarr is running successfully"

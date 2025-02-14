@@ -1,0 +1,40 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Deploy Lunasea container
+  docker_container:
+    name: lunasea
+    image: ghcr.io/jagandeepbrar/lunasea:stable
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "lunasea"
+      traefik.enable: "true"
+      traefik.http.routers.lunasea-secure.entrypoints: "https"
+      traefik.http.routers.lunasea-secure.rule: "Host(`lunasea.shajalslab.top`)"
+      traefik.http.routers.lunasea-secure.tls: "true"
+      traefik.http.routers.lunasea.service: "lunasea"
+      traefik.http.services.lunasea.loadbalancer.server.port: "80"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "lunasea"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "80"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: always
+    tty: yes
+    interactive: yes
+    state: started
+
+- name: Lunasea deployed
+  debug:
+    msg: "Lunasea is running successfully"

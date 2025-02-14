@@ -1,0 +1,108 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure external networks exist
+  docker_network:
+    name: traefik_proxy
+    state: present
+    internal: no
+    driver: bridge
+
+- name: Create Nextcloud directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ nextcloud_base_directory }}"
+    - "{{ nextcloud_data_directory }}"
+    - "{{ nextcloud_db_data_directory }}"
+
+
+- name: Deploy MySQL container
+  docker_container:
+    name: nextcloud_db
+    image: mysql:5.7
+    hostname: nextcloud_db
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_PASSWORD: "{{ db_password }}"
+      MYSQL_DATABASE: "{{ db_name }}"
+      MYSQL_USER: "{{ db_user }}"
+    volumes:
+      - "{{ nextcloud_db_data_directory }}:/var/lib/mysql"
+    labels:
+      com.docker.compose.project: "nextcloud_stack"
+      com.docker.compose.service: "nextcloud_db"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+
+- name: Deploy Redis container
+  docker_container:
+    name: nextcloud_redis
+    image: redis:latest
+    hostname: nextcloud_redis
+    command: redis-server --requirepass "{{ redis_password }}"
+    labels:
+      com.docker.compose.project: "nextcloud_stack"
+      com.docker.compose.service: "nextcloud_redis"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Nextcloud container
+  docker_container:
+    name: nextcloud
+    image: nextcloud:latest
+    hostname: nextcloud
+    env:
+      MYSQL_HOST: "nextcloud_db"
+      MYSQL_PASSWORD: "{{ db_password }}"
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_DATABASE: "{{ db_name }}"
+      MYSQL_USER: "{{ db_user }}"
+      REDIS_HOST: "nextcloud_redis"
+      REDIS_HOST_PASSWORD: "{{ redis_password }}"
+      NEXTCLOUD_ADMIN_USER: "{{ nextcloud_username }}"
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_password }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "{{ domain }} {{ domain2 }}"
+      NEXTCLOUD_FPM: "true"
+      OVERWRITEPROTOCOL: "https"
+      OVERWRITECLIURL: "https://{{ domain }}"
+      OVERWRITEHOST: "{{ domain }}"
+      TRUSTED_PROXIES: 172.16.0.0/12 192.168.1.0/16 100.0.0.0/8 10.0.0.0/8 fc00::/7 fe80::/10 2001:db8::/32
+    volumes:
+      - "{{ nextcloud_data_directory }}:/var/www/html"
+    labels:
+      com.docker.compose.project: "nextcloud_stack"
+      com.docker.compose.service: "nextcloud"
+      traefik.enable: "true"
+      traefik.http.routers.nextcloud-secure.entrypoints: "https"
+      traefik.http.routers.nextcloud-secure.rule: "Host(`nextcloud.shajalslab.top`)"
+      traefik.http.routers.nextcloud-secure.tls: "true"
+      traefik.http.routers.nextcloud-secure.service: "nextcloud"
+      traefik.http.services.nextcloud.loadbalancer.server.port: "80"
+      traefik.docker.network: "traefik_proxy"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "nextcloud"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "80"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Display success message
+  debug:
+    msg: "Nextcloud with Redis cache has been successfully deployed!"

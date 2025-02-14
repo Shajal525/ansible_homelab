@@ -1,0 +1,74 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Ensure FUSE is installed
+  apt:
+    name: fuse3
+    state: present
+
+- name: Unmount folder if already mounted.
+  shell: sudo fusermount -u "{{ rclone_google_drive_mount_path }}"
+  ignore_errors: true
+
+- name: Create directories for RClone
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ rclone_config_path }}"
+    - "{{ rclone_log_path }}"
+    - "{{ rclone_cache_path }}"
+    - "{{ rclone_google_drive_mount_path }}"
+
+- name: Deploy RClone mount
+  docker_container:
+    name: rclone_mount_google_drive
+    image: rclone/rclone:latest
+    security_opts:
+      - "apparmor:unconfined"
+    privileged: true
+    capabilities:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    mounts:
+      - source: "{{ rclone_google_drive_mount_path }}"
+        target: /data/GoogleDrive
+        type: bind
+        propagation: rshared
+    volumes:
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - "{{ rclone_config_path }}:/config/rclone"
+      - "{{ rclone_log_path }}:/log"
+      - "{{ rclone_cache_path }}:/cache"
+    command: |
+      mount GoogleDrive:/ /data/GoogleDrive
+      --log-file /log/rclone.log --log-level ERROR --umask 002
+      --buffer-size 128M --checkers 20 --transfers 5 --vfs-read-ahead 1G
+      --vfs-cache-mode writes --allow-other --allow-non-empty
+    labels:
+      com.docker.compose.project: "rclone_stack"
+      com.docker.compose.service: "rclone_mount_google_drive"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: RClone mounted Google Drive
+  debug:
+    msg: "RClone mounted Google Drive successfully"
+

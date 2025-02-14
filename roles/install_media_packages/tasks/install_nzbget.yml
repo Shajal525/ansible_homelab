@@ -1,0 +1,78 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for NZBget
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ nzbget_config }}"
+    - "{{ media_data_path }}"
+    - "{{ media_data_path }}/downloads"
+    - "{{ media_data_path }}/downloads/nzbget"
+    - "{{ media_data_path }}/downloads/nzbget/completed" 
+    - "{{ media_data_path }}/downloads/nzbget/completed/Movies"
+    - "{{ media_data_path }}/downloads/nzbget/completed/Series"
+    - "{{ media_data_path }}/downloads/nzbget/incomplit"
+    - "{{ media_data_path }}/downloads/nzbget/torrent"
+
+- name: Deploy NZBGet container
+  docker_container:
+    name: nzbget
+    image: lscr.io/linuxserver/nzbget:latest
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "GB"
+      NZBGET_USER: "{{ nzbget_username }}"
+      NZBGET_PASS: "{{ nzbget_password }}"
+    volumes:
+      - "{{ nzbget_config }}:/config"
+      - "{{ media_data_path }}:/data"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "nzbget"
+      traefik.enable: "true"
+      traefik.http.routers.nzbget-secure.entrypoints: "https"
+      traefik.http.routers.nzbget-secure.rule: "Host(`nzbget.shajalslab.top`)"
+      traefik.http.routers.nzbget-secure.tls: "true"
+      traefik.http.routers.nzbget.service: "nzbget"
+      traefik.http.services.nzbget.loadbalancer.server.port: "6789"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "nzbget"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "6789"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Fix folder ownership
+  shell: "sudo docker exec -it qbittorrent chown abc:users {{ item }}"
+  loop:
+    - "/data"
+    - "/data/downloads"
+    - "/data/downloads/nzbget"
+    - "/data/downloads/nzbget/completed"
+    - "/data/downloads/nzbget/completed/Movies"
+    - "/data/downloads/nzbget/completed/Series"
+    - "/data/downloads/nzbget/incomplit"
+    - "/data/downloads/nzbget/torrent"
+
+- name: NZBget deployed
+  debug:
+    msg: "NZBget is running successfully"

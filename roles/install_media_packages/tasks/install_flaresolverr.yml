@@ -1,0 +1,45 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Deploy FlareSolverr using Docker Compose
+  docker_container:
+    name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    hostname: flaresolverr
+    env:
+      LOG_LEVEL: "info"
+      LOG_HTML: "false"
+      CAPTCHA_SOLVER: "none"
+      TZ: Europe/London
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "flaresolverr"
+      traefik.enable: "true"
+      traefik.http.routers.flaresolverr-secure.entrypoints: "https"
+      traefik.http.routers.flaresolverr-secure.rule: "Host(`flaresolverr.shajalslab.top`)"
+      traefik.http.routers.flaresolverr-secure.tls: "true"
+      traefik.http.routers.flaresolverr.service: "flaresolverr"
+      traefik.http.services.flaresolverr.loadbalancer.server.port: "8191"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "flaresolverr"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8096"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: FlareSolverr deployed
+  debug:
+    msg: "FlareSolverr is running successfully"

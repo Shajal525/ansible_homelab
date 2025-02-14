@@ -1,0 +1,125 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for Immich
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ upload_location }}"
+    - "{{ db_data_location }}"
+    - "{{ immich_compose_dir }}"
+
+- name: Delete compose file if it exists
+  ansible.builtin.file:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    state: absent
+
+- name: Download Immich Docker Compose file
+  get_url:
+    url: "https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml"
+    dest: "{{ immich_compose_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Insert labels after '2283:2283' line
+  replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: "(^\\s*-\\s*'2283:2283'\\s*$)"
+    replace: |
+      \1
+      {{ ' ' * 4 }}labels:
+      {{ ' ' * 4 }}  traefik.enable: true
+      {{ ' ' * 4 }}  traefik.http.routers.immich.entrypoints: https
+      {{ ' ' * 4 }}  traefik.http.routers.immich.rule: Host(`immich.shajalslab.top`)
+      {{ ' ' * 4 }}  traefik.http.routers.immich.tls: true
+      {{ ' ' * 4 }}  traefik.http.routers.immich.service: immich
+      {{ ' ' * 4 }}  traefik.http.services.immich.loadbalancer.server.port: 2283
+      # {{ ' ' * 4 }}  tsdproxy.enable: true
+      # {{ ' ' * 4 }}  tsdproxy.name: immich
+      # {{ ' ' * 4 }}  tsdproxy.scheme: http
+      # {{ ' ' * 4 }}  tsdproxy.tlsvalidate: false
+      # {{ ' ' * 4 }}  tsdproxy.container_port: 2283
+
+- name: Insert Traefik network
+  replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: "^(.*restart: always.*)$"
+    replace: |
+      \1
+      {{ ' ' * 4 }}networks:
+      {{ ' ' * 4 }}  - traefik_proxy
+
+- name: Insert networks configuration at the end of the file
+  lineinfile:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    line: |
+      networks:
+        traefik_proxy:
+          external: true
+    insertafter: EOF
+
+- name: Remove 'name' field from Docker Compose file
+  replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^name:.*\n'
+    replace: ''
+
+- name: Replace 'start_interval' with 'interval' in database healthcheck
+  replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\\s*start_interval:.*\\n'
+    replace: ''
+
+- name: Create .env file for Immich
+  copy:
+    dest: "{{ immich_compose_dir }}/.env"
+    content: |
+      UPLOAD_LOCATION={{ upload_location }}
+      DB_DATA_LOCATION={{ db_data_location }}
+      DB_PASSWORD={{ db_password }}
+      DB_USERNAME={{ db_username }}
+      DB_DATABASE_NAME={{ db_database_name }}
+      IMMICH_VERSION={{ immich_version }}
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Check if Immich container is running
+  shell: docker ps -q --filter "name=immich_server"
+  register: immich_running
+  changed_when: false
+
+- name: Validate Docker Compose file
+  shell:
+    cmd: docker compose config
+    chdir: "{{ immich_compose_dir }}"
+  register: compose_validation
+  failed_when: compose_validation.rc != 0
+  changed_when: true
+  when: immich_running.stdout == ""
+  
+- name: Restart Docker Compose stack with project name 'immich'
+  shell:
+    cmd: docker compose -p immich up -d
+    chdir: "{{ immich_compose_dir }}"
+  changed_when: true
+  when: immich_running.stdout == ""
+
+- name: Display Immich status
+  debug:
+    msg: "Immich is running successfully"
+

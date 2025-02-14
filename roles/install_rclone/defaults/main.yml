@@ -1,0 +1,11 @@
+rclone_base_path: "{{ base_storage_path }}/rclone"
+rclone_config_path: "{{ rclone_base_path }}/config"
+rclone_data_path: "{{ rclone_base_path }}/data"
+rclone_google_drive_mount_path: "{{ rclone_data_path }}/GoogleDrive"
+rclone_pcloud_mount_path: "{{ rclone_data_path }}/pCloud"
+rclone_sync_script_path: "{{ rclone_base_path }}/sync_script"
+rclone_log_path: "{{ rclone_base_path }}/log"
+rclone_cache_path: "{{ rclone_base_path }}/cache"
+
+rclone_username: "{{ vm_username }}"
+rclone_password: "{{ vm_password }}"

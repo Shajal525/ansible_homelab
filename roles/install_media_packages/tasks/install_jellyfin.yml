@@ -1,0 +1,74 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create directories for Jellyfin
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ jellyfin_config }}"
+    - "{{ media_data_path }}"
+    - "{{ media_data_path }}/movies"
+    - "{{ media_data_path }}/series"
+    - "{{ media_data_path }}/others"
+
+- name: Deploy Jellyfin using Docker Compose
+  docker_container:
+    name: jellyfin
+    image: lscr.io/linuxserver/jellyfin:latest
+    hostname: jellyfin
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "GB"
+      # JELLYFIN_PublishedServerUrl: "https://jellyfin.shajalslab.top" #optional
+    volumes:
+      - "{{ jellyfin_config }}:/config"
+      - "{{ media_data_path }}:/data"
+    ports:
+      - "8920:8920" #optional
+      - "7359:7359/udp" #optional
+      - "1900:1900/udp" #optional
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "jellyfin"
+      traefik.enable: "true"
+      traefik.http.routers.jellyfin-secure.entrypoints: "https"
+      traefik.http.routers.jellyfin-secure.rule: "Host(`jellyfin.shajalslab.top`)"
+      traefik.http.routers.jellyfin-secure.tls: "true"
+      traefik.http.routers.jellyfin.service: "jellyfin"
+      traefik.http.services.jellyfin.loadbalancer.server.port: "8096"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "jellyfin"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8096"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Fix folder ownership
+  shell: "sudo docker exec -it jellyfin chown abc:users {{ item }}"
+  loop:
+    - "/data"
+    - "/data/movies"
+    - "/data/series"
+    - "/data/others"
+
+- name: Jellyfin deployed
+  debug:
+    msg: "Jellyfin is running successfully"

@@ -1,0 +1,83 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+  
+- name: Create directories for qBittorrent
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ qbittorrent_config }}"
+    - "{{ media_data_path }}"
+    - "{{ media_data_path }}/downloads"
+    - "{{ media_data_path }}/downloads/qbittorrent"
+    - "{{ media_data_path }}/downloads/qbittorrent/completed"
+    - "{{ media_data_path }}/downloads/qbittorrent/incomplit"
+    - "{{ media_data_path }}/downloads/qbittorrent/torrent"
+
+- name: Deploy qBittorrent container
+  docker_container:
+    name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "GB"
+      TORRENTING_PORT: "6881"
+    volumes:
+      - "{{ qbittorrent_config }}:/config"
+      - "{{ media_data_path }}:/data"
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "qbittorrent"
+      traefik.enable: "true"
+      traefik.http.routers.qbittorrent-secure.entrypoints: "https"
+      traefik.http.routers.qbittorrent-secure.rule: "Host(`qbittorrent.shajalslab.top`)"
+      traefik.http.routers.qbittorrent-secure.tls: "true"
+      traefik.http.routers.qbittorrent.service: "qbittorrent"
+      traefik.http.services.qbittorrent.loadbalancer.server.port: "8080"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "qbittorrent"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8080"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: qBittorrent deployed
+  debug:
+    msg: "qBittorrent is running successfully"
+
+- name: Fix folder ownership
+  shell: "sudo docker exec -it qbittorrent chown abc:users {{ item }}"
+  loop:
+    - "/data"
+    - "/data/downloads"
+    - "/data/downloads/qbittorrent"
+    - "/data/downloads/qbittorrent/completed"
+    - "/data/downloads/qbittorrent/incomplit"
+    - "/data/downloads/qbittorrent/torrent"
+    
+- name: Get log to see the password.
+  shell: docker logs qbittorrent | grep password || true
+  changed_when: false
+  register: qbittorrent_log
+
+- name: Print logs
+  debug:
+    var: qbittorrent_log.stdout

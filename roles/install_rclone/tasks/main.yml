@@ -1,0 +1,5 @@
+---
+- include_tasks: install_rclone.yml
+# - include_tasks: deploy_google_drive.yml
+# - include_tasks: deploy_rclone_pcloud.yml
+

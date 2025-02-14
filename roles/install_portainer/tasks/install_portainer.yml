@@ -1,0 +1,57 @@
+---
+
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure external networks exist
+  docker_network:
+    name: traefik_proxy
+    state: present
+    internal: no
+    driver: bridge
+
+- name: Create Portainer directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ portainer_data }}"
+
+- name: Deploy Portainer
+  docker_container:
+    name: portainer
+    image: portainer/portainer-ce
+    ports:
+      # - "9000:9000"
+      - "8000:8000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ portainer_data }}:/data"
+    labels:
+      com.docker.compose.project: "portainer_stack"
+      com.docker.compose.service: "portainer"
+      traefik.enable: "true"
+      traefik.http.routers.portainer-secure.entrypoints: "https"
+      traefik.http.routers.portainer-secure.rule: "Host(`portainer.shajalslab.top`)"
+      traefik.http.routers.portainer-secure.tls: "true"
+      traefik.http.routers.portainer-secure.service: "portainer"
+      traefik.http.services.portainer.loadbalancer.server.port: "9000"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "portainer"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "9000"
+    networks:
+      - name: traefik_proxy
+    restart_policy: always
+    state: started
+
+- name: Portainer deployed
+  debug:
+    msg: "Portainer is running successfully"

@@ -1,0 +1,67 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create Homarr directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ homarr_data }}"
+
+- name: Generate SECRET_ENCRYPTION_KEY
+  shell: openssl rand -hex 32
+  register: encryption_key
+  changed_when: false
+
+- name: Debug encryption_key
+  debug:
+    var: encryption_key.stdout
+
+- name: Deploy Homarr container
+  docker_container:
+    name: homarr
+    image: ghcr.io/homarr-labs/homarr:latest
+    hostname: homarr
+    env:
+      SECRET_ENCRYPTION_KEY: "{{ encryption_key.stdout }}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ homarr_data }}:/appdata"
+    labels:
+      com.docker.compose.project: "homarr_stack"
+      com.docker.compose.service: "homarr"
+      traefik.enable: "true"
+      traefik.http.routers.homarr-secure.entrypoints: "https"
+      traefik.http.routers.homarr-secure.rule: "Host(`homarr.shajalslab.top`)"
+      traefik.http.routers.homarr-secure.tls: "true"
+      traefik.http.routers.homarr.service: "homarr"
+      traefik.http.services.homarr.loadbalancer.server.port: "7575"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "homarr"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "7575"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Wait 15 seconds
+  pause:
+    seconds: 15
+
+- name: Homarr deployed
+  debug:
+    msg: "Homarr is running successfully"
+
