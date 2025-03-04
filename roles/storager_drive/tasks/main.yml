@@ -1,0 +1,4 @@
+---
+- include_tasks: format_drives.yml
+- include_tasks: mount_drives.yml
+

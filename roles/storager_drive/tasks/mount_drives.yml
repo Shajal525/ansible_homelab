@@ -1,0 +1,86 @@
+---
+- name: Get details of the disk and partitions
+  command: "lsblk  -o NAME,TYPE,SIZE,MOUNTPOINTS"
+  register: disk_info
+  changed_when: false
+
+- name: Get only partitions
+  set_fact:
+    partition_info: "{{ disk_info.stdout_lines | map('split') | selectattr('1', 'equalto', 'part') | map('regex_replace', '[^a-zA-Z0-9 ./]', '') | list }}"
+
+- name: Length of splited list
+  set_fact:
+    splitted_list_length: "{{ partition_info | map('split') | map('length') | list }}"
+
+- name: Get only unmounted partitions
+  set_fact:
+    unmounted_partitions: "{{ partition_info | zip(splitted_list_length) | map('list') | selectattr(1, 'equalto', 3) | map('first') | list }}"
+
+- name: Get drive sizes
+  shell: |
+    lsblk -b -o NAME,SIZE --noheadings | awk '$1 ~ /{{ item }}$/ { printf "%0.2f\n", $2/1024/1024/1024 }'
+  register: drive_sizes
+  with_items: "{{ unmounted_partitions | map('split') | map('first') | list }}"
+  changed_when: false
+
+- name: Extract drive sizes into a list
+  set_fact:
+    partition_sizes: "{{ partition_sizes | default([]) + [ item.stdout ] }}"
+  with_items: "{{ drive_sizes.results }}"
+  when: item.stdout != ""
+
+- name: Remove small partitions
+  set_fact:
+    filtered_partitions: "{{ unmounted_partitions | zip(partition_sizes | map('float')) | list | selectattr('1', 'ge', 25) | map(attribute=0) | list }}"
+
+- name: Filtered partition name only
+  set_fact:
+    filtered_partition_names: "{{ filtered_partitions | map('split') | map('first') | list }}"
+
+- name: Filtered unmounted partitions
+  debug:
+    var: filtered_partitions
+
+- name: Prompt user to select a device
+  pause:
+    prompt: "Enter the partition name (e.g., sdb1, sdc2) to mount:"
+  register: selected_partition
+
+- name: Validate user input
+  fail:
+    msg: "Invalid device selected! Choose from: {{ filtered_partitions | join(', ') }}"
+  when: selected_partition.user_input not in filtered_partition_names
+
+
+- name: Full name of partition
+  set_fact: 
+    selected_partition: "/dev/{{ selected_partition.user_input | trim }}"
+
+- name: Selected partition
+  debug: 
+    var: selected_partition
+
+- name: Prompt user to enter mount location for selected partition
+  pause:
+    prompt: "Enter mount location(e.g. /mnt/data1) to mount selected partition:"
+  register: mount_location
+
+- name: Validate mount location format
+  fail:
+    msg: "Invalid mount location! It must start with '/' and should not contain spaces."
+  when: mount_location.user_input is not regex('^\/[^\s]+$')
+
+- name: Ensure the mount point directory exists
+  file:
+    path: "{{ mount_location.user_input }}"
+    state: directory
+
+- name: Mount the BTRFS filesystem
+  mount:
+    path: "{{ mount_location.user_input }}"
+    src: "{{ selected_partition }}"
+    fstype: "{{ filesystem_type }}"
+    opts: defaults
+    state: mounted
+
+

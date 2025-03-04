@@ -1,0 +1,78 @@
+---
+- name: Get list of all available block devices
+  command: "lsblk -dn -o NAME,TYPE,SIZE"
+  register: lsblk_output
+  changed_when: false
+
+- name: Extract valid disk names
+  set_fact:
+    available_disks: "{{ lsblk_output.stdout_lines 
+                          | map('split') 
+                          | selectattr('1', 'equalto', 'disk') 
+                          | map(attribute=0) 
+                          | list }}"
+                          
+- name: Display available devices
+  debug:
+    msg: "{{ lsblk_output.stdout_lines | map('split') | selectattr('1', 'equalto', 'disk') | map('join', ' ') | list }}"
+
+- name: Prompt user to select a device
+  pause:
+    prompt: "Enter the device name (e.g., sdb, sdc) to delete all partitions:"
+  register: selected_device
+
+- name: Validate user input
+  fail:
+    msg: "Invalid device selected! Choose from: {{ available_disks | join(', ') }}"
+  when: selected_device.user_input not in available_disks
+
+- name: Full name of drive
+  set_fact: 
+    selected_device: "/dev/{{ selected_device.user_input | trim }}"
+
+- name: debug
+  debug:
+    var: selected_device
+
+- name: Read device information (always use unit when probing)
+  community.general.parted:
+    device: "{{ selected_device }}"
+    unit: MiB
+  register: sdb_info
+
+- name: Remove all partitions from disk
+  parted:
+    device: "{{ selected_device }}"
+    number: '{{ item.num }}'
+    state: absent
+  loop: '{{ sdb_info.partitions }}'
+
+- name: Ensure the disk has a GPT partition table and Create a new btrfs primary partition
+  parted:
+    device: "{{ selected_device }}"
+    label: gpt
+    name: GPT
+    number: 1
+    state: present
+    fs_type: "{{ filesystem_type }}"
+
+- name: Format the partition with Btrfs
+  filesystem:
+    fstype: btrfs
+    dev: "{{ selected_device }}1"
+    force: true
+
+- name: Verify the new partition exists
+  command: "lsblk -dn -o NAME,TYPE {{ selected_device }}1"
+  register: lsblk_output
+  changed_when: false
+
+- name: Get only drive
+  set_fact:
+    only_drive: "{{ selected_device | regex_replace('^/dev/', '') }}"
+
+- name: Check if partition exists
+  fail:
+    msg: "Partition was not created successfully on /dev/{{ selected_device }}"
+  when: lsblk_output.stdout_lines | regex_search(only_drive + '[0-9]+') | list | length == 0
+
