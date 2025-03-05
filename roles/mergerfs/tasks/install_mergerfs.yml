@@ -1,0 +1,73 @@
+---
+- name: Install MergerFS
+  apt:
+    name: mergerfs
+    state: present
+
+- name: Ensure mount directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ mergerfs_mount_location }}"
+    - "{{ mergerfs_mount_location_without_cache }}"
+
+- name: Ensure cache disk is mounted
+  command: "findmnt {{ cache_storage }}"
+  register: cache_mount_check
+  changed_when: false
+  failed_when: cache_mount_check.rc != 0
+
+- name: Ensure disks are mounted
+  command: "findmnt {{ item }}"
+  register: mount_check
+  changed_when: false
+  failed_when: mount_check.rc != 0
+  loop: "{{ data_storage }}"
+
+- name: Set combined data storage.
+  set_fact:
+    combined_data_storage: "{{ data_storage | join(':') }}"
+
+- name: Configure Cached Pool (ff policy) with SSD
+  mount:
+    path: "{{ mergerfs_mount_location }}"
+    src: "{{ cache_storage }}:{{ combined_data_storage }}"
+    fstype: fuse.mergerfs
+    opts: "defaults,allow_other,use_ino,cache.files=off,fsname=mergerfs-cached,category.create=ff"
+    state: mounted
+
+- name: Configure Static Pool (epmfs policy) without SSD
+  mount:
+    path: "{{ mergerfs_mount_location_without_cache }}"
+    src: "{{ combined_data_storage }}"
+    fstype: fuse.mergerfs
+    opts: "defaults,allow_other,use_ino,cache.files=off,fsname=mergerfs-static,category.create=epmfs"
+    state: mounted
+
+- name: Create rsync move script to move data from SSD to HDD
+  copy:
+    dest: /usr/local/bin/move_data_to_hdd.sh
+    content: |
+      #!/bin/bash
+      # Move files older than 1 day from SSD to HDD
+      find {{ cache_storage }} -type f -mtime +1 -print0 | rsync -a --remove-source-files --files-from=- {{ cache_storage }} {{ mergerfs_mount_location_without_cache }}
+      find {{ cache_storage }} -type d -empty -delete
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Create cron job to run rsync daily
+  cron:
+    name: "Move old data from SSD to HDD"
+    minute: "0"
+    hour: "0"
+    job: "/usr/local/bin/move_data_to_hdd.sh"
+    state: present
+    user: root
+
+- name: Ensure cron service is running
+  service:
+    name: cron
+    state: started
+    enabled: true
