@@ -1,0 +1,56 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Deploy PostgreSql using Docker Compose
+  docker_container:
+    name: postgresql
+    image: postgres:latest
+    hostname: postgresql
+    shm_size: 128m
+    ports:
+      - "{{ postgres_port }}:5432"
+    volumes:
+      - "{{ postgres_data_path }}:/var/lib/postgresql/data"
+    env:
+      POSTGRES_PASSWORD: "{{ postgres_password }}"
+      POSTGRES_USER: "{{ postgres_username }}"
+      POSTGRES_DB: "{{ postgres_username }}"
+    labels:
+      com.docker.compose.project: "postgresql"
+      com.docker.compose.service: "postgresql"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Adminer using Docker Compose
+  docker_container:
+    name: adminer
+    image: adminer:latest
+    hostname: adminer
+    labels:
+      com.docker.compose.project: "postgresql"
+      com.docker.compose.service: "adminer"
+      traefik.enable: "true"
+      traefik.http.routers.postgresql-secure.entrypoints: "https"
+      traefik.http.routers.postgresql-secure.rule: "Host(`adminer.shajalslab.top`)"
+      traefik.http.routers.postgresql-secure.tls: "true"
+      traefik.http.routers.postgresql.service: "adminer"
+      traefik.http.services.postgresql.loadbalancer.server.port: "8080"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: PostgreSql deployed
+  debug:
+    msg: "PostgreSql is running successfully"

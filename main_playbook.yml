@@ -1,14 +1,14 @@
 ---
-- name: Update and generate SSL files
-  hosts: pvehomelab
-  become: true
-  gather_facts: false
+# - name: Update and generate SSL files
+#   hosts: pvehomelab
+#   become: true
+#   gather_facts: false
 
-  roles:
-    # - basics
-    # - storager_drive
-    - mergerfs
-    # - openssl_generate_certificate # don't need now
+#   roles:
+#     - basics
+#     # - storager_drive
+#     # - mergerfs
+#     # - openssl_generate_certificate # don't need now
 
 # - name: Install docker
 #   hosts: pvehomelab
@@ -18,20 +18,21 @@
 #   roles:
 #     - docker
 
-# - name: Install Portainer, Nextcloud, Nginx
-#   hosts: pvehomelab
-#   become: true
-#   gather_facts: false
+- name: Install Portainer, Nextcloud, Nginx
+  hosts: pvehomelab
+  become: true
+  gather_facts: false
 
-#   roles:
-#     # - install_tsdproxy_tailscale # don't need now
-#     # - cloudflare_tunnel # don't need now
-#     # - install_traefik
-#     # - install_homarr
-#     # - install_immich
-#     # - install_media_packages
-#     # - install_nextcloud
-#     # - install_portainer
-#     # - install_syncthing
-#     - install_rclone
+  roles:
+    # - install_tsdproxy_tailscale # don't need now
+    # - cloudflare_tunnel # don't need now
+    # - install_traefik
+    # - install_homarr
+    # - install_immich
+    # - install_media_packages
+    # - install_nextcloud
+    # - install_portainer
+    # - install_syncthing
+    # - install_rclone
+    - postgresql
 
