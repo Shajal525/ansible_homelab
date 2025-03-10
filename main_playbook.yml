@@ -34,5 +34,6 @@
     # - install_portainer
     # - install_syncthing
     # - install_rclone
-    - postgresql
+    # - postgresql
+    # - rustdesk
 

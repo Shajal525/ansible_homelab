@@ -1,0 +1,61 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create Rustdesk directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ rustdesk_base_path }}"
+    - "{{ rustdesk_data }}"
+
+- name: Deploy Rustdesk container
+  docker_container:
+    name: rustdesk-server
+    image: rustdesk/rustdesk-server-s6:latest
+    hostname: rustdesk-server
+    ports:
+      - "21115:21115"
+      - "21116:21116"
+      - "21116:21116/udp"
+      - "21117:21117"
+    env:
+      RELAY: "{{ rustdesk_domain_or_ip }}:21117"
+      ENCRYPTED_ONLY: "1"
+    volumes:
+      - "{{ rustdesk_data }}:/data"
+    labels:
+      com.docker.compose.project: "rustdesk"
+      com.docker.compose.service: "rustdesk-server"
+      
+      # traefik.enable: "true"
+      # traefik.http.routers.rustdesk-secure.entrypoints: "https"
+      # traefik.http.routers.rustdesk-secure.rule: "Host(`rustdesk.shajalslab.top`)"
+      # traefik.http.routers.rustdesk-secure.tls: "true"
+      # traefik.http.services.nextcloud.loadbalancer.server.port: "21117"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "rustdesk"
+      # tsdproxy.scheme: "https"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8384"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Rustdesk deployed
+  debug:
+    msg: "Rustdesk is running successfully"
+
