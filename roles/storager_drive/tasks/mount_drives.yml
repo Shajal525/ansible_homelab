@@ -1,12 +1,12 @@
 ---
 - name: Get details of the disk and partitions
-  command: "lsblk  -o NAME,TYPE,SIZE,MOUNTPOINTS"
+  command: "lsblk  -o NAME,TYPE,SIZE,MOUNTPOINTS,UUID"
   register: disk_info
   changed_when: false
 
 - name: Get only partitions
   set_fact:
-    partition_info: "{{ disk_info.stdout_lines | map('split') | selectattr('1', 'equalto', 'part') | map('regex_replace', '[^a-zA-Z0-9 ./]', '') | list }}"
+    partition_info: "{{ disk_info.stdout_lines | map('split') | selectattr('1', 'equalto', 'part') | map('regex_replace', '[^a-zA-Z0-9 ./-]', '') | list }}"
 
 - name: Length of splited list
   set_fact:
@@ -14,7 +14,7 @@
 
 - name: Get only unmounted partitions
   set_fact:
-    unmounted_partitions: "{{ partition_info | zip(splitted_list_length) | map('list') | selectattr(1, 'equalto', 3) | map('first') | list }}"
+    unmounted_partitions: "{{ partition_info | zip(splitted_list_length) | map('list') | selectattr(1, 'equalto', 4) | map('first') | list }}"
 
 - name: Get drive sizes
   shell: |
@@ -54,11 +54,15 @@
 
 - name: Full name of partition
   set_fact: 
-    selected_partition: "/dev/{{ selected_partition.user_input | trim }}"
+    selected_partition: "{{ selected_partition.user_input | trim }}"
 
-- name: Selected partition
+- name: UUID of selected disk
+  set_fact:
+    selected_uuid: "{{ filtered_partitions | select('search', selected_partition + ' ') | first | split(' ') | last }}"
+
+- name: Selected partition and UUID
   debug: 
-    var: selected_partition
+    msg: "{{ selected_partition + ' -> ' + selected_uuid }}"
 
 - name: Prompt user to enter mount location for selected partition
   pause:
@@ -78,7 +82,7 @@
 - name: Mount the BTRFS filesystem
   mount:
     path: "{{ mount_location.user_input }}"
-    src: "{{ selected_partition }}"
+    src: "{{ 'UUID=' + selected_uuid }}"
     fstype: "{{ filesystem_type }}"
     opts: defaults
     state: mounted
