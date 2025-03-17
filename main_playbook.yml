@@ -1,15 +1,15 @@
 ---
-- name: Update and generate SSL files
-  hosts: pvehomelab
-  become: true
-  gather_facts: false
+# - name: Update and generate SSL files
+#   hosts: pvehomelab
+#   become: true
+#   gather_facts: false
 
-  roles:
-    # - basics
-    - storager_drive
-    # - snapraid
-    # - mergerfs
-    # - openssl_generate_certificate # don't need now
+#   roles:
+#     # - basics
+#     # - storager_drive
+#     # - snapraid
+#     - mergerfs
+#     # - openssl_generate_certificate # don't need now
 
 # - name: Install docker
 #   hosts: pvehomelab
@@ -19,22 +19,25 @@
 #   roles:
 #     - docker
 
-# - name: Install Portainer, Nextcloud, Nginx
-#   hosts: pvehomelab
-#   become: true
-#   gather_facts: false
+- name: Install Portainer, Nextcloud, Nginx
+  hosts: pvehomelab
+  become: true
+  gather_facts: false
 
-#   roles:
-#     # - install_tsdproxy_tailscale # don't need now
-#     # - cloudflare_tunnel # don't need now
-#     # - install_traefik
-#     # - install_homarr
-#     # - install_immich
-#     # - install_media_packages
-#     # - install_nextcloud
-#     # - install_portainer
-#     # - install_syncthing
-#     # - install_rclone
-#     # - postgresql
-#     # - rustdesk
+  roles:
+    # - install_tsdproxy_tailscale # don't need now
+    # - cloudflare_tunnel # don't need now
+    # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver. 
+    # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
+    # Wait until certificates are generated. command: "docker logs traefik"
+    - install_traefik 
+    # - install_portainer
+    # - install_homarr
+    # - install_immich
+    # - install_media_packages
+    # - install_nextcloud
+    # - install_syncthing
+    # - install_rclone
+    # - postgresql
+    # - rustdesk
 

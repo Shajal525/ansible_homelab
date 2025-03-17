@@ -45,7 +45,7 @@
       - "443:443"
     env:
       TRAEFIK_DASHBOARD_CREDENTIALS: "{{ htpasswd_hash.stdout }}"
-      # CF_API_EMAIL: your@email.com # Cloudflare email
+      CF_API_EMAIL: "{{ cloudflare_email }}" # Cloudflare email
       CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}" # Cloudflare API Token
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -56,7 +56,6 @@
     labels:
       com.docker.compose.project: "traefik_stack"
       com.docker.compose.service: "traefik"
-
       traefik.enable: "true"
       traefik.http.routers.traefik.entrypoints: "http"
       traefik.http.routers.traefik.rule: "Host(`traefik.shajalslab.top`)"

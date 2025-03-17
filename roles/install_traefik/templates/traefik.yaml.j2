@@ -1,12 +1,3 @@
-global:
-  checkNewVersion: false
-  sendAnonymousUsage: false
-
-accessLog: {}
-
-log:
-  level: INFO
-
 api:
   dashboard: true
   debug: true
@@ -43,9 +34,13 @@ certificatesResolvers:
       storage: /etc/traefik/certs/acme.json
       dnsChallenge:
         provider: cloudflare
-        # disablePropagationCheck: true # Some people using Cloudflare note this can solve DNS propagation issues.
+        disablePropagationCheck: true # Some people using Cloudflare note this can solve DNS propagation issues.
+        delayBeforeCheck: 60
         resolvers:
           - "1.1.1.1:53"
-          - "1.0.0.1:53"
+          - "8.8.8.8:53"
 
-
+log:
+  level: INFO
+accessLog:
+  filePath: "/var/log/traefik/access.log"
