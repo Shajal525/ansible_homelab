@@ -36,23 +36,3 @@ enabled = true
 ; Percentage it will check
 plan = 10
 older-than = 10
-
-; [path]
-; Base path for snapraid-btrfs's temporary config files
-; config = /tmp/snapraid-btrfs
-
-[snapshots]
-; Snapshot naming pattern
-pattern = snapraid-btrfs_{:%Y-%m-%d_%H:%M:%S}
-
-; Snapshot directory name
-dir = .snapshots
-
-{% for disk in data_disks %}
-[{{ disk.path }}]
-; Mount path of the subvolume
-mountpoint = {{ disk.path }}
-
-; Snapshot storage path
-snapshotdir = {{ disk.path }}/.snapshots
-{% endfor %}

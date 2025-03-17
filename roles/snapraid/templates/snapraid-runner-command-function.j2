@@ -1,0 +1,41 @@
+def snapraid_command(command, args={}, *, allow_statuscodes=[]):
+    """
+    Run snapraid command
+    Raises subprocess.CalledProcessError if errorlevel != 0
+    """
+    arguments = ["--conf", config["snapraid"]["config"], "--quiet"]
+    
+    for (k, v) in args.items():
+        arguments.extend(["--" + k, str(v)])
+
+    snapraid_executable = config["snapraid"]["executable"]
+    if command == "sync":
+        snapraid_executable = "/usr/local/bin/snapraid-btrfs"
+
+    p = subprocess.Popen(
+        [snapraid_executable, command] + arguments,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        # Snapraid always outputs utf-8 on windows. On linux, utf-8
+        # also seems a sensible assumption.
+        encoding="utf-8",
+        errors="replace"
+    )
+
+    out = []
+    threads = [
+        tee_log(p.stdout, out, logging.OUTPUT),
+        tee_log(p.stderr, [], logging.OUTERR)
+    ]
+
+    for t in threads:
+        t.join()
+
+    ret = p.wait()
+    # sleep for a while to prevent output mixup
+    time.sleep(0.3)
+
+    if ret == 0 or ret in allow_statuscodes:
+        return out
+    else:
+        raise subprocess.CalledProcessError(ret, f"{snapraid_executable} {command}")

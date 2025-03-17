@@ -49,6 +49,7 @@
 - name: Create subvolumes to store snapraid.content file
   command: "btrfs subvolume create {{ item.path }}/content_subvolume"
   loop: "{{ data_disks }}"
+  changed_when: false
   failed_when: false
 
 - name: Clone snapraid-btrfs repository
@@ -83,15 +84,16 @@
     dest: "{{ snapraid_runner_install_path }}/snapraid-runner.conf"
     mode: '0644'
 
-- name: Create SnapRAID-BTRFS sync script
-  template:
-    src: snapraid-btrfs-sync.sh.j2
-    dest: /usr/local/bin/snapraid-btrfs-sync
-    mode: '0755'
+- name: Edit snapraid-runner to replace snapraid_command function to use snapraid-btrfs.conf 
+  replace:
+    path: "{{ snapraid_runner_install_path }}/snapraid-runner.py"
+    regexp: |
+      def snapraid_command\(command, args=\{\}, \*, allow_statuscodes=\[\]\):[\s\S]*?raise subprocess.CalledProcessError\(ret, "snapraid " \+ command\)
+    replace: "{{ lookup('file', 'templates/snapraid-runner-command-function.j2') }}"
 
 - name: Setup SnapRAID-BTRFS cron job
   cron:
     name: "SnapRAID-BTRFS sync"
     hour: "1"
     minute: "0"
-    job: "/usr/local/bin/snapraid-btrfs-sync"
+    job: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py"
