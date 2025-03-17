@@ -28,8 +28,8 @@
     name: portainer
     image: portainer/portainer-ce:latest
     ports:
-      - "9443:9443"
-      - "9000:9000"
+      # - "9443:9443"
+      # - "9000:9000"
       - "8000:8000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -37,18 +37,18 @@
     labels:
       com.docker.compose.project: "portainer_stack"
       com.docker.compose.service: "portainer"
-      # traefik.enable: "true"
-      # traefik.http.routers.portainer-secure.entrypoints: "https"
-      # traefik.http.routers.portainer-secure.rule: "Host(`portainer.shajalslab.top`)"
-      # traefik.http.routers.portainer-secure.tls: "true"
-      # traefik.http.routers.portainer-secure.service: "portainer"
-      # traefik.http.services.portainer.loadbalancer.server.port: "9000"
+      traefik.enable: "true"
+      traefik.http.routers.portainer-secure.entrypoints: "https"
+      traefik.http.routers.portainer-secure.rule: "Host(`portainer.shajalslab.top`)"
+      traefik.http.routers.portainer-secure.tls: "true"
+      traefik.http.routers.portainer-secure.service: "portainer"
+      traefik.http.services.portainer.loadbalancer.server.port: "9000"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "portainer"
       # tsdproxy.scheme: "http"
       # tsdproxy.tlsvalidate: "false"
-    # networks:
-    #   - name: traefik_proxy
+    networks:
+      - name: traefik_proxy
     restart_policy: always
     state: started
 
