@@ -79,12 +79,18 @@
     path: "{{ mount_location.user_input }}"
     state: directory
 
+- name: Ensure 'user_allow_other' is enabled in fuse.conf
+  lineinfile:
+    path: /etc/fuse.conf
+    line: "user_allow_other"
+    create: yes
+
 - name: Mount the BTRFS filesystem
   mount:
     path: "{{ mount_location.user_input }}"
     src: "{{ 'UUID=' + selected_uuid }}"
     fstype: "{{ filesystem_type }}"
-    opts: defaults
+    opts: "defaults,allow_other,use_ino,cache.files=off,dropcacheonclose=true"
     state: mounted
 
 
