@@ -6,8 +6,8 @@
 
   roles:
     # - basics
-    # - storager_drive
-    - snapraid
+    - storager_drive
+    # - snapraid
     # - mergerfs
     # - openssl_generate_certificate # don't need now
 

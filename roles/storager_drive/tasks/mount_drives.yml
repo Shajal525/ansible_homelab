@@ -78,19 +78,22 @@
   file:
     path: "{{ mount_location.user_input }}"
     state: directory
-
-- name: Ensure 'user_allow_other' is enabled in fuse.conf
-  lineinfile:
-    path: /etc/fuse.conf
-    line: "user_allow_other"
-    create: yes
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0755'
 
 - name: Mount the BTRFS filesystem
   mount:
     path: "{{ mount_location.user_input }}"
     src: "{{ 'UUID=' + selected_uuid }}"
     fstype: "{{ filesystem_type }}"
-    opts: "defaults,allow_other,use_ino,cache.files=off,dropcacheonclose=true"
+    opts: defaults
     state: mounted
 
-
+- name: Fix file parmission
+  file:
+    path: "{{ mount_location.user_input }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0755'
+    recurse: yes
