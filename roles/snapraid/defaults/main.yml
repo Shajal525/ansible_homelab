@@ -1,0 +1,30 @@
+snapraid_content_path: "/var/snapraid"
+snapraid_config_path: /etc/snapraid.conf
+snapraid_btrfs_config_path: /etc/snapraid-btrfs.conf
+
+snapraid_btrfs_git_url: https://github.com/automorphism88/snapraid-btrfs.git
+snapraid_btrfs_install_path: /opt/snapraid-btrfs
+snapraid_runner_git_url: https://github.com/Chronial/snapraid-runner.git
+snapraid_runner_install_path: /opt/snapraid-runner
+
+
+snapraid_email_from: "shajal525@gmail.com"
+snapraid_email_to: "shajal525@gmail.com"
+snapraid_email_smtp_user: "shajal525@gmail.com"
+snapraid_email_smtp_password: "{{ gmail_smtp_password }}"
+
+parity_disk: /mnt/parity
+data_disks:
+  - path: /mnt/data1
+    name: data1
+  - path: /mnt/data2
+    name: data2
+
+snapper_settings:
+  - { key: "ALLOW_USERS", value: "root" }
+  - { key: "TIMELINE_CREATE", value: "no" }
+  - { key: "NUMBER_CLEANUP", value: "yes" }
+  - { key: "NUMBER_MIN_AGE", value: "1800" }
+  - { key: "NUMBER_LIMIT", value: "10" }
+  - { key: "NUMBER_LIMIT_IMPORTANT", value: "10" }
+

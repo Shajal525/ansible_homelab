@@ -1,0 +1,36 @@
+#!/bin/bash
+# SnapRAID-BTRFS sync script
+
+LOG_FILE="/var/log/snapraid-btrfs-sync.log"
+SNAPRAID_CONFIG_FILE={{ snapraid_btrfs_config_path }}
+
+echo "Starting snapraid-btrfs sync at $(date)" >> $LOG_FILE
+
+# Test if snapraid-btrfs can find all snapper configs
+/usr/local/bin/snapraid-btrfs ls
+if [ $? -ne 0 ]; then
+    echo "Error: snapraid-btrfs cannot find all snapper configs. Please check your setup." >> $LOG_FILE
+    exit 1
+fi
+
+# Run snapraid-btrfs sync
+/usr/local/bin/snapraid-btrfs sync
+
+# Check for errors
+if [ $? -ne 0 ]; then
+    echo "SnapRAID-BTRFS sync failed at $(date)!" >> $LOG_FILE
+exit 1
+fi
+
+echo "SnapRAID-BTRFS sync completed successfully at $(date)." >> $LOG_FILE
+
+# Optionally run a scrub operation periodically (e.g., once a month)
+# Uncomment the following lines to enable monthly scrubs
+# MONTH_DAY=$(date +%d)
+# if [ "$MONTH_DAY" = "01" ]; then
+#   echo "Starting monthly scrub at $(date)" >> $LOG_FILE
+#   /usr/local/bin/snapraid-btrfs scrub
+#   echo "Monthly scrub completed at $(date)" >> $LOG_FILE
+# fi
+
+exit 0

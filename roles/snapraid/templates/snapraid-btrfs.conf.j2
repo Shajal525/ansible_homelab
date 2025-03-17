@@ -1,0 +1,58 @@
+# snapraid-btrfs configuration
+
+[snapraid]
+; Path to the snapraid executable
+executable = /usr/bin/snapraid
+
+; Path to the snapraid config
+config = {{ snapraid_config_path }}
+deletethreshold = 10000
+touch = false
+
+[logging]
+file = /root/snapraid.log
+; Size in KiB
+maxsize = 5000
+
+[email]
+sendon = success,error
+short = true
+subject = [SnapRAID] Status Report
+from = {{ snapraid_email_from }}
+to = {{ snapraid_email_to }}
+; Size in KiB
+maxsize = 500
+
+[smtp]
+host = smtp.gmail.com
+port = 465
+ssl = true
+tls = false
+user = {{ snapraid_email_smtp_user }}
+password = {{ snapraid_email_smtp_password }}
+
+[scrub]
+enabled = true
+; Percentage it will check
+plan = 10
+older-than = 10
+
+; [path]
+; Base path for snapraid-btrfs's temporary config files
+; config = /tmp/snapraid-btrfs
+
+[snapshots]
+; Snapshot naming pattern
+pattern = snapraid-btrfs_{:%Y-%m-%d_%H:%M:%S}
+
+; Snapshot directory name
+dir = .snapshots
+
+{% for disk in data_disks %}
+[{{ disk.path }}]
+; Mount path of the subvolume
+mountpoint = {{ disk.path }}
+
+; Snapshot storage path
+snapshotdir = {{ disk.path }}/.snapshots
+{% endfor %}
