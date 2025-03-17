@@ -29,12 +29,20 @@
   set_fact:
     combined_data_storage: "{{ data_storage | join(':') }}"
 
+- name: Unmount if already mounted
+  mount:
+    path: "{{ item }}"
+    state: unmounted
+  loop: 
+    - "{{ mergerfs_mount_location }}"
+    - "{{ mergerfs_mount_location_without_cache }}"
+
 - name: Configure Cached Pool (ff policy) with SSD
   mount:
     path: "{{ mergerfs_mount_location }}"
     src: "{{ cache_storage }}:{{ combined_data_storage }}"
     fstype: fuse.mergerfs
-    opts: "defaults,allow_other,use_ino,cache.files=off,fsname=mergerfs-cached,category.create=ff"
+    opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=off,fsname=mergerfs-cached,category.create=ff"
     state: mounted
 
 - name: Configure Static Pool (epmfs policy) without SSD
@@ -42,7 +50,7 @@
     path: "{{ mergerfs_mount_location_without_cache }}"
     src: "{{ combined_data_storage }}"
     fstype: fuse.mergerfs
-    opts: "defaults,allow_other,use_ino,cache.files=off,fsname=mergerfs-static,category.create=epmfs"
+    opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=off,fsname=mergerfs-static,category.create=epmfs"
     state: mounted
 
 - name: Create rsync move script to move data from SSD to HDD

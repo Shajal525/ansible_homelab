@@ -30,8 +30,8 @@
     # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver. 
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
-    - install_traefik 
-    # - install_portainer
+    # - install_traefik 
+    - install_portainer
     # - install_homarr
     # - install_immich
     # - install_media_packages
