@@ -62,7 +62,7 @@
     state: started
 
 - name: Fix folder ownership
-  shell: "sudo docker exec -it qbittorrent chown abc:users {{ item }}"
+  shell: "sudo docker exec -it nzbget chown abc:users {{ item }}"
   loop:
     - "/data"
     - "/data/downloads"
