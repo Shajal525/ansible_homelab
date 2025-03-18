@@ -23,6 +23,7 @@
     - "{{ rclone_config_path }}"
     - "{{ rclone_sync_script_path }}"
     - "{{ rclone_data_path }}"
+    - "{{ my_storage_path }}"
 
 - name: Create RClone config file from template
   template:
@@ -41,6 +42,7 @@
       - "{{ rclone_config_path }}:/config/rclone"
       - "{{ rclone_sync_script_path }}:/sync_script"
       - "{{ rclone_data_path }}:/data"
+      - "{{ my_storage_path }}:/shajal"
     devices:
       - /dev/fuse
     command: |

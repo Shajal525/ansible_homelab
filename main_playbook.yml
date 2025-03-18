@@ -37,7 +37,7 @@
     # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
-    # - install_rclone
+    - install_rclone
     # - postgresql
     # - rustdesk
 
