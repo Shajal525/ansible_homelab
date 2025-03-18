@@ -1,6 +1,5 @@
 snapraid_content_path: "/var/snapraid"
 snapraid_config_path: /etc/snapraid.conf
-snapraid_btrfs_config_path: /etc/snapraid-btrfs.conf
 
 snapraid_btrfs_git_url: https://github.com/automorphism88/snapraid-btrfs.git
 snapraid_btrfs_install_path: /opt/snapraid-btrfs

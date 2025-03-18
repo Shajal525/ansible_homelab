@@ -96,4 +96,4 @@
     name: "SnapRAID-BTRFS sync"
     hour: "1"
     minute: "0"
-    job: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py"
+    job: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf"

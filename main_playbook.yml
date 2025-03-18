@@ -1,15 +1,15 @@
 ---
-# - name: Update and generate SSL files
-#   hosts: pvehomelab
-#   become: true
-#   gather_facts: false
+- name: Update and generate SSL files
+  hosts: pvehomelab
+  become: true
+  gather_facts: false
 
-#   roles:
-#     # - basics
-#     # - storager_drive
-#     # - snapraid
-#     - mergerfs
-#     # - openssl_generate_certificate # don't need now
+  roles:
+    # - basics
+    # - storager_drive
+    - snapraid
+    # - mergerfs
+    # - openssl_generate_certificate # don't need now
 
 # - name: Install docker
 #   hosts: pvehomelab
@@ -37,7 +37,7 @@
     # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
-    - install_rclone
+    # - install_rclone
     # - postgresql
     # - rustdesk
 
