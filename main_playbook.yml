@@ -7,8 +7,8 @@
   roles:
     # - basics
     # - storager_drive
-    - snapraid
-    # - mergerfs
+    # - snapraid
+    - mergerfs
     # - openssl_generate_certificate # don't need now
 
 # - name: Install docker
