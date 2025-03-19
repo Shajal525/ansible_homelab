@@ -5,5 +5,5 @@ ssh_key_path: "{{ ssh_directory }}id_rsa"
 ssh_port: 22
 shell: /bin/bash
 base_storage_path: "/mnt/data2/Apps/Docker"
-my_storage_path: "/mnt/storage/Shajal"
+my_storage_path: "/mnt/storage/DataStorage"
 

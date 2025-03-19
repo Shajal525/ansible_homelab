@@ -42,7 +42,7 @@
       - "{{ rclone_config_path }}:/config/rclone"
       - "{{ rclone_sync_script_path }}:/sync_script"
       - "{{ rclone_data_path }}:/data"
-      - "{{ my_storage_path }}:/shajal"
+      - "{{ my_storage_path }}:/datastorage"
     devices:
       - /dev/fuse
     command: |
