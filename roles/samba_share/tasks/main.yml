@@ -4,18 +4,30 @@
     name: samba
     state: present
 
-- name: Ensure Samba user exists
-  command: "smbpasswd -a {{ samba_user }}"
+- name: Ensure users exist
+  user:
+    name: "{{ item.username }}"
+    state: present
+  loop: "{{ shares }}"
+
+- name: Ensure Samba users exist
+  command: "smbpasswd -a {{ item.username }}"
   args:
-    stdin: "{{ samba_password }}\n{{ samba_password }}"
+    stdin: "{{ item.password }}\n{{ item.password }}"
   changed_when: false
+  loop: "{{ shares }}"
+
+- name: Ensure Samba users are enabled
+  command: "smbpasswd -e {{ item.username }}"
+  changed_when: false
+  loop: "{{ shares }}"
 
 - name: Ensure shared directories exist
   file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ samba_user }}"
-    group: "{{ samba_user }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
     mode: '0777'
   loop: "{{ shares }}"
 
@@ -29,6 +41,7 @@
       browseable = yes
       guest ok = {{ item.guest_ok }}
       writeable = {{ item.writeable }}
+      valid users = {{ item.username }}
   loop: "{{ shares }}"
   notify: Restart Samba
 

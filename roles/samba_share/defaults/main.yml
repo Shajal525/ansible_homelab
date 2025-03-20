@@ -3,14 +3,40 @@ samba_user: "{{ vm_username }}"
 samba_password: "{{ vm_username }}"
 
 shares:
-  - name: Anannya
+  - name: AnannyaCloud
     path: "/mnt/storage/DataStorage/Anannya/"
     guest_ok: "no"
     writeable: "yes"
-    username: "{{ samba_user }}"
-  - name: NonCloudDataStorage
-    path: "/mnt/storage/NonCloudDataStorage/"
+    username: "anannya"
+    password: "{{ ana_pass }}"
+  - name: Anannya
+    path: "/mnt/storage/NonCloudDataStorage/Anannya/"
     guest_ok: "no"
     writeable: "yes"
-    username: "{{ samba_user }}"
+    username: "anannya"
+    password: "{{ ana_pass }}"
+  - name: SushmoyCloud
+    path: "/mnt/storage/DataStorage/Sushmoy/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "sushmoy"
+    password: "{{ sush_pass }}"
+  - name: Sushmoy
+    path: "/mnt/storage/NonCloudDataStorage/Sushmoy/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "sushmoy"
+    password: "{{ sush_pass }}"
+  - name: ShajalCloud
+    path: "/mnt/storage/DataStorage/Shajal/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "shajal"
+    password: "{{ vm_password }}"
+  - name: Shajal
+    path: "/mnt/storage/NonCloudDataStorage/Shajal/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "shajal"
+    password: "{{ vm_password }}"
 
