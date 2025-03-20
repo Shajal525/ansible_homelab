@@ -1,0 +1,16 @@
+---
+- name: Create cron job to run rclone to sync storage to PCloud.
+  cron:
+    name: "Sync storage data to PCloud"
+    minute: "0"
+    hour: "0"
+    job: "docker exec -it rclone rclone copy -P /datastorage 'PCloud:/Apps/'"
+    state: present
+
+- name: Create cron job to run rclone to sync Apps to PCloud.
+  cron:
+    name: "Sync Apps data to PCloud"
+    minute: "0"
+    hour: "1"
+    job: "docker exec -it rclone rclone copy -P /datastorage 'PCloud:/DataStorage/'"
+    state: present

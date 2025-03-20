@@ -1,0 +1,34 @@
+---
+- name: Install Samba
+  apt:
+    name: samba
+    state: present
+
+- name: Ensure Samba user exists
+  command: "smbpasswd -a {{ samba_user }}"
+  args:
+    stdin: "{{ samba_password }}\n{{ samba_password }}"
+  changed_when: false
+
+- name: Ensure shared directories exist
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ samba_user }}"
+    group: "{{ samba_user }}"
+    mode: '0777'
+  loop: "{{ shares }}"
+
+- name: Ensure Samba share configurations are present
+  blockinfile:
+    path: /etc/samba/smb.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - {{ item.name }}"
+    block: |
+      [{{ item.name }}]
+      path = {{ item.path }}
+      browseable = yes
+      guest ok = {{ item.guest_ok }}
+      writeable = {{ item.writeable }}
+  loop: "{{ shares }}"
+  notify: Restart Samba
+

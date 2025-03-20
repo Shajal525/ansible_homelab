@@ -1,0 +1,16 @@
+---
+samba_user: "{{ vm_username }}"
+samba_password: "{{ vm_username }}"
+
+shares:
+  - name: Anannya
+    path: "/mnt/storage/DataStorage/Anannya/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "{{ samba_user }}"
+  - name: NonCloudDataStorage
+    path: "/mnt/storage/NonCloudDataStorage/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "{{ samba_user }}"
+
