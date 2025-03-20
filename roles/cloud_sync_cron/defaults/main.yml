@@ -1,0 +1,11 @@
+cron_list:
+  - name: "Sync storage data to PCloud"
+    minute: "0"
+    hour: "3"
+    local_storage_mapped_to_docker: "/datastorage"
+    remote_location: "PCloud:/DataStorage/"
+  - name: "Sync App data to PCloud"
+    minute: "0"
+    hour: "2"
+    local_storage_mapped_to_docker: "/appstorage"
+    remote_location: "PCloud:/Apps/"
