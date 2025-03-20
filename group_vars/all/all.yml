@@ -6,4 +6,5 @@ ssh_port: 22
 shell: /bin/bash
 base_storage_path: "/mnt/data2/Apps/Docker"
 my_storage_path: "/mnt/storage/DataStorage"
+my_app_storage_path: "/mnt/storage/Apps"
 

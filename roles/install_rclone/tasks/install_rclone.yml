@@ -24,6 +24,7 @@
     - "{{ rclone_sync_script_path }}"
     - "{{ rclone_data_path }}"
     - "{{ my_storage_path }}"
+    - "{{ my_app_storage_path }}"
 
 - name: Create RClone config file from template
   template:
@@ -43,6 +44,7 @@
       - "{{ rclone_sync_script_path }}:/sync_script"
       - "{{ rclone_data_path }}:/data"
       - "{{ my_storage_path }}:/datastorage"
+      - "{{ my_app_storage_path }}:/appstorage"
     devices:
       - /dev/fuse
     command: |

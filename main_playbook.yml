@@ -40,6 +40,6 @@
     # - install_rclone
     # - postgresql
     # - rustdesk
-    # - cloud_sync_cron
-    - samba_share
+    - cloud_sync_cron
+    # - samba_share
 
