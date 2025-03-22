@@ -26,7 +26,7 @@ email:
 
   # The port on the mail server for outgoing SMTP. Defaults to 25.
   #
-  smtp_port: 465
+  smtp_port: 587
 
   # Username/password for authentication to the SMTP server. By default, no
   # authentication is attempted.
@@ -47,7 +47,7 @@ email:
   # Note that the placeholder must be written '%(app)s', including the
   # trailing 's'.
   #
-  notif_from: "Your Friendly %(app)s homeserver {{ matrix_email_from }}"
+  notif_from: "Your Friendly %(app)s homeserver <noreply@yourdomain.com>"
 
   # app_name defines the default value for '%(app)s' in notif_from and email
   # subjects. It defaults to 'Matrix'.
@@ -63,3 +63,6 @@ user_directory.search_all_users: true
 matrix_synapse_allow_public_rooms_over_federation: true
 # enable federation on port 443
 serve_server_wellknown: true
+
+# Android issue
+public_baseurl: "https://matrix.shajalslab.top" 
