@@ -40,6 +40,7 @@
     # - install_rclone
     # - postgresql
     # - rustdesk
-    - cloud_sync_cron
+    # - cloud_sync_cron
     # - samba_share
+    - install_matrix_synapse
 

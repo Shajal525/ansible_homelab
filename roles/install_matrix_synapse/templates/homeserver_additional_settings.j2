@@ -1,0 +1,65 @@
+
+database:
+    name: psycopg2
+    args:
+        user: "{{ matrix_db_user }}"
+        password: "{{ matrix_db_password }}"
+        database: "{{ matrix_db_name }}"
+        host: postgres
+        port: 5432
+        cp_min: 5
+        cp_max: 10
+
+
+enable_registration: true
+# users require an email to sign up - needed for password resets
+registrations_require_3pid:
+  - email
+#enable_registration_captcha: true
+#recaptcha_public_key: <recaptcha site key>
+#recaptcha_private_key: <recaptcha private key>
+
+email:
+  # The hostname of the outgoing SMTP server to use. Defaults to 'localhost'.
+  #
+  smtp_host: smtp.gmail.com
+
+  # The port on the mail server for outgoing SMTP. Defaults to 25.
+  #
+  smtp_port: 465
+
+  # Username/password for authentication to the SMTP server. By default, no
+  # authentication is attempted.
+  #
+  smtp_user: "{{ matrix_email_smtp_user }}"
+  smtp_pass: "{{ matrix_email_smtp_password }}"
+
+
+  require_transport_security: false
+
+  # notif_from defines the "From" address to use when sending emails.
+  # It must be set if email sending is enabled.
+  #
+  # The placeholder '%(app)s' will be replaced by the application name,
+  # which is normally 'app_name' (below), but may be overridden by the
+  # Matrix client application.
+  #
+  # Note that the placeholder must be written '%(app)s', including the
+  # trailing 's'.
+  #
+  notif_from: "Your Friendly %(app)s homeserver {{ matrix_email_from }}"
+
+  # app_name defines the default value for '%(app)s' in notif_from and email
+  # subjects. It defaults to 'Matrix'.
+  #
+  app_name: HomeLab
+
+
+# allows people to change their email address
+enable_3pid_changes: true
+# allows searching of all users in directory
+user_directory.search_all_users: true
+# allow room access over federation
+matrix_synapse_allow_public_rooms_over_federation: true
+# enable federation on port 443
+serve_server_wellknown: true

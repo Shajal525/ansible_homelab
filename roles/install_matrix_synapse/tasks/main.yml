@@ -1,0 +1,127 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+
+- name: Create external network
+  docker_network:
+    name: synapse_network
+    driver: bridge
+    state: present
+
+- name: Create Matrix directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ matrix_data_dir }}"
+
+- name: Generate Synapse configuration
+  command: >
+    docker run -it --rm
+    --mount type=bind,src={{ matrix_data_dir }},dst=/data
+    -e SYNAPSE_SERVER_NAME={{ matrix_domain }}
+    -e SYNAPSE_REPORT_STATS=no
+    matrixdotorg/synapse:latest generate
+  args:
+    creates: "{{ matrix_data_dir }}/homeserver.yaml"
+
+- name: Update the permission after file generation.
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+    recurse: true
+  loop:
+    - "{{ matrix_data_dir }}"
+
+- name: Remove SQLite database configuration
+  replace:
+    path: "{{ matrix_data_dir }}/homeserver.yaml"
+    regexp: '(^database:\n\s+name:\s+sqlite3\n(?:\s+.*\n?){2})'
+    replace: '\n'
+
+
+- name: Insert PostgreSQL configuration and other settings into homeserver.yaml
+  blockinfile:
+    path: "{{ matrix_data_dir }}/homeserver.yaml"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: "{{ lookup('template', 'templates/homeserver_additional_settings.j2') }}"
+    state: present
+
+- name: Deploy Matrix Postgres DB container
+  docker_container:
+    name: postgres
+    image: postgres:15
+    env:
+      POSTGRES_DB: "{{ matrix_db_name }}"
+      POSTGRES_USER: "{{ matrix_db_user }}"
+      POSTGRES_PASSWORD: "{{ matrix_db_password }}"
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
+    # ports:
+      # - "5433:5432"
+    labels:
+      com.docker.compose.project: "matrix_stack"
+      com.docker.compose.service: "postgres"
+    networks:
+      - name: synapse_network
+    restart_policy: unless-stopped
+    state: started
+
+
+- name: Wait 30 seconds for database to be ready
+  pause:
+    seconds: 30
+
+- name: Deploy Matrix Synapse container
+  docker_container:
+    name: synapse
+    image: matrixdotorg/synapse:latest
+    env:
+      SYNAPSE_SERVER_NAME: "{{ matrix_domain }}"
+      SYNAPSE_REPORT_STATS: "yes"
+      SYNAPSE_CONFIG_PATH: "/data/homeserver.yaml"
+      UID: "1000"
+      GID: "1000"
+    volumes:
+      - "{{ matrix_data_dir }}:/data"
+    labels:
+      com.docker.compose.project: "matrix_stack"
+      com.docker.compose.service: "synapse"
+      traefik.enable: "true"
+      traefik.http.routers.synapse-secure.entrypoints: "https"
+      traefik.http.routers.synapse-secure.rule: "Host(`{{ matrix_domain }}`)"
+      traefik.http.routers.synapse-secure.tls: "true"
+      traefik.http.routers.synapse-secure.service: "synapse"
+      traefik.http.services.synapse.loadbalancer.server.port: "8008"
+      traefik.docker.network: "traefik_proxy"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "synapse"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8008"
+    networks:
+      - name: traefik_proxy
+      - name: synapse_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Matrix deployed
+  debug:
+    msg: "Matrix is running successfully"
+
