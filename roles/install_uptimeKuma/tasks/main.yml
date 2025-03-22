@@ -1,0 +1,55 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  changed_when: false
+  failed_when: network_check.rc != 0
+
+- name: Create directories for UptimeKuma
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ uptimekuma_base_path }}"
+    - "{{ uptimekuma_data_path }}"
+
+- name: Deploy UptimeKuma container
+  docker_container:
+    name: uptimekuma
+    image: louislam/uptime-kuma:latest
+    security_opts:
+      - "no-new-privileges:true"
+    volumes:
+      - "{{ uptimekuma_data_path }}:/app/data"
+    labels:
+      com.docker.compose.project: "uptimekuma_stack"
+      com.docker.compose.service: "uptimekuma"
+      traefik.enable: "true"
+      traefik.http.routers.uptimekuma-secure.entrypoints: "https"
+      traefik.http.routers.uptimekuma-secure.rule: "Host(`uptimekuma.shajalslab.top`)"
+      traefik.http.routers.uptimekuma-secure.tls: "true"
+      traefik.http.routers.uptimekuma.service: "uptimekuma"
+      traefik.http.services.uptimekuma.loadbalancer.server.port: "3001"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "uptimekuma"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "3001"
+    networks:
+      # - name: media_network
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: UptimeKuma deployed
+  debug:
+    msg: "UptimeKuma is running successfully"
