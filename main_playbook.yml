@@ -43,5 +43,6 @@
     # - cloud_sync_cron
     # - samba_share
     # - install_matrix_synapse
-    - install_uptimeKuma
+    # - install_uptimeKuma
+    - install_linkwarden
 

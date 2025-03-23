@@ -64,7 +64,7 @@
 
 - name: Deploy Matrix Postgres DB container
   docker_container:
-    name: postgres
+    name: postgres_matrix
     image: postgres:15
     env:
       POSTGRES_DB: "{{ matrix_db_name }}"
@@ -77,7 +77,7 @@
       # - "5433:5432"
     labels:
       com.docker.compose.project: "matrix_stack"
-      com.docker.compose.service: "postgres"
+      com.docker.compose.service: "postgres_matrix"
     networks:
       - name: synapse_network
     restart_policy: unless-stopped

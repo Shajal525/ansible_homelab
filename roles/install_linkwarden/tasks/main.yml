@@ -1,0 +1,84 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+
+- name: Create external network
+  docker_network:
+    name: linkwarden_network
+    driver: bridge
+    state: present
+
+- name: Create LinkWarden directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ base_storage_path }}"
+    - "{{ linkwarden_data_dir }}"
+    - "{{ postgres_data_dir }}"
+
+- name: Deploy LinkWarden Postgres DB container
+  docker_container:
+    name: postgres_linkwarden
+    image: postgres:15
+    env:
+      POSTGRES_DB: "{{ linkwarden_db_name }}"
+      POSTGRES_USER: "{{ linkwarden_db_user }}"
+      POSTGRES_PASSWORD: "{{ linkwarden_db_password }}"
+    volumes:
+      - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
+    labels:
+      com.docker.compose.project: "linkwarden_stack"
+      com.docker.compose.service: "postgres_linkwarden"
+    networks:
+      - name: linkwarden_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy LinkWarden container
+  docker_container:
+    name: linkwarden
+    image: ghcr.io/linkwarden/linkwarden:latest
+    env:
+      NEXTAUTH_SECRET: "{{ nextauth_secret }}"
+      NEXTAUTH_URL: "http://localhost:3000/api/v1/auth"
+      DATABASE_URL: "postgresql://{{ linkwarden_db_user }}:{{linkwarden_db_password}}@postgres_linkwarden:5432/{{ linkwarden_db_name }}"
+    volumes:
+      - "{{ linkwarden_data_dir }}:/data/data"
+    labels:
+      com.docker.compose.project: "linkwarden_stack"
+      com.docker.compose.service: "linkwarden"
+      traefik.docker.network: "traefik_proxy"
+      traefik.enable: "true"
+      traefik.http.routers.linkwarden-secure.entrypoints: "https"
+      traefik.http.routers.linkwarden-secure.rule: "Host(`{{ linkwarden_domain }}`)"
+      traefik.http.routers.linkwarden-secure.tls: "true"
+      traefik.http.routers.linkwarden-secure.service: "linkwarden"
+      traefik.http.services.linkwarden.loadbalancer.server.port: "3000"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "linkwarden"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8008"
+    networks:
+      - name: traefik_proxy
+      - name: linkwarden_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: LinkWarden deployed
+  debug:
+    msg: "LinkWarden is running successfully"
+

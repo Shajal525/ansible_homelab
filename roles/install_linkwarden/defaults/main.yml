@@ -1,0 +1,10 @@
+linkwarden_base_path: "{{ base_storage_path }}/linkwarden"
+linkwarden_data_dir: "{{ linkwarden_base_path }}/data"
+postgres_data_dir: "{{ linkwarden_base_path }}/linkwardendb"
+nextauth_secret: "{{ vm_password }}"
+
+linkwarden_db_name: "linkwarden_db"
+linkwarden_db_user: "{{ vm_username }}"
+linkwarden_db_password: "{{ vm_password }}"
+
+linkwarden_domain: "linkwarden.shajalslab.top"
