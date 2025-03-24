@@ -1,0 +1,15 @@
+notify_script_path: "/usr/local/bin/matrix_notify.py"
+matrix_homeserver_url: "https://matrix.shajalslab.top"
+matrix_bot_username: "@homelab:matrix.shajalslab.top"
+matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.shajalslab.top"
+matrix_access_token: "{{ matrix_access_token }}"
+
+cron_jobs:
+  - name: "Database Backup"
+    command: "/path/to/backup.sh"
+    schedule: "0 2 * * *"
+    user: "root"
+  - name: "Log Cleanup"
+    command: "/path/to/cleanup.sh"
+    schedule: "0 0 * * *"
+    user: "root"

@@ -44,5 +44,6 @@
     # - samba_share
     # - install_matrix_synapse
     # - install_uptimeKuma
-    - install_linkwarden
+    # - install_linkwarden
+    - notification_script
 
