@@ -45,5 +45,6 @@
     # - install_matrix_synapse
     # - install_uptimeKuma
     # - install_linkwarden
-    - notification_script
+    # - notification_script
+    - install_n8n
 

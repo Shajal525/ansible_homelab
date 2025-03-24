@@ -1,0 +1,61 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+
+- name: Create N8N directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ n8n_config }}"
+    - "{{ n8n_data }}"
+
+- name: Deploy N8N container
+  docker_container:
+    name: n8n
+    image: docker.n8n.io/n8nio/n8n
+    hostname: n8n
+    env:
+      N8N_HOST: "{{ n8n_domain }}"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: "https"
+      NODE_ENV: "production"
+      WEBHOOK_URL: "https://{{ n8n_domain }}/"
+      GENERIC_TIMEZONE: "Europe/London"
+    volumes:
+      - "{{ n8n_config }}:/home/node/.n8n"
+      - "{{ n8n_data }}:/files"
+    ports:
+      # - "5678:5678"
+    labels:
+      com.docker.compose.project: "n8n_stack"
+      com.docker.compose.service: "n8n"
+      traefik.enable: "true"
+      traefik.http.routers.n8n-secure.entrypoints: "https"
+      traefik.http.routers.n8n-secure.rule: "Host(`{{ n8n_domain }}`)"
+      traefik.http.routers.n8n-secure.tls: "true"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "n8n"
+      # tsdproxy.scheme: "https"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "5678"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: N8N deployed
+  debug:
+    msg: "N8N is running successfully"
+

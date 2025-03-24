@@ -1,0 +1,5 @@
+n8n_base_path: "{{ base_storage_path }}/n8n"
+n8n_data: "{{ n8n_base_path }}/data"
+n8n_config: "{{ n8n_base_path }}/config"
+
+n8n_domain: "n8n.shajalslab.top"
