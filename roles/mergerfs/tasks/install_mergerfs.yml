@@ -59,7 +59,7 @@
     content: |
       #!/bin/bash
       # Move files older than 1 day from SSD to HDD
-      sudo find {{ cache_storage }} -type f -mtime +1 -print0 | sudo rsync -P -a --remove-source-files --files-from=- --from0 {{ cache_storage }} {{ mergerfs_mount_location_without_cache }}
+      sudo find {{ cache_storage }} -type f -mtime +1 -print0 | sudo sed 's|/mnt/cache/||g' | sudo rsync -P -a --remove-source-files --files-from=- --from0 {{ cache_storage }} {{ mergerfs_mount_location_without_cache }}
       sudo find {{ cache_storage }} -type d -empty -delete
     mode: "0755"
     owner: root

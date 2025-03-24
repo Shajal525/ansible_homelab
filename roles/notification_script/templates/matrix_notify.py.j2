@@ -12,7 +12,7 @@ async def send_notification(subject, exit_status, output):
     message = (
         f"**{subject}**\n"
         f"**Status:** {status} (Exit Code: `{exit_status}`)\n"
-        f"**Output:**\n{output if output else '<No output>'}"
+        f"**Output:**\n{'\n'.join(output.splitlines()[-{{last_number_of_line_to_send}}:]) if output else '<No output>'}"
     )
 
     await client.room_send(
