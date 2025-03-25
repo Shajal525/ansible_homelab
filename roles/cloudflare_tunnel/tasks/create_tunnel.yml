@@ -8,10 +8,14 @@
   set_fact:
     tunnel_exists: "{{ tunnel_name in tunnel_list_output.stdout }}"
 
+- name: Debug tunnel_exists
+  debug:
+    var: tunnel_exists
+
 - name: Run cloudflared tunnel create command
   shell: cloudflared tunnel create {{ tunnel_name }}
   register: tunnel_create_output
-  changed_when: true
+  ignore_errors: true
   when: not tunnel_exists
 
 - name: debug tunnel_create_output
@@ -62,22 +66,17 @@
       tunnel: {{ tunnel_id }}
       credentials-file: {{ tunnel_json_file }}
       ingress:
-        - hostname: {{ hostname1 }}
-          service: {{ local_service1 }}
+      {% for entry in ingress_entries %}
+        - hostname: {{ entry.hostname }}
+          service: {{ entry.service }}
           originRequest:
             noTLSVerify: true
-        - hostname: {{ hostname2 }}
-          service: {{ local_service2 }}
-          originRequest:
-            noTLSVerify: true
-
+      {% endfor %}
         - service: http_status:404
 
-- name: "Run cloudflared tunnel route dns {{ tunnel_name }} {{ hostname1 }} command"
-  shell: cloudflared tunnel route dns {{ tunnel_name }} {{ hostname1 }}
-
-- name: "Run cloudflared tunnel route dns {{ tunnel_name }} {{ hostname2 }} command"
-  shell: cloudflared tunnel route dns {{ tunnel_name }} {{ hostname2 }}
+- name: "Run cloudflared tunnel route dns {{ tunnel_name }} {{ item.hostname }} command"
+  shell: cloudflared tunnel route dns {{ tunnel_name }} {{ item.hostname }}
+  loop: "{{ ingress_entries }}"
 
 - name: Check if cloudflared service file exists
   stat:

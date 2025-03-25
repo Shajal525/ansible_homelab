@@ -11,6 +11,7 @@
     # - install_traefik
     # - install_portainer
     # - install_ollama
-    - install_open_webui
+    # - install_open_webui
+    - cloudflare_tunnel
 
 

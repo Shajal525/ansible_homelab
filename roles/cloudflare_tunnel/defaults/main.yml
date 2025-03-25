@@ -1,6 +1,7 @@
 ---
 tunnel_name: "cloud_tunnel"
-hostname1: "{{ hostname1 }}"
-local_service1: "{{ local_service1 }}"
-hostname2: "{{ hostname2 }}"
-local_service2: "{{ local_service2 }}"
+ingress_entries:
+  - hostname: "{{ hostname1 }}"
+    service: "{{ local_service1 }}"
+  - hostname: "{{ hostname2 }}"
+    service: "{{ local_service2 }}"
