@@ -10,5 +10,7 @@
     # - docker
     # - install_traefik
     # - install_portainer
+    # - install_ollama
+    - install_open_webui
 
 

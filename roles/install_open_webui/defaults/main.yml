@@ -2,3 +2,4 @@ openwebui_base_path: "{{ base_storage_path }}/openwebui"
 openwebui_data_dir: "{{ openwebui_base_path }}/data"
 
 openwebui_domain: "openwebui.{{ subdomain }}"
+ollama_domain: "ollama.{{ subdomain }}"

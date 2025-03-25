@@ -27,6 +27,8 @@
     image: ghcr.io/open-webui/open-webui:main
     volumes:
       - "{{ openwebui_data_dir }}:/app/backend/data"
+    env:
+      OLLAMA_BASE_URL: "https://{{ ollama_domain }}"
     labels:
       com.docker.compose.project: "openwebui_stack"
       com.docker.compose.service: "openwebui"
