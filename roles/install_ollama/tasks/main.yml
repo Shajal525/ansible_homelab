@@ -1,0 +1,53 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+
+- name: Create Ollama directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ ollama_data_dir }}"
+
+- name: Deploy Ollama container
+  docker_container:
+    name: ollama
+    image: ollama/ollama:latest
+    volumes:
+      - "{{ ollama_data_dir }}:/root/.ollama"
+    labels:
+      com.docker.compose.project: "ollama_stack"
+      com.docker.compose.service: "ollama"
+      traefik.docker.network: "traefik_proxy"
+      traefik.enable: "true"
+      traefik.http.routers.ollama-secure.entrypoints: "https"
+      traefik.http.routers.ollama-secure.rule: "Host(`{{ ollama_domain }}`)"
+      traefik.http.routers.ollama-secure.tls: "true"
+      traefik.http.routers.ollama-secure.service: "ollama"
+      traefik.http.services.ollama.loadbalancer.server.port: "11434"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "ollama"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "11434"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Ollama deployed
+  debug:
+    msg: "Ollama is running successfully"
+

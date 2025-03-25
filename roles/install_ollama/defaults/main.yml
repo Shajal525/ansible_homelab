@@ -1,0 +1,4 @@
+ollama_base_path: "{{ base_storage_path }}/ollama"
+ollama_data_dir: "{{ ollama_base_path }}/data"
+
+ollama_domain: "ollama.{{ subdomain }}"

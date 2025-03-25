@@ -8,7 +8,7 @@
     # - deploy_ssh
     # - basics
     # - docker
-    - install_traefik
+    # - install_traefik
     # - install_portainer
 
 

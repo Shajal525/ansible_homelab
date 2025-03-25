@@ -1,0 +1,53 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if traefik_proxy network exists
+  command: docker network inspect traefik_proxy
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+
+- name: Create OpenWebUI directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ openwebui_data_dir }}"
+
+- name: Deploy OpenWebUI container
+  docker_container:
+    name: openwebui
+    image: ghcr.io/open-webui/open-webui:main
+    volumes:
+      - "{{ openwebui_data_dir }}:/app/backend/data"
+    labels:
+      com.docker.compose.project: "openwebui_stack"
+      com.docker.compose.service: "openwebui"
+      traefik.docker.network: "traefik_proxy"
+      traefik.enable: "true"
+      traefik.http.routers.openwebui-secure.entrypoints: "https"
+      traefik.http.routers.openwebui-secure.rule: "Host(`{{ openwebui_domain }}`)"
+      traefik.http.routers.openwebui-secure.tls: "true"
+      traefik.http.routers.openwebui-secure.service: "openwebui"
+      traefik.http.services.openwebui.loadbalancer.server.port: "8080"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "openwebui"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "8080"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: OpenWebUI deployed
+  debug:
+    msg: "OpenWebUI is running successfully"
+
