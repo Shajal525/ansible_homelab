@@ -8,3 +8,5 @@ base_storage_path: "/mnt/data2/Apps/Docker"
 my_storage_path: "/mnt/storage/DataStorage"
 my_app_storage_path: "/mnt/storage/Apps"
 
+subdomain: "shajalslab.top"
+

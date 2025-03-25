@@ -10,4 +10,4 @@ base_storage_path: "/home/apps"
 cloudflare_email: "{{ cloudflare_email }}"
 CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}"
 
-subdomain: "shajalslab.top"
+subdomain: "ai.shajalslab.top"
