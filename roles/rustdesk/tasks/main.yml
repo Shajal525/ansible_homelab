@@ -42,7 +42,7 @@
       
       # traefik.enable: "true"
       # traefik.http.routers.rustdesk-secure.entrypoints: "https"
-      # traefik.http.routers.rustdesk-secure.rule: "Host(`rustdesk.shajalslab.top`)"
+      # traefik.http.routers.rustdesk-secure.rule: "Host(`{{ rustdesk_domain }}`)"
       # traefik.http.routers.rustdesk-secure.tls: "true"
       # traefik.http.services.nextcloud.loadbalancer.server.port: "21117"
       # tsdproxy.enable: "true"

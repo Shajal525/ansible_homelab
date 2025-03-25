@@ -5,3 +5,4 @@ portainer_base_path: "{{ base_storage_path }}/portainer"
 portainer_data: "{{ portainer_base_path }}/data"
 watchtower_path: "{{ base_storage_path }}/watchtower"
 
+portainer_domain: "portainer.{{ subdomain }}"

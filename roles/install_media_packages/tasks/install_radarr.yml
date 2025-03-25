@@ -37,7 +37,7 @@
       com.docker.compose.service: "radarr"
       traefik.enable: "true"
       traefik.http.routers.radarr-secure.entrypoints: "https"
-      traefik.http.routers.radarr-secure.rule: "Host(`radarr.shajalslab.top`)"
+      traefik.http.routers.radarr-secure.rule: "Host(`{{ radarr_domain }}`)"
       traefik.http.routers.radarr-secure.tls: "true"
       traefik.http.routers.radarr.service: "radarr"
       traefik.http.services.radarr.loadbalancer.server.port: "7878"

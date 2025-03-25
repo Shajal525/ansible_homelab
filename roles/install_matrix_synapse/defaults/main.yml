@@ -4,7 +4,8 @@ postgres_data_dir: "{{ matrix_base_path }}/matrixdb"
 matrix_db_name: "matrix_db"
 matrix_db_user: "{{ vm_username }}"
 matrix_db_password: "{{ vm_password }}"
-matrix_domain: "matrix.shajalslab.top"
+matrix_domain: "matrix.{{ subdomain }}"
+
 
 matrix_email_from: "shajal525@gmail.com"
 matrix_email_smtp_user: "shajal525@gmail.com"

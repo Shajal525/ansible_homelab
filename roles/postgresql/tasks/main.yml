@@ -42,7 +42,7 @@
       com.docker.compose.service: "adminer"
       traefik.enable: "true"
       traefik.http.routers.postgresql-secure.entrypoints: "https"
-      traefik.http.routers.postgresql-secure.rule: "Host(`adminer.shajalslab.top`)"
+      traefik.http.routers.postgresql-secure.rule: "Host(`{{ adminer_domain }}`)"
       traefik.http.routers.postgresql-secure.tls: "true"
       traefik.http.routers.postgresql.service: "adminer"
       traefik.http.services.postgresql.loadbalancer.server.port: "8080"

@@ -45,7 +45,7 @@
       com.docker.compose.service: "syncthing"
       traefik.enable: "true"
       traefik.http.routers.syncthing-secure.entrypoints: "https"
-      traefik.http.routers.syncthing-secure.rule: "Host(`syncthing.shajalslab.top`)"
+      traefik.http.routers.syncthing-secure.rule: "Host(`{{ syncthing_domain }}`)"
       traefik.http.routers.syncthing-secure.tls: "true"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "syncthing"

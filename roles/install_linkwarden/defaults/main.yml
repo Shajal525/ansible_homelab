@@ -7,4 +7,4 @@ linkwarden_db_name: "linkwarden_db"
 linkwarden_db_user: "{{ vm_username }}"
 linkwarden_db_password: "{{ vm_password }}"
 
-linkwarden_domain: "linkwarden.shajalslab.top"
+linkwarden_domain: "linkwarden.{{ subdomain }}"

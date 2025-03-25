@@ -35,7 +35,7 @@
       com.docker.compose.service: "uptimekuma"
       traefik.enable: "true"
       traefik.http.routers.uptimekuma-secure.entrypoints: "https"
-      traefik.http.routers.uptimekuma-secure.rule: "Host(`uptimekuma.shajalslab.top`)"
+      traefik.http.routers.uptimekuma-secure.rule: "Host(`{{ uptimekuma_domain }}`)"
       traefik.http.routers.uptimekuma-secure.tls: "true"
       traefik.http.routers.uptimekuma.service: "uptimekuma"
       traefik.http.services.uptimekuma.loadbalancer.server.port: "3001"

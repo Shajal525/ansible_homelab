@@ -24,3 +24,16 @@ nzbget_password: "{{ vm_password }}"
 qbittorrent_config: "{{ config_path }}/qbittorrent"
 
 
+ariang_domain: "ariang.{{ subdomain }}"
+aria2pro_domain: "aria2pro.{{ subdomain }}"
+flaresolverr_domain: "flaresolverr.{{ subdomain }}"
+jellyfin_domain: "jellyfin.{{ subdomain }}"
+jellyseerr_domain: "jellyseerr.{{ jellyseerr }}"
+lunasea_domain: "lunasea.{{ subdomain }}"
+nzbget_domain: "nzbget.{{ subdomain }}"
+prowlarr_domain: "prowlarr.{{ subdomain }}"
+qbittorrent_domain: "qbittorrent.{{ subdomain }}"
+radarr_domain: "radarr.{{ subdomain }}"
+sonarr_domain: "sonarr.{{ subdomain }}"
+
+

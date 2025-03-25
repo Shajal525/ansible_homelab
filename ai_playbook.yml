@@ -1,0 +1,14 @@
+---
+- name: AI Deployment
+  hosts: pveailab
+  become: true
+  gather_facts: true
+
+  roles:
+    # - deploy_ssh
+    # - basics
+    # - docker
+    # - install_traefik
+    - install_portainer
+
+

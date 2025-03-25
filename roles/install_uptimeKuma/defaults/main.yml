@@ -1,2 +1,4 @@
 uptimekuma_base_path: "{{ base_storage_path }}/uptimekuma"
 uptimekuma_data_path: "{{ uptimekuma_base_path }}/data"
+
+uptimekuma_domain: "uptimekuma.{{ subdomain }}"

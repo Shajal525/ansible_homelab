@@ -12,3 +12,5 @@ rclone_cache_path: "{{ rclone_base_path }}/cache"
 
 rclone_username: "{{ vm_username }}"
 rclone_password: "{{ vm_password }}"
+
+rclone_domain: "rclone.{{ subdomain }}"

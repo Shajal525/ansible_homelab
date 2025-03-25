@@ -7,3 +7,8 @@
 
 [pvenetwork]
 # 192.168.8.3 ansible_connection=ssh ansible_user="{{ proxmox_username }}" ansible_ssh_private_key_file="{{ ssh_key_path }}" ansible_ssh_port="{{ ssh_port }}"
+
+[pveailab]
+#192.168.8.4 ansible_connection=ssh ansible_user="{{ vm_username }}" ansible_password="{{ vm_password }}"
+
+192.168.8.4 ansible_connection=ssh ansible_user="{{ vm_username }}" ansible_become_pass="{{ vm_password }}" ansible_ssh_private_key_file="{{ ssh_key_path }}" ansible_ssh_port="{{ ssh_port }}"

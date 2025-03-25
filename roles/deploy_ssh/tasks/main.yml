@@ -1,0 +1,11 @@
+---
+- name: Install openssh-server
+  apt:
+    name: openssh-server
+    state: present
+
+- name: Deploy SSH public key to all hosts
+  authorized_key:
+    user: "{{ vm_username }}"
+    key: "{{ lookup('file', ssh_public_key) }}"
+    state: present

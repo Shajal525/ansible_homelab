@@ -46,7 +46,7 @@
       com.docker.compose.service: "nzbget"
       traefik.enable: "true"
       traefik.http.routers.nzbget-secure.entrypoints: "https"
-      traefik.http.routers.nzbget-secure.rule: "Host(`nzbget.shajalslab.top`)"
+      traefik.http.routers.nzbget-secure.rule: "Host(`{{ nzbget_domain }}`)"
       traefik.http.routers.nzbget-secure.tls: "true"
       traefik.http.routers.nzbget.service: "nzbget"
       traefik.http.services.nzbget.loadbalancer.server.port: "6789"

@@ -34,7 +34,7 @@
       com.docker.compose.service: "prowlarr"
       traefik.enable: "true"
       traefik.http.routers.prowlarr-secure.entrypoints: "https"
-      traefik.http.routers.prowlarr-secure.rule: "Host(`prowlarr.shajalslab.top`)"
+      traefik.http.routers.prowlarr-secure.rule: "Host(`{{ prowlarr_domain }}`)"
       traefik.http.routers.prowlarr-secure.tls: "true"
       traefik.http.routers.prowlarr.service: "prowlarr"
       traefik.http.services.prowlarr.loadbalancer.server.port: "9696"

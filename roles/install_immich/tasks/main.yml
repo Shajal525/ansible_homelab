@@ -44,7 +44,7 @@
       {{ ' ' * 4 }}labels:
       {{ ' ' * 4 }}  traefik.enable: true
       {{ ' ' * 4 }}  traefik.http.routers.immich.entrypoints: https
-      {{ ' ' * 4 }}  traefik.http.routers.immich.rule: Host(`immich.shajalslab.top`)
+      {{ ' ' * 4 }}  traefik.http.routers.immich.rule: Host(`{{ immich_domain }}`)
       {{ ' ' * 4 }}  traefik.http.routers.immich.tls: true
       {{ ' ' * 4 }}  traefik.http.routers.immich.service: immich
       {{ ' ' * 4 }}  traefik.http.services.immich.loadbalancer.server.port: 2283

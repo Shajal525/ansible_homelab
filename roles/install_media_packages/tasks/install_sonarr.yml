@@ -37,7 +37,7 @@
       com.docker.compose.service: "sonarr"
       traefik.enable: "true"
       traefik.http.routers.sonarr-secure.entrypoints: "https"
-      traefik.http.routers.sonarr-secure.rule: "Host(`sonarr.shajalslab.top`)"
+      traefik.http.routers.sonarr-secure.rule: "Host(`{{ sonarr_domain }}`)"
       traefik.http.routers.sonarr-secure.tls: "true"
       traefik.http.routers.sonarr.service: "sonarr"
       traefik.http.services.sonarr.loadbalancer.server.port: "8989"

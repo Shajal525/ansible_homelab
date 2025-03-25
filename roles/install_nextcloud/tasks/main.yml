@@ -75,11 +75,11 @@
       REDIS_HOST_PASSWORD: "{{ redis_password }}"
       NEXTCLOUD_ADMIN_USER: "{{ nextcloud_username }}"
       NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_password }}"
-      NEXTCLOUD_TRUSTED_DOMAINS: "{{ domain }} {{ domain2 }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "{{ nextcloud_domain }} {{ nextcloud_domain2 }}"
       NEXTCLOUD_FPM: "true"
       OVERWRITEPROTOCOL: "https"
-      OVERWRITECLIURL: "https://{{ domain }}"
-      OVERWRITEHOST: "{{ domain }}"
+      OVERWRITECLIURL: "https://{{ nextcloud_domain }}"
+      OVERWRITEHOST: "{{ nextcloud_domain }}"
       TRUSTED_PROXIES: 172.16.0.0/12 192.168.1.0/16 100.0.0.0/8 10.0.0.0/8 fc00::/7 fe80::/10 2001:db8::/32
     volumes:
       - "{{ nextcloud_data_directory }}:/var/www/html"
@@ -88,7 +88,7 @@
       com.docker.compose.service: "nextcloud"
       traefik.enable: "true"
       traefik.http.routers.nextcloud-secure.entrypoints: "https"
-      traefik.http.routers.nextcloud-secure.rule: "Host(`nextcloud.shajalslab.top`)"
+      traefik.http.routers.nextcloud-secure.rule: "Host(`{{ nextcloud_domain }}`)"
       traefik.http.routers.nextcloud-secure.tls: "true"
       traefik.http.routers.nextcloud-secure.service: "nextcloud"
       traefik.http.services.nextcloud.loadbalancer.server.port: "80"

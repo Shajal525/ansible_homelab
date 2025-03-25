@@ -1,0 +1,13 @@
+---
+ssh_directory: "/home/shajal/.ssh/"
+ssh_public_key: "{{ ssh_directory }}id_rsa.pub"
+ssh_key_path: "{{ ssh_directory }}id_rsa"
+ssh_port: 22
+vm_username: "{{ vm_username }}"
+vm_password: "{{ vm_password }}"
+
+base_storage_path: "/home/apps"
+cloudflare_email: "{{ cloudflare_email }}"
+CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}"
+
+subdomain: "shajalslab.top"

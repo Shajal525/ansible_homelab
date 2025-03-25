@@ -58,18 +58,18 @@
       com.docker.compose.service: "traefik"
       traefik.enable: "true"
       traefik.http.routers.traefik.entrypoints: "http"
-      traefik.http.routers.traefik.rule: "Host(`traefik.shajalslab.top`)"
+      traefik.http.routers.traefik.rule: "Host(`{{ traefik_domain }}`)"
       traefik.http.middlewares.traefik-auth.basicauth.users: "{{ htpasswd_hash.stdout }}"
       traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
       traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: "https"
       traefik.http.routers.traefik.middlewares: "traefik-https-redirect"
       traefik.http.routers.traefik-secure.entrypoints: "https"
-      traefik.http.routers.traefik-secure.rule: "Host(`traefik.shajalslab.top`)"
+      traefik.http.routers.traefik-secure.rule: "Host(`{{ traefik_domain }}`)"
       traefik.http.routers.traefik-secure.middlewares: "traefik-auth"
       traefik.http.routers.traefik-secure.tls: "true"
       traefik.http.routers.traefik-secure.tls.certresolver: "cloudflare"
-      traefik.http.routers.traefik-secure.tls.domains[0].main: "shajalslab.top"
-      traefik.http.routers.traefik-secure.tls.domains[0].sans: "*.shajalslab.top"
+      traefik.http.routers.traefik-secure.tls.domains[0].main: "{{ traefik_subdomain }}"
+      traefik.http.routers.traefik-secure.tls.domains[0].sans: "*.{{ traefik_subdomain }}"
       traefik.http.routers.traefik-secure.service: "api@internal"
     networks:
       - name: traefik_proxy
@@ -84,13 +84,13 @@
 
 # required
 # traefik.http.routers.syncthing-secure.entrypoints: "https"
-# traefik.http.routers.syncthing-secure.rule: "Host(`syncthing.shajalslab.top`)"
+# traefik.http.routers.syncthing-secure.rule: "Host(`syncthing.{{ traefik_subdomain }}`)"
 # traefik.http.routers.syncthing-secure.tls: "true"
 
 
 # optional
 # traefik.http.routers.syncthing.entrypoints: "http"
-# traefik.http.routers.syncthing.rule: "Host(`syncthing.shajalslab.top`)"
+# traefik.http.routers.syncthing.rule: "Host(`syncthing.{{ traefik_subdomain }}`)"
 # traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
 # traefik.http.routers.syncthing-secure.middlewares: "traefik-https-redirect"
 # traefik.http.routers.syncthing-secure.service: "syncthing"

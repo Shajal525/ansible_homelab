@@ -33,7 +33,7 @@
       PUID: "1000"
       PGID: "1000"
       TZ: "GB"
-      # JELLYFIN_PublishedServerUrl: "https://jellyfin.shajalslab.top" #optional
+      # JELLYFIN_PublishedServerUrl: "https://{{ jellyfin_domain }}" #optional
     volumes:
       - "{{ jellyfin_config }}:/config"
       - "{{ media_data_path }}:/data"
@@ -46,7 +46,7 @@
       com.docker.compose.service: "jellyfin"
       traefik.enable: "true"
       traefik.http.routers.jellyfin-secure.entrypoints: "https"
-      traefik.http.routers.jellyfin-secure.rule: "Host(`jellyfin.shajalslab.top`)"
+      traefik.http.routers.jellyfin-secure.rule: "Host(`{{ jellyfin_domain }}`)"
       traefik.http.routers.jellyfin-secure.tls: "true"
       traefik.http.routers.jellyfin.service: "jellyfin"
       traefik.http.services.jellyfin.loadbalancer.server.port: "8096"

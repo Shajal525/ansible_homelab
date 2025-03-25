@@ -3,5 +3,5 @@ postgres_data_path: "{{ postgres_base_path }}/data"
 postgres_username: "{{ vm_username }}"
 postgres_password: "{{ vm_password }}"
 postgres_port: "5432"
-adminer_port: "5433"
 
+adminer_domain: "adminer.{{ subdomain }}"

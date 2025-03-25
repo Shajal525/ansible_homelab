@@ -43,7 +43,7 @@
       com.docker.compose.service: "homarr"
       traefik.enable: "true"
       traefik.http.routers.homarr-secure.entrypoints: "https"
-      traefik.http.routers.homarr-secure.rule: "Host(`homarr.shajalslab.top`)"
+      traefik.http.routers.homarr-secure.rule: "Host(`{{ homarr_domain }}`)"
       traefik.http.routers.homarr-secure.tls: "true"
       traefik.http.routers.homarr.service: "homarr"
       traefik.http.services.homarr.loadbalancer.server.port: "7575"

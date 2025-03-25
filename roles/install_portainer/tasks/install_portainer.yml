@@ -39,7 +39,7 @@
       com.docker.compose.service: "portainer"
       traefik.enable: "true"
       traefik.http.routers.portainer-secure.entrypoints: "https"
-      traefik.http.routers.portainer-secure.rule: "Host(`portainer.shajalslab.top`)"
+      traefik.http.routers.portainer-secure.rule: "Host(`{{ portainer_domain }}`)"
       traefik.http.routers.portainer-secure.tls: "true"
       traefik.http.routers.portainer-secure.service: "portainer"
       traefik.http.services.portainer.loadbalancer.server.port: "9000"
