@@ -49,6 +49,12 @@
   set_fact:
     tunnel_json_file: "/root/.cloudflared/{{ tunnel_id }}.json"
 
+- name: Ensure the directory /etc/cloudflared exists
+  file:
+    path: /etc/cloudflared
+    state: directory
+    mode: '0755'
+
 - name: Create config file with tunnel UUID and json file path
   copy:
     dest: /etc/cloudflared/config.yml
@@ -82,11 +88,11 @@
   debug:
     var: service_file_status.stat.exists
 
-- name: Ensure /etc/cloudflared/config.yml is absent
-  file:
-    path: /etc/cloudflared/config.yml
-    state: absent
-  when: not service_file_status.stat.exists
+# - name: Ensure /etc/cloudflared/config.yml is absent
+#   file:
+#     path: /etc/cloudflared/config.yml
+#     state: absent
+#   when: not service_file_status.stat.exists
 
 - name: Run daemon-reload
   shell: systemctl daemon-reload
