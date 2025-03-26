@@ -11,3 +11,4 @@ cloudflare_email: "{{ cloudflare_email }}"
 CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}"
 
 subdomain: "ai.shajalslab.top"
+cloudflare_tunnel_name: "ailab_cloud_tunnel"

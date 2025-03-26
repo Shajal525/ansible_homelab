@@ -9,4 +9,4 @@ my_storage_path: "/mnt/storage/DataStorage"
 my_app_storage_path: "/mnt/storage/Apps"
 
 subdomain: "shajalslab.top"
-
+cloudflare_tunnel_name: "homelab_cloud_tunnel"

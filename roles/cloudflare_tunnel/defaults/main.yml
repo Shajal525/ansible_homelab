@@ -1,5 +1,5 @@
 ---
-tunnel_name: "cloud_tunnel"
+tunnel_name: "{{ cloudflare_tunnel_name }}"
 ingress_entries:
   - hostname: "{{ hostname1 }}"
     service: "{{ local_service1 }}"
