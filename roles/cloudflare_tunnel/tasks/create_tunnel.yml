@@ -68,9 +68,10 @@
       ingress:
       {% for entry in ingress_entries %}
         - hostname: {{ entry.hostname }}
-          service: {{ entry.service }}
+          service: https://{{ entry.service }}
           originRequest:
             noTLSVerify: true
+            httpHostHeader: {{ entry.service }}
       {% endfor %}
         - service: http_status:404
 
