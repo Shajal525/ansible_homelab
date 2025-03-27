@@ -26,7 +26,7 @@
 
   roles:
     # - install_tsdproxy_tailscale # don't need now
-    - cloudflare_tunnel # don't need now
+    # - cloudflare_tunnel # don't need now
     # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver. 
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
@@ -47,4 +47,5 @@
     # - install_linkwarden
     # - notification_script
     # - install_n8n
+    - system_monitoring
 

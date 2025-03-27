@@ -1,0 +1,12 @@
+monitoring_base_path: "{{ base_storage_path }}/system_monitoring"
+prometheus_base: "{{ monitoring_base_path }}/prometheus"
+prometheus_data: "{{ prometheus_base }}/data"
+prometheus_config: "{{ prometheus_base }}/config"
+prometheus_config_yaml: "{{ prometheus_config }}/prometheus.yaml"
+grafana_data: "{{ monitoring_base_path }}/grafana"
+
+prometheus_domain: "prometheus.{{ subdomain }}"
+grafana_domain: "grafana.{{ subdomain }}"
+cadvisor_domain: "cadvisor.{{ subdomain }}"
+nodeexporter_domain: "nodeexporter.{{ subdomain }}"
+
