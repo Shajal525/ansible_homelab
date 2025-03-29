@@ -63,6 +63,12 @@
       {{ ' ' * 4 }}networks:
       {{ ' ' * 4 }}  - traefik_proxy
 
+- name: Insert external storage path.
+  lineinfile:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    insertafter: '\$\{UPLOAD_LOCATION\}:/usr/src/app/upload'
+    line: "      - ${EXTERNAL_STORAGE_PATH}:/datastorage"
+
 - name: Insert networks configuration at the end of the file
   lineinfile:
     path: "{{ immich_compose_dir }}/docker-compose.yml"
@@ -88,6 +94,7 @@
   copy:
     dest: "{{ immich_compose_dir }}/.env"
     content: |
+      EXTERNAL_STORAGE_PATH={{ immich_external_library_path }}
       UPLOAD_LOCATION={{ upload_location }}
       DB_DATA_LOCATION={{ db_data_location }}
       DB_PASSWORD={{ db_password }}

@@ -12,6 +12,6 @@
     # - install_portainer
     # - install_ollama
     # - install_open_webui
-    - cloudflare_tunnel
+    # - cloudflare_tunnel
 
 
