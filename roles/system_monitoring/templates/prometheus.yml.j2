@@ -17,12 +17,12 @@ scrape_configs:
     static_configs:
       - targets: ['{{ prometheus_domain }}']
 
-# Example job for node_exporter
-#- job_name: 'nodeexporter'
-#  static_configs:
-#    - targets: ['{{ nodeexporter_domain }}']
-#
-## Example job for cadvisor
-#- job_name: 'cadvisor'
-#  static_configs:
-#    - targets: ['{{ cadvisor_domain }}']
+  #Example job for node_exporter
+  - job_name: 'nodeexporter'
+    static_configs:
+      - targets: ['{{ nodeexporter_domain }}']
+
+  # Example job for cadvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['{{ cadvisor_domain }}']

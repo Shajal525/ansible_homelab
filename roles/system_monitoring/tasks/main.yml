@@ -33,8 +33,8 @@
 
 - name: Copy Prometheus config yaml file
   template:
-    src: prometheus.yaml.j2
-    dest: "{{ prometheus_config_yaml }}"
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config }}/prometheus.yml"
     mode: '0644'
 
 - name: Deploy Prometheus
@@ -43,9 +43,9 @@
     image: docker.io/prom/prometheus:latest
     # ports:
       # - "9090:9090"
-    command: "--config.file=/etc/prometheus/prometheus.yaml"
+    command: "--config.file=/etc/prometheus/prometheus.yml"
     volumes:
-      - "{{ prometheus_config_yaml }}:/etc/prometheus/prometheus.yaml:ro"
+      - "{{ prometheus_config }}:/etc/prometheus"
       - "{{ prometheus_data }}:/prometheus"
     labels:
       com.docker.compose.project: "monitoring_stack"
