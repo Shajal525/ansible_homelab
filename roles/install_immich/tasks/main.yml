@@ -82,6 +82,8 @@
       networks:
         traefik_proxy:
           external: true
+        pangolin_network:
+          external: true
     insertafter: EOF
 
 - name: Remove 'name' field from Docker Compose file

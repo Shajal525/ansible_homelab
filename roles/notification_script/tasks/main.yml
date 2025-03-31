@@ -20,24 +20,28 @@
   ignore_errors: true
   changed_when: false
 
-- name: Exit playbook if notification script already added in cron jobs
-  meta: end_play
-  when: "{{ notify_script_path in cron_jobs.stdout }}"
+- name: Make sure the script is not already added.
+  set_fact:
+    not_exists: "{{ notify_script_path not in cron_jobs.stdout }}"
 
 - name: Replace multiple spaces with newline and save output
   set_fact:
     updated_cron_jobs: "{{ cron_jobs.stdout | regex_replace('\\s{2,}', '\\n') }}"
+  when: not_exists
 
 - name: Backup existing crontab
   copy:
     content: "{{ updated_cron_jobs }}"
     dest: "/root/crontab_backup"
-  when: updated_cron_jobs != ""
+  when: 
+    - not_exists
+    - updated_cron_jobs != ""
   changed_when: false
 
 - name: Update cron jobs to new format
   set_fact: 
      cron_jobs_with_notification: "{{ updated_cron_jobs.splitlines() | map('regex_replace', '^(?!#)(\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+)\\s*(.+)', '\\1 ( \\2 2>&1 ; echo \"EXIT:\\$?\" ) | python3 ' + notify_script_path + ' \\\"Cron Job Status\\\"') | join('\n') }}"
+  when: not_exists
 
 # - name: debug
 #   debug:
@@ -46,4 +50,6 @@
 - name: Update cron jobs to new format
   shell: |
     echo "{{ cron_jobs_with_notification }}" | crontab -
-  when: cron_jobs_with_notification != ""
+  when: 
+    - not_exists
+    - cron_jobs_with_notification != ""

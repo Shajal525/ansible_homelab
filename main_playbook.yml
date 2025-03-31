@@ -2,13 +2,13 @@
 # - name: Update and generate SSL files
 #   hosts: pvehomelab
 #   become: true
-#   gather_facts: false
+#   gather_facts: true
 
 #   roles:
-#     - basics
+#     # - basics
 #     # - storager_drive
-#     - snapraid
-#     - mergerfs
+#     # - snapraid
+#     # - mergerfs
 #     # - openssl_generate_certificate # don't need now
 #     - docker
 
@@ -23,8 +23,8 @@
     # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver. 
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
-    # - install_traefik 
-    - pangolin_newt
+    # - install_traefik
+    # - pangolin_newt
     # - install_portainer
     # - install_homarr
     # - install_immich
@@ -38,8 +38,8 @@
     # - samba_share
     # - install_matrix_synapse
     # - install_uptimeKuma
-    - install_linkwarden
-    # - notification_script
-    # - install_n8n
-    # - system_monitoring
+    # - install_linkwarden
+    - notification_script
+    - install_n8n
+    - system_monitoring
 
