@@ -2,6 +2,7 @@ mergerfs_mount_location: "/mnt/storage"
 mergerfs_mount_location_without_cache: "/mnt/data-static"
 
 cache_storage: "/mnt/cache"
+cache_persistent_docker_storage: "/mnt/cache/Apps/Docker"
 data_storage: 
   - "/mnt/data1"
   - "/mnt/data2"

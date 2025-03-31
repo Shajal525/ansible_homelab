@@ -1,23 +1,16 @@
 ---
-# - name: Update and generate SSL files
-#   hosts: pvehomelab
-#   become: true
-#   gather_facts: false
+- name: Update and generate SSL files
+  hosts: pvehomelab
+  become: true
+  gather_facts: false
 
-#   roles:
-#     # - basics
-#     # - storager_drive
-#     # - snapraid
-#     - mergerfs
-#     # - openssl_generate_certificate # don't need now
-
-# - name: Install docker
-#   hosts: pvehomelab
-#   become: true
-#   gather_facts: yes
-
-#   roles:
-#     - docker
+  roles:
+    - basics
+    # - storager_drive
+    - snapraid
+    - mergerfs
+    # - openssl_generate_certificate # don't need now
+    - docker
 
 - name: Install Portainer, Nextcloud, Nginx
   hosts: pvehomelab

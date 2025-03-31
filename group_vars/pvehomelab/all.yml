@@ -4,9 +4,9 @@ ssh_public_key: "{{ ssh_directory }}id_rsa.pub"
 ssh_key_path: "{{ ssh_directory }}id_rsa"
 ssh_port: 22
 shell: /bin/bash
-base_storage_path: "/mnt/data2/Apps/Docker"
+base_storage_path: "/mnt/cache/Apps/Docker"
 my_storage_path: "/mnt/storage/DataStorage"
-my_app_storage_path: "/mnt/storage/Apps"
+my_app_storage_path: "/mnt/cache/Apps"
 
 subdomain: "shajalslab.top"
 cloudflare_tunnel_name: "homelab_cloud_tunnel"
