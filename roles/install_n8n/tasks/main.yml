@@ -5,10 +5,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create N8N directories
   file:
@@ -45,6 +49,7 @@
       traefik.http.routers.n8n-secure.entrypoints: "https"
       traefik.http.routers.n8n-secure.rule: "Host(`{{ n8n_domain }}`)"
       traefik.http.routers.n8n-secure.tls: "true"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "n8n"
       # tsdproxy.scheme: "https"
@@ -52,6 +57,7 @@
       # tsdproxy.container_port: "5678"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

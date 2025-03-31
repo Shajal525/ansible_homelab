@@ -5,10 +5,15 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
-  register: network_check
-  failed_when: network_check.rc != 0
+- name: Ensure external networks exist
+  docker_network:
+    name: "{{ item }}"
+    state: present
+    internal: no
+    driver: bridge
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create Syncthing directories
   file:
@@ -47,6 +52,7 @@
       traefik.http.routers.syncthing-secure.entrypoints: "https"
       traefik.http.routers.syncthing-secure.rule: "Host(`{{ syncthing_domain }}`)"
       traefik.http.routers.syncthing-secure.tls: "true"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "syncthing"
       # tsdproxy.scheme: "https"
@@ -54,6 +60,7 @@
       # tsdproxy.container_port: "8384"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

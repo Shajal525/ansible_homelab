@@ -5,11 +5,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
   changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create external network
   docker_network:
@@ -75,6 +78,7 @@
     networks:
       - name: traefik_proxy
       - name: linkwarden_network
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

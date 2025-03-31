@@ -5,10 +5,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create directories for Immich
   file:
@@ -48,6 +52,7 @@
       {{ ' ' * 4 }}  traefik.http.routers.immich.tls: true
       {{ ' ' * 4 }}  traefik.http.routers.immich.service: immich
       {{ ' ' * 4 }}  traefik.http.services.immich.loadbalancer.server.port: 2283
+      {{ ' ' * 4 }}  traefik.docker.network: "traefik_proxy"
       # {{ ' ' * 4 }}  tsdproxy.enable: true
       # {{ ' ' * 4 }}  tsdproxy.name: immich
       # {{ ' ' * 4 }}  tsdproxy.scheme: http
@@ -62,6 +67,7 @@
       \1
       {{ ' ' * 4 }}networks:
       {{ ' ' * 4 }}  - traefik_proxy
+      {{ ' ' * 4 }}  - pangolin_network
 
 - name: Insert external storage path.
   lineinfile:

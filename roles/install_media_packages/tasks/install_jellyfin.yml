@@ -5,10 +5,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create directories for Jellyfin
   file:
@@ -50,14 +54,15 @@
       traefik.http.routers.jellyfin-secure.tls: "true"
       traefik.http.routers.jellyfin.service: "jellyfin"
       traefik.http.services.jellyfin.loadbalancer.server.port: "8096"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "jellyfin"
       # tsdproxy.scheme: "http"
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "8096"
     networks:
-      # - name: media_network
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

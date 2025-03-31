@@ -4,10 +4,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create directories for Prowlarr
   file:
@@ -38,14 +42,15 @@
       traefik.http.routers.prowlarr-secure.tls: "true"
       traefik.http.routers.prowlarr.service: "prowlarr"
       traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "prowlarr"
       # tsdproxy.scheme: "http"
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "9696"
     networks:
-      # - name: media_network
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

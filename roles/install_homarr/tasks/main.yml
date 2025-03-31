@@ -4,10 +4,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create Homarr directory
   file:
@@ -47,6 +51,7 @@
       traefik.http.routers.homarr-secure.tls: "true"
       traefik.http.routers.homarr.service: "homarr"
       traefik.http.services.homarr.loadbalancer.server.port: "7575"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "homarr"
       # tsdproxy.scheme: "http"
@@ -54,6 +59,7 @@
       # tsdproxy.container_port: "7575"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

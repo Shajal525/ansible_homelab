@@ -7,10 +7,13 @@
 
 - name: Ensure external networks exist
   docker_network:
-    name: traefik_proxy
+    name: "{{ item }}"
     state: present
     internal: no
     driver: bridge
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create Nextcloud directory
   file:
@@ -100,6 +103,7 @@
       # tsdproxy.container_port: "80"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

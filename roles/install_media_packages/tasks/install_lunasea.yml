@@ -4,10 +4,14 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Deploy Lunasea container
   docker_container:
@@ -22,14 +26,15 @@
       traefik.http.routers.lunasea-secure.tls: "true"
       traefik.http.routers.lunasea.service: "lunasea"
       traefik.http.services.lunasea.loadbalancer.server.port: "80"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "lunasea"
       # tsdproxy.scheme: "http"
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "80"
     networks:
-      # - name: media_network
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: always
     tty: yes
     interactive: yes

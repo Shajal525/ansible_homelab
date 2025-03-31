@@ -5,11 +5,15 @@
     state: started
     enabled: yes
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
-  register: network_check
-  changed_when: false
-  failed_when: network_check.rc != 0
+- name: Ensure external networks exist
+  docker_network:
+    name: "{{ item }}"
+    state: present
+    internal: no
+    driver: bridge
+  loop: 
+    - traefik_proxy
+    - pangolin_network
 
 - name: Create directories for UptimeKuma
   file:
@@ -39,14 +43,15 @@
       traefik.http.routers.uptimekuma-secure.tls: "true"
       traefik.http.routers.uptimekuma.service: "uptimekuma"
       traefik.http.services.uptimekuma.loadbalancer.server.port: "3001"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "uptimekuma"
       # tsdproxy.scheme: "http"
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "3001"
     networks:
-      # - name: media_network
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
 

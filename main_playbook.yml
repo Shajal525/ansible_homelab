@@ -1,16 +1,16 @@
 ---
-- name: Update and generate SSL files
-  hosts: pvehomelab
-  become: true
-  gather_facts: false
+# - name: Update and generate SSL files
+#   hosts: pvehomelab
+#   become: true
+#   gather_facts: false
 
-  roles:
-    - basics
-    # - storager_drive
-    - snapraid
-    - mergerfs
-    # - openssl_generate_certificate # don't need now
-    - docker
+#   roles:
+#     - basics
+#     # - storager_drive
+#     - snapraid
+#     - mergerfs
+#     # - openssl_generate_certificate # don't need now
+#     - docker
 
 - name: Install Portainer, Nextcloud, Nginx
   hosts: pvehomelab
@@ -24,9 +24,10 @@
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
     # - install_traefik 
+    - pangolin_newt
     # - install_portainer
     # - install_homarr
-    - install_immich
+    # - install_immich
     # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
@@ -37,7 +38,7 @@
     # - samba_share
     # - install_matrix_synapse
     # - install_uptimeKuma
-    # - install_linkwarden
+    - install_linkwarden
     # - notification_script
     # - install_n8n
     # - system_monitoring

@@ -1,0 +1,7 @@
+---
+- name: Create Pangolin network if it does not exist
+  docker_network:
+    name: pangolin_network
+    state: present
+
+
