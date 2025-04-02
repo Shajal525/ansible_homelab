@@ -1,0 +1,3 @@
+newt_id: "{{ newt_id }}"
+newt_secret: "{{ newt_secret }}"
+pangolin_endpoint: "https://pangolin.shajalslab.top"

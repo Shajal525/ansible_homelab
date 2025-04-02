@@ -39,7 +39,8 @@
     # - install_matrix_synapse
     # - install_uptimeKuma
     # - install_linkwarden
-    - notification_script
-    - install_n8n
-    - system_monitoring
+    # - notification_script
+    # - install_n8n
+    # - system_monitoring
+    - pangolin_newt
 
