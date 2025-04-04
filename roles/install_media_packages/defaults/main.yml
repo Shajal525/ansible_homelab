@@ -2,7 +2,7 @@ ssl_cert_dir: "/etc/ssl/openssl/certs"
 ip_address: "{{ vm_ip_address }}"
 
 media_base_path: "{{ base_storage_path }}/media"
-media_data_path: "{{ media_base_path }}/data"
+media_data_path: "{{ my_storage_path }}/Media"
 config_path: "{{ media_base_path }}/config"
 
 jellyfin_config: "{{ config_path }}/jellyfin"
@@ -14,7 +14,6 @@ radarr_config: "{{ config_path }}/radarr"
 prowlarr_config: "{{ config_path }}/prowlarr"
 jellyseerr_config: "{{ config_path }}/jellyseerr"
 aria_config: "{{ config_path }}/aria"
-aria_downloads: "{{ media_data_path }}/downloads/aria"
 aria_secret_key: "{{ vm_password }}"
 
 nzbget_config: "{{ config_path }}/nzbget"

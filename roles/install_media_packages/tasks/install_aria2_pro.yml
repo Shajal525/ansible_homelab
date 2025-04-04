@@ -23,7 +23,7 @@
     mode: "0755"
   loop:
     - "{{ aria_config }}"
-    - "{{ aria_downloads }}"
+    - "{{ media_data_path }}/downloads/aria"
 
 - name: Deploy Aria2-pro container
   docker_container:
@@ -43,7 +43,7 @@
       TZ: "GB"
     volumes:
       - "{{ aria_config }}/config"
-      - "{{ aria_downloads }}:/downloads"
+      - "{{ media_data_path }}/downloads/aria:/downloads"
     ports:
     #  - 6800:6800
      - 6888:6888
