@@ -31,7 +31,7 @@
       LOG_LEVEL: "debug"
       TZ: "GB"
     volumes:
-      - "{{ jellyseerr_config }}:/config"
+      - "{{ jellyseerr_config }}:/app/config"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "jellyseerr"
