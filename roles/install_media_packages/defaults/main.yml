@@ -14,7 +14,7 @@ radarr_config: "{{ config_path }}/radarr"
 prowlarr_config: "{{ config_path }}/prowlarr"
 jellyseerr_config: "{{ config_path }}/jellyseerr"
 aria_config: "{{ config_path }}/aria"
-aria_secret_key: "{{ vm_password }}"
+aria_secret_key: "P3TERX"
 
 nzbget_config: "{{ config_path }}/nzbget"
 nzbget_username: "{{ vm_username }}"

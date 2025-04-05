@@ -44,7 +44,7 @@
       NZBGET_PASS: "{{ nzbget_password }}"
     volumes:
       - "{{ nzbget_config }}:/config"
-      - "{{ media_data_path }}:/data"
+      - "{{ media_data_path }}/downloads/nzbget:/downloads"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "nzbget"
@@ -69,14 +69,9 @@
 - name: Fix folder ownership
   shell: "sudo docker exec -it nzbget chown abc:users {{ item }}"
   loop:
-    - "/data"
-    - "/data/downloads"
-    - "/data/downloads/nzbget"
-    - "/data/downloads/nzbget/completed"
-    - "/data/downloads/nzbget/completed/Movies"
-    - "/data/downloads/nzbget/completed/Series"
-    - "/data/downloads/nzbget/incomplit"
-    - "/data/downloads/nzbget/torrent"
+    - "/downloads/completed"
+    - "/downloads/incomplit"
+    - "/downloads/torrent"
 
 - name: NZBget deployed
   debug:

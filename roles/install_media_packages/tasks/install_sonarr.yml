@@ -24,6 +24,8 @@
   loop:
     - "{{ sonarr_config }}"
     - "{{ media_data_path }}"
+    - "{{ media_data_path }}/series"
+    - "{{ media_data_path }}/downloads"
 
 - name: Deploy Sonarr container
   docker_container:
@@ -35,7 +37,8 @@
       TZ: "GB"
     volumes:
       - "{{ sonarr_config }}:/config"
-      - "{{ media_data_path }}:/data"
+      - "{{ media_data_path }}/series:/series"
+      - "{{ media_data_path }}/downloads:/downloads"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "sonarr"
@@ -57,8 +60,11 @@
     restart_policy: unless-stopped
     state: started
 
-- name: Fix data folder ownership
-  shell: "sudo docker exec -it sonarr chown abc:users /data"
+- name: Fix folder ownership
+  shell: "sudo docker exec -it sonarr chown abc:users {{ item }}"
+  loop:
+    - "/series"
+    - "/downloads"
 
 - name: Sonarr deployed
   debug:

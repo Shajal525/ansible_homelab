@@ -40,7 +40,7 @@
       TORRENTING_PORT: "6881"
     volumes:
       - "{{ qbittorrent_config }}:/config"
-      - "{{ media_data_path }}:/data"
+      - "{{ media_data_path }}/downloads/qbittorrent:/downloads"
     ports:
       - 6881:6881
       - 6881:6881/udp
@@ -72,12 +72,9 @@
 - name: Fix folder ownership
   shell: "sudo docker exec -it qbittorrent chown abc:users {{ item }}"
   loop:
-    - "/data"
-    - "/data/downloads"
-    - "/data/downloads/qbittorrent"
-    - "/data/downloads/qbittorrent/completed"
-    - "/data/downloads/qbittorrent/incomplit"
-    - "/data/downloads/qbittorrent/torrent"
+    - "/downloads/completed"
+    - "/downloads/incomplit"
+    - "/downloads/torrent"
     
 - name: Get log to see the password.
   shell: docker logs qbittorrent | grep password || true

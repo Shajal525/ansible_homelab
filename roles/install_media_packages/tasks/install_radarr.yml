@@ -24,6 +24,8 @@
   loop:
     - "{{ radarr_config }}"
     - "{{ media_data_path }}"
+    - "{{ media_data_path }}/movies"
+    - "{{ media_data_path }}/downloads"
 
 - name: Deploy Radarr container
   docker_container:
@@ -35,7 +37,8 @@
       TZ: "GB"
     volumes:
       - "{{ radarr_config }}:/config"
-      - "{{ media_data_path }}:/data"
+      - "{{ media_data_path }}/movies:/movies"
+      - "{{ media_data_path }}/downloads:/downloads"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "radarr"
@@ -60,7 +63,8 @@
 - name: Fix folder ownership
   shell: "sudo docker exec -it radarr chown abc:users {{ item }}"
   loop:
-    - "/data"
+    - "/movies"
+    - "/downloads"
 
 - name: Radarr deployed
   debug:
