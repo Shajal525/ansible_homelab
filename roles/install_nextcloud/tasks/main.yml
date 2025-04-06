@@ -26,6 +26,7 @@
     - "{{ nextcloud_base_directory }}"
     - "{{ nextcloud_data_directory }}"
     - "{{ nextcloud_db_data_directory }}"
+    - "{{ nextcloud_config_directory }}"
 
 
 - name: Deploy MySQL container
@@ -85,7 +86,8 @@
       OVERWRITEHOST: "{{ nextcloud_domain }}"
       TRUSTED_PROXIES: 172.16.0.0/12 192.168.1.0/16 100.0.0.0/8 10.0.0.0/8 fc00::/7 fe80::/10 2001:db8::/32
     volumes:
-      - "{{ nextcloud_data_directory }}:/var/www/html"
+      - "{{ nextcloud_config_directory }}:/var/www/html"
+      - "{{ nextcloud_data_directory }}:/var/www/html/data"
     labels:
       com.docker.compose.project: "nextcloud_stack"
       com.docker.compose.service: "nextcloud"
