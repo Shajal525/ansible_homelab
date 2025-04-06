@@ -1,8 +1,8 @@
 ---
 nextcloud_version: "25.0.0"
 nextcloud_base_directory: "{{ base_storage_path }}/nextcloud"
-nextcloud_data_directory: "{{ nextcloud_base_directory }}/data"
 nextcloud_db_data_directory: "{{ nextcloud_base_directory }}/db_data"
+nextcloud_data_directory: "{{ my_storage_path }}/Nextcloud"
 db_root_password: "{{ vm_password }}"
 db_user: "{{ vm_username }}"
 db_password: "{{ vm_password }}"
