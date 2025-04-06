@@ -6,6 +6,7 @@ ssh_port: 22
 shell: /bin/bash
 base_storage_path: "/mnt/cache/Apps/Docker"
 my_storage_path: "/mnt/storage/DataStorage"
+my_non_cloud_storage_path: "/mnt/storage/NonCloudDataStorage"
 my_app_storage_path: "/mnt/cache/Apps"
 
 subdomain: "shajalslab.top"
