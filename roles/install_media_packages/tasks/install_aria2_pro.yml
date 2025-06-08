@@ -42,7 +42,7 @@
       CUSTOM_TRACKER_URL: ""
       TZ: "GB"
     volumes:
-      - "{{ aria_config }}/config"
+      - "{{ aria_config }}:/config"
       - "{{ media_data_path }}/downloads/aria:/downloads"
     ports:
     #  - 6800:6800
