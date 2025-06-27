@@ -32,7 +32,7 @@
 - name: Deploy MySQL container
   docker_container:
     name: nextcloud_db
-    image: mysql:5.7
+    image: mysql:latest
     hostname: nextcloud_db
     env:
       MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"

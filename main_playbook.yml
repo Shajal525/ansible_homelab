@@ -12,7 +12,7 @@
 #     # - openssl_generate_certificate # don't need now
 #     - docker
 
-- name: Install Portainer, Nextcloud, Nginx
+- name: Install all apps
   hosts: pvehomelab
   become: true
   gather_facts: false
@@ -27,7 +27,7 @@
     # - install_portainer
     # - install_homarr
     # - install_immich
-    # - install_media_packages
+    - install_media_packages
     # - install_nextcloud
     # - install_syncthing
     # - install_rclone

@@ -7,6 +7,13 @@ config_path: "{{ media_base_path }}/config"
 
 jellyfin_config: "{{ config_path }}/jellyfin"
 
+jellystat_path: "{{ config_path }}/jellystat"
+jellystat_config: "{{ jellystat_path }}/config"
+jellystat_db_config: "{{ config_path }}/postgres_db"
+jellystat_db_username: "{{ vm_username }}"
+jellystat_db_password: "{{ vm_password }}"
+jellystat_jwt_key: "{{ vm_password }}"
+
 sonarr_config: "{{ config_path }}/sonarr"
 
 radarr_config: "{{ config_path }}/radarr"
@@ -28,6 +35,7 @@ aria2pro_domain: "aria2pro.{{ subdomain }}"
 flaresolverr_domain: "flaresolverr.{{ subdomain }}"
 jellyfin_domain: "jellyfin.{{ subdomain }}"
 jellyseerr_domain: "jellyseerr.{{ subdomain }}"
+jellystat_domain: "jellystat.{{ subdomain }}"
 lunasea_domain: "lunasea.{{ subdomain }}"
 nzbget_domain: "nzbget.{{ subdomain }}"
 prowlarr_domain: "prowlarr.{{ subdomain }}"

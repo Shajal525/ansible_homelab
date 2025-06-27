@@ -1,0 +1,96 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
+  
+- name: Create external network
+  docker_network:
+    name: jellystat_network
+    driver: bridge
+    state: present
+
+- name: Create directories for Jellystat
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+  loop:
+    - "{{ jellystat_path }}"
+    - "{{ jellystat_config }}"
+    - "{{ jellystat_db_config }}"
+
+- name: Deploy Jellystat Postgres DB container
+  docker_container:
+    name: jellystat-db
+    image: postgres:15.2
+    log_driver: "json-file"
+    log_options:
+      max-file: "5"
+      max-size: "10m"
+    env:
+      POSTGRES_USER: "{{ jellystat_db_username }}"
+      POSTGRES_PASSWORD: "{{ jellystat_db_password }}"
+    volumes:
+      - "{{ jellystat_db_config }}/config:/var/lib/postgresql/data"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "jellystat-db"
+    networks:
+      - name: jellystat_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Jellystat container
+  docker_container:
+    name: jellystat
+    image: cyfershepard/jellystat:latest
+    log_driver: "json-file"
+    log_options:
+      max-file: "5"
+      max-size: "10m"
+    env:
+      POSTGRES_USER: "{{ jellystat_db_username }}"
+      POSTGRES_PASSWORD: "{{ jellystat_db_password }}"
+      POSTGRES_IP: "jellystat-db"
+      POSTGRES_PORT: "5432"
+      JWT_SECRET: "{{ jellystat_jwt_key }}"
+      TZ: "GB"
+    volumes:
+      - "{{ jellystat_config }}/db:/app/backend/backup-data"
+    labels:
+      com.docker.compose.project: "media_stack"
+      com.docker.compose.service: "jellystat"
+      traefik.enable: "true"
+      traefik.http.routers.jellystat-secure.entrypoints: "https"
+      traefik.http.routers.jellystat-secure.rule: "Host(`{{ jellystat_domain }}`)"
+      traefik.http.routers.jellystat-secure.tls: "true"
+      traefik.http.routers.jellystat.service: "jellystat"
+      traefik.http.services.jellystat.loadbalancer.server.port: "3000"
+      traefik.docker.network: "traefik_proxy"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "jellystat"
+      # tsdproxy.scheme: "http"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "3000"
+    networks:
+      - name: jellystat_network
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Jellystat deployed
+  debug:
+    msg: "Jellystat is running successfully"
