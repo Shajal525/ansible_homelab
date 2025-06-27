@@ -13,4 +13,3 @@ grafana_matrix_forwarder_port: 5000
 grafana_matrix_user: "@homelab:matrix.{{ subdomain }}"
 grafana_matrix_password: "{{ vm_password }}"
 grafana_matrix_homeserver: "https://matrix.{{ subdomain }}"
-grafana_matrix_room: "!EeepdmpVgLXnFtyaBd:matrix.{{ subdomain }}"
