@@ -27,7 +27,7 @@
     # - install_portainer
     # - install_homarr
     # - install_immich
-    - install_media_packages
+    # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
     # - install_rclone
@@ -40,6 +40,6 @@
     # - install_linkwarden
     # - notification_script
     # - install_n8n
-    # - system_monitoring
+    - system_monitoring
     # - pangolin_newt
 

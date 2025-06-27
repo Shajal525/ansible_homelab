@@ -39,4 +39,10 @@ shares:
     writeable: "yes"
     username: "shajal"
     password: "{{ vm_password }}"
+  - name: Media
+    path: "/mnt/storage/NonCloudDataStorage/Media/"
+    guest_ok: "no"
+    writeable: "yes"
+    username: "shajal"
+    password: "{{ vm_password }}"
 

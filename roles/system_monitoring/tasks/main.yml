@@ -166,3 +166,25 @@
     restart_policy: unless-stopped
     state: started
 
+- name: Deploy grafana-matrix-forwarder container
+  docker_container:
+    name: grafana-matrix-forwarder
+    image: registry.gitlab.com/hctrdev/grafana-matrix-forwarder:latest
+    published_ports:
+      - "{{ grafana_matrix_forwarder_port }}:5000"
+    env:
+      GMF_MATRIX_USER: "{{ grafana_matrix_user }}"
+      GMF_MATRIX_PASSWORD: "{{ grafana_matrix_password }}"
+      GMF_MATRIX_HOMESERVER: "{{ grafana_matrix_homeserver }}"
+      GMF_MATRIX_ROOM: "{{ grafana_matrix_room }}"
+    labels:
+      com.docker.compose.project: "monitoring_stack"
+      com.docker.compose.service: "grafana-matrix-forwarder"
+    networks:
+      - name: monitoring_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: System monitoring packages deployed
+  debug:
+    msg: "System monitoring packages are running successfully"
