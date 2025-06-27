@@ -1,0 +1,394 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: CPU Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: feq86r1i6obuoe
+          title: High CPU
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: CPU usage is higher than 80%
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Cache Disk Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: feq8al8q8v94wd
+          title: Cache Storage Disk Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: max(100 - ((node_filesystem_avail_bytes{device="/dev/sdb1"} * 100) / node_filesystem_size_bytes{device="/dev/sdb1"}))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 90
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: Cache Disk mostly filled.
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Main Storage Disk Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: feq8au6rem2gwc
+          title: Main Storage Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: max(100 - ((node_filesystem_avail_bytes{device="/dev/sdc1"} * 100) / node_filesystem_size_bytes{device="/dev/sdc1"}))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: Main storage disk is almost full
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Parity Storage Disk Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: feq8b2hjdvzswf
+          title: Parity Storage Disk Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: max(100 - ((node_filesystem_avail_bytes{device="/dev/sdd1"} * 100) / node_filesystem_size_bytes{device="/dev/sdd1"}))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: Parity storage disk almost filled.
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: RAM Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: deq882gx62ubkd
+          title: RAM Usaage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: High Ram usage detected
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Root Storage Disk Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: aeq8704ews83kc
+          title: Root Disk Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: max(100 - ((node_filesystem_avail_bytes{device="/dev/sda1"} * 100) / node_filesystem_size_bytes{device="/dev/sda1"}))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 70
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: High Root Disk Usage
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Second Storage Disk Usage
+      folder: Resource Usage Alerts
+      interval: 1m
+      rules:
+        - uid: deq8b7d68v94wa
+          title: Second Storage Disk Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: max(100 - ((node_filesystem_avail_bytes{device="/dev/sde1"} * 100) / node_filesystem_size_bytes{device="/dev/sde1"}))
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 80
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            summary: Second Storage Disk almost full
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification

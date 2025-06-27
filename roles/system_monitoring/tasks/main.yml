@@ -186,5 +186,5 @@
   debug:
     msg: "System monitoring packages are running successfully. Add this url in Grafana alert webhook: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top"
 
-#  Grafana alert webhook URL: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top
-
+# Grafana alert webhook URL: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top
+# Copy the code from grafana_alert_rules.yml.j2 to graphana Alert Rules
