@@ -40,6 +40,14 @@
     # - install_linkwarden
     # - notification_script
     # - install_n8n
-    - system_monitoring
+    # - system_monitoring
     # - pangolin_newt
+
+- name: Install node_exporter for Proxmox host resource monitor with Grafana
+  hosts: proxmoxhost
+  become: true
+  gather_facts: false
+
+  roles:
+    - proxmox_host_resource_monitor_grafana
 

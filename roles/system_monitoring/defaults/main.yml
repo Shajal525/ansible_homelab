@@ -8,6 +8,7 @@ prometheus_domain: "prometheus.{{ subdomain }}"
 grafana_domain: "grafana.{{ subdomain }}"
 cadvisor_domain: "cadvisor.{{ subdomain }}"
 nodeexporter_domain: "nodeexporter.{{ subdomain }}"
+proxmox_host: "192.168.8.2:9100"
 
 grafana_matrix_forwarder_port: 5000
 grafana_matrix_user: "@homelab:matrix.{{ subdomain }}"

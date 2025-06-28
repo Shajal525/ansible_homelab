@@ -26,3 +26,8 @@ scrape_configs:
   - job_name: 'cadvisor'
     static_configs:
       - targets: ['{{ cadvisor_domain }}']
+
+  # Example job for proxmox host
+  - job_name: 'nodeexporter_proxmoxhost'
+    static_configs:
+      - targets: ['{{ proxmox_host }}']
