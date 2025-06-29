@@ -1,6 +1,258 @@
 apiVersion: 1
 groups:
     - orgId: 1
+      name: Proxmox host Bandwidth
+      folder: Proxmox Host Resource
+      interval: 1m
+      rules:
+        - uid: deqc48z2os9ogf
+          title: Proxmox Host Bandwidth Alert
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                editorMode: code
+                expr: "sum by(instance) (\r\n  irate(node_network_receive_bytes_total{instance=\"192.168.8.2:9100\"}[30s]) +\r\n  irate(node_network_transmit_bytes_total{instance=\"192.168.8.2:9100\"}[30s])\r\n) / 1024 / 1024"
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 20
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 1
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "1"
+            summary: Proxmox host high bandwidth usage detected
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Proxmox host CPU
+      folder: Proxmox Host Resource
+      interval: 1m
+      rules:
+        - uid: eeqc2uw8u09vke
+          title: Proxmox Host CPU Alert
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                disableTextWrap: false
+                editorMode: code
+                expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle", instance="192.168.8.2:9100"}[1m])) * 100)
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+                useBackend: false
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 81
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 2
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "2"
+            summary: Proxmox host CPU high
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Proxmox host Network
+      folder: Proxmox Host Resource
+      interval: 1m
+      rules:
+        - uid: feqc40ole2pkwf
+          title: Proxmox Host Internet Alert
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                disableTextWrap: false
+                editorMode: code
+                expr: (irate(node_network_receive_bytes_total{instance="192.168.8.2:9100", device="enx00e04ce8005a"}[30s]) + irate(node_network_transmit_bytes_total{instance="192.168.8.2:9100", device="enx00e04ce8005a"}[30s])) / 1024 / 1024
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+                useBackend: false
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 15
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 3
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "3"
+            summary: Proxmox host high internet usage
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
+      name: Proxmox host RAM
+      folder: Proxmox Host Resource
+      interval: 1m
+      rules:
+        - uid: ceqc388fuatxca
+          title: Proxmox Host RAM Usage
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: beh7x9pz6tedca
+              model:
+                disableTextWrap: false
+                editorMode: code
+                expr: 100 * (1 - (node_memory_MemAvailable_bytes{instance="192.168.8.2:9100"} / node_memory_MemTotal_bytes{instance="192.168.8.2:9100"}))
+                fullMetaSearch: false
+                includeNullMetadata: true
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+                useBackend: false
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 90
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 4
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "4"
+            summary: Proxmox host high RAM usage
+          isPaused: false
+          notification_settings:
+            receiver: matrix-channel-notification
+    - orgId: 1
       name: CPU Usage
       folder: Resource Usage Alerts
       interval: 1m
@@ -48,10 +300,14 @@ groups:
                 maxDataPoints: 43200
                 refId: C
                 type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 6
           noDataState: NoData
           execErrState: Error
           for: 1m
           annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "6"
             summary: CPU usage is higher than 80%
           isPaused: false
           notification_settings:
@@ -104,10 +360,14 @@ groups:
                 maxDataPoints: 43200
                 refId: C
                 type: threshold
+          dashboardUid: deqewhxqk77y8b
+          panelId: 5
           noDataState: NoData
           execErrState: Error
           for: 1m
           annotations:
+            __dashboardUid__: deqewhxqk77y8b
+            __panelId__: "5"
             summary: Cache Disk mostly filled.
           isPaused: false
           notification_settings:
@@ -240,7 +500,7 @@ groups:
               datasourceUid: beh7x9pz6tedca
               model:
                 editorMode: code
-                expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))
+                expr: 100 * (1 - (node_memory_MemAvailable_bytes{instance="nodeexporter.shajalslab.top:80"} / node_memory_MemTotal_bytes{instance="nodeexporter.shajalslab.top:80"}))
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
