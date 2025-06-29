@@ -29,7 +29,40 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -49,60 +82,24 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "/dev/sdc1"
+              "options": "192.168.8.2:9100"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Main Storage(2TB)"
+                "value": "Proxmox host"
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "/dev/sdb1"
+              "options": "nodeexporter.shajalslab.top:80"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Cached Storage"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "/dev/sdd1"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Parity Storage"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "/dev/sda1"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Root Storage"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "/dev/sde1"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Second Storage(500GB)"
+                "value": "Homelab VM"
               }
             ]
           }
@@ -114,34 +111,32 @@
         "x": 0,
         "y": 0
       },
-      "id": 7,
+      "id": 6,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "11.6.0",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max by(device)(100 - ((node_filesystem_avail_bytes{device=~\"/dev/sdc1|/dev/sdb1|/dev/sdd1|/dev/sda1|/dev/sde1\"} * 100) / node_filesystem_size_bytes{device=~\"/dev/sdc1|/dev/sdb1|/dev/sdd1|/dev/sda1|/dev/sde1\"}))",
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Storage Used(% filled)",
-      "type": "gauge"
+      "title": "CPU usage(%)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -268,6 +263,128 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "/dev/sdc1"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Main Storage(2TB)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "/dev/sdb1"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cached Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "/dev/sdd1"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Parity Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "/dev/sda1"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Root Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "/dev/sde1"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Second Storage(500GB)"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by(device)(100 - ((node_filesystem_avail_bytes{device=~\"/dev/sdc1|/dev/sdb1|/dev/sdd1|/dev/sda1|/dev/sde1\"} * 100) / node_filesystem_size_bytes{device=~\"/dev/sdc1|/dev/sdb1|/dev/sdd1|/dev/sda1|/dev/sde1\"}))",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Storage Used(% filled)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "beh7x9pz6tedca"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "palette-classic"
           },
           "custom": {
@@ -321,24 +438,60 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "192.168.8.2:9100"
+              "options": "{device=\"sdc\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Proxmox host"
+                "value": "Main Storage(2TB)"
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "nodeexporter.shajalslab.top:80"
+              "options": "{device=\"sdb\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Homelab VM"
+                "value": "Cached Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sdd\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Parity Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sda\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Root Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sde\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Second Storage(500GB)"
               }
             ]
           }
@@ -347,10 +500,10 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 8
       },
-      "id": 6,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -367,14 +520,175 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
+          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
+          "expr": "irate(node_disk_read_bytes_total{device=~\"sdc|sdb|sdd|sda|sde\", instance=\"192.168.8.2:9100\"}[30s]) / (1024 * 1024)\r\nor\r\nirate(node_disk_written_bytes_total{device=~\"sdc|sdb|sdd|sda|sde\", instance=\"192.168.8.2:9100\"}[30s]) / (1024 * 1024)",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         }
       ],
-      "title": "CPU usage(%)",
+      "title": "Storage Read Write Speed",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "beh7x9pz6tedca"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sdc\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Main Storage(2TB)"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sdb\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cached Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sdd\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Parity Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sda\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Root Storage"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{device=\"sde\", instance=\"192.168.8.2:9100\", job=\"nodeexporter_proxmoxhost\"}"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Second Storage(500GB)"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "irate(node_disk_reads_completed_total{device=~\"sdc|sdb|sdd|sda|sde\", instance=\"192.168.8.2:9100\"}[30s]) \r\nor \r\nirate(node_disk_writes_completed_total{device=~\"sdc|sdb|sdd|sda|sde\", instance=\"192.168.8.2:9100\"}[30s])\r\n",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Storage IOPS",
       "type": "timeseries"
     },
     {
@@ -465,7 +779,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 16
       },
       "id": 3,
       "options": {
@@ -502,12 +816,12 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Resource Usage Custom",
   "uid": "deqewhxqk77y8b",
-  "version": 19
+  "version": 21
 }
