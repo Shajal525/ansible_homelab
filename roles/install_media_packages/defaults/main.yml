@@ -29,9 +29,8 @@ qbittorrent_config: "{{ config_path }}/qbittorrent"
 
 
 aria_config: "{{ config_path }}/aria"
-aria2ariang_domain: "aria2ariang.{{ subdomain }}"
-aria2_username: "{{ vm_username }}"
-aria2_password: "{{ vm_password }}"
+aria_domain: "aria.{{ subdomain }}"
+aria_secret: "{{ vm_password }}"
 flaresolverr_domain: "flaresolverr.{{ subdomain }}"
 jellyfin_domain: "jellyfin.{{ subdomain }}"
 jellyseerr_domain: "jellyseerr.{{ subdomain }}"

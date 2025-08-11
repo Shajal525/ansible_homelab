@@ -27,15 +27,13 @@
 
 - name: Deploy Aria2-AriaNG container
   docker_container:
-    name: aria2ariang
+    name: aria
     image: hurlenko/aria2-ariang
     env:
       PUID: "1000"
       PGID: "1000"
-      RPC_SECRET: "{{ aria2_password }}"
+      RPC_SECRET: "{{ aria_secret }}"
       ARIA2RPCPORT: "443"
-      BASIC_AUTH_USERNAME: "{{ aria2_username }}"
-      BASIC_AUTH_PASSWORD: "{{ aria2_password }}"
     volumes:
       - "{{ aria_config }}:/aria2/conf"
       - "{{ media_data_path }}/downloads/aria:/aria2/data"
@@ -43,13 +41,13 @@
     #  - 443:8080
     labels:
       com.docker.compose.project: "media_stack"
-      com.docker.compose.service: "aria2ariang"
+      com.docker.compose.service: "aria"
       traefik.enable: "true"
-      traefik.http.routers.aria2pro-secure.entrypoints: "https"
-      traefik.http.routers.aria2pro-secure.rule: "Host(`{{ aria2ariang_domain }}`)"
-      traefik.http.routers.aria2pro-secure.tls: "true"
-      traefik.http.routers.aria2pro.service: "aria2ariang"
-      traefik.http.services.aria2pro.loadbalancer.server.port: "8080"
+      traefik.http.routers.aria2-secure.entrypoints: "https"
+      traefik.http.routers.aria2-secure.rule: "Host(`{{ aria_domain }}`)"
+      traefik.http.routers.aria2-secure.tls: "true"
+      traefik.http.routers.aria2.service: "aria"
+      traefik.http.services.aria2.loadbalancer.server.port: "8080"
       traefik.docker.network: "traefik_proxy"
     networks:
       - name: traefik_proxy
@@ -57,7 +55,7 @@
     restart_policy: unless-stopped
     state: started
 
-- name: Aria2-pro deployed
+- name: Combined Aria2 and AriaNG deployed
   debug:
-    msg: "Aria2-pro is running successfully"
+    msg: "Aria2 is running successfully"
 
