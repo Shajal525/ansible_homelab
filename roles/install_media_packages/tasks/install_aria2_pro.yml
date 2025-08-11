@@ -57,6 +57,7 @@
       traefik.http.routers.aria2pro-secure.tls: "true"
       traefik.http.routers.aria2pro.service: "aria2pro"
       traefik.http.services.aria2pro.loadbalancer.server.port: "6800"
+      traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
       # tsdproxy.name: "aria2pro"
       # tsdproxy.scheme: "http"
@@ -65,6 +66,7 @@
     networks:
       # - name: media_network
       - name: traefik_proxy
+      - name: pangolin_network
     log_driver: "json-file"
     log_options:
       max-size: "1m"

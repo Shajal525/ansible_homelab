@@ -7,7 +7,7 @@
 # - include_tasks: install_jellyfin.yml
 # - include_tasks: install_flaresolverr.yml
 # - include_tasks: install_jellyseerr.yml
-# - include_tasks: install_aria2_pro.yml
+- include_tasks: install_aria2_pro.yml
 # - include_tasks: install_qbittorrent.yml
-- include_tasks: install_jellystat.yml
+# - include_tasks: install_jellystat.yml
 

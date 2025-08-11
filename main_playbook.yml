@@ -27,7 +27,7 @@
     # - install_portainer
     # - install_homarr
     # - install_immich
-    # - install_media_packages
+    - install_media_packages
     # - install_nextcloud
     # - install_syncthing
     # - install_rclone
@@ -43,11 +43,11 @@
     # - system_monitoring
     # - pangolin_newt
 
-- name: Install node_exporter for Proxmox host resource monitor with Grafana
-  hosts: proxmoxhost
-  become: true
-  gather_facts: false
+# - name: Install node_exporter for Proxmox host resource monitor with Grafana
+#   hosts: proxmoxhost
+#   become: true
+#   gather_facts: false
 
-  roles:
-    - proxmox_host_resource_monitor_grafana
+#   roles:
+#     - proxmox_host_resource_monitor_grafana
 
