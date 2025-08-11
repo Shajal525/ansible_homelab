@@ -27,7 +27,7 @@
     # - install_portainer
     # - install_homarr
     # - install_immich
-    - install_media_packages
+    # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
     # - install_rclone

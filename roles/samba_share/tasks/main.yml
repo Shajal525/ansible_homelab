@@ -41,7 +41,10 @@
       browseable = yes
       guest ok = {{ item.guest_ok }}
       writeable = {{ item.writeable }}
-      valid users = {{ item.username }}
+      public = {{ item.public }}
+      {% if not item.guest_ok | bool %}
+        valid users = {{ item.username }}
+      {% endif %}
   loop: "{{ shares }}"
   notify: Restart Samba
 
