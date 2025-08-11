@@ -25,87 +25,37 @@
     - "{{ aria_config }}"
     - "{{ media_data_path }}/downloads/aria"
 
-- name: Deploy Aria2-pro container
+- name: Deploy Aria2-AriaNG container
   docker_container:
-    name: aria2pro
-    image: p3terx/aria2-pro:latest
+    name: aria2ariang
+    image: hurlenko/aria2-ariang
     env:
       PUID: "1000"
       PGID: "1000"
-      UMASK_SET: "022"
-      RPC_SECRET: "P3TERX"
-      RPC_PORT: "6800"
-      LISTEN_PORT: "6888"
-      DISK_CACHE: "64M"
-      IPV6_MODE: "false"
-      UPDATE_TRACKERS: "true"
-      CUSTOM_TRACKER_URL: ""
-      TZ: "GB"
+      RPC_SECRET: "{{ aria2_password }}"
+      ARIA2RPCPORT: "443"
+      BASIC_AUTH_USERNAME: "{{ aria2_username }}"
+      BASIC_AUTH_PASSWORD: "{{ aria2_password }}"
     volumes:
-      - "{{ aria_config }}:/config"
-      - "{{ media_data_path }}/downloads/aria:/downloads"
-    ports:
-    #  - 6800:6800
-     - 6888:6888
-     - 6888:6888/udp
+      - "{{ aria_config }}:/aria2/conf"
+      - "{{ media_data_path }}/downloads/aria:/aria2/data"
+    # ports:
+    #  - 443:8080
     labels:
       com.docker.compose.project: "media_stack"
-      com.docker.compose.service: "aria2pro"
+      com.docker.compose.service: "aria2ariang"
       traefik.enable: "true"
       traefik.http.routers.aria2pro-secure.entrypoints: "https"
-      traefik.http.routers.aria2pro-secure.rule: "Host(`{{ aria2pro_domain }}`)"
+      traefik.http.routers.aria2pro-secure.rule: "Host(`{{ aria2ariang_domain }}`)"
       traefik.http.routers.aria2pro-secure.tls: "true"
-      traefik.http.routers.aria2pro.service: "aria2pro"
-      traefik.http.services.aria2pro.loadbalancer.server.port: "6800"
+      traefik.http.routers.aria2pro.service: "aria2ariang"
+      traefik.http.services.aria2pro.loadbalancer.server.port: "8080"
       traefik.docker.network: "traefik_proxy"
-      # tsdproxy.enable: "true"
-      # tsdproxy.name: "aria2pro"
-      # tsdproxy.scheme: "http"
-      # tsdproxy.tlsvalidate: "false"
-      # tsdproxy.container_port: "6800"
     networks:
-      # - name: media_network
       - name: traefik_proxy
       - name: pangolin_network
-    log_driver: "json-file"
-    log_options:
-      max-size: "1m"
     restart_policy: unless-stopped
     state: started
-
-- name: Deploy AriaNG container
-  docker_container:
-    name: ariang
-    image: p3terx/ariang:latest
-    command: --port 6880 --ipv6
-    labels:
-      com.docker.compose.project: "media_stack"
-      com.docker.compose.service: "ariang"
-      traefik.enable: "true"
-      traefik.http.routers.ariang-secure.entrypoints: "https"
-      traefik.http.routers.ariang-secure.rule: "Host(`{{ ariang_domain }}`)"
-      traefik.http.routers.ariang-secure.tls: "true"
-      traefik.http.routers.ariang.service: "ariang"
-      traefik.http.services.ariang.loadbalancer.server.port: "6880"
-      traefik.docker.network: "traefik_proxy"
-      # tsdproxy.enable: "true"
-      # tsdproxy.name: "ariang"
-      # tsdproxy.scheme: "http"
-      # tsdproxy.tlsvalidate: "false"
-      # tsdproxy.container_port: "6880"
-    networks:
-      - name: traefik_proxy
-      - name: pangolin_network
-    log_driver: "json-file"
-    log_options:
-      max-size: "1m"
-    restart_policy: always
-    state: started
-
-- name: Fix folder ownership
-  shell: "sudo docker exec -it aria2pro chown p3terx:p3terx {{ item }}"
-  loop:
-    - "/downloads"
 
 - name: Aria2-pro deployed
   debug:

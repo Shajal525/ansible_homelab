@@ -20,8 +20,6 @@ radarr_config: "{{ config_path }}/radarr"
 
 prowlarr_config: "{{ config_path }}/prowlarr"
 jellyseerr_config: "{{ config_path }}/jellyseerr"
-aria_config: "{{ config_path }}/aria"
-aria_secret_key: "P3TERX"
 
 nzbget_config: "{{ config_path }}/nzbget"
 nzbget_username: "{{ vm_username }}"
@@ -30,8 +28,10 @@ nzbget_password: "{{ vm_password }}"
 qbittorrent_config: "{{ config_path }}/qbittorrent"
 
 
-ariang_domain: "ariang.{{ subdomain }}"
-aria2pro_domain: "aria2pro.{{ subdomain }}"
+aria_config: "{{ config_path }}/aria"
+aria2ariang_domain: "aria2ariang.{{ subdomain }}"
+aria2_username: "{{ vm_username }}"
+aria2_password: "{{ vm_password }}"
 flaresolverr_domain: "flaresolverr.{{ subdomain }}"
 jellyfin_domain: "jellyfin.{{ subdomain }}"
 jellyseerr_domain: "jellyseerr.{{ subdomain }}"
