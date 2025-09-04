@@ -30,8 +30,8 @@
     name: aria
     image: hurlenko/aria2-ariang
     env:
-      PUID: "1000"
-      PGID: "1000"
+      PUID: "65534"
+      PGID: "65534"
       RPC_SECRET: "{{ aria_secret }}"
       ARIA2RPCPORT: "443"
     volumes:

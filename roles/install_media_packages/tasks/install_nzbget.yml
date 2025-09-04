@@ -37,8 +37,8 @@
     name: nzbget
     image: lscr.io/linuxserver/nzbget:latest
     env:
-      PUID: "1000"
-      PGID: "1000"
+      PUID: "65534"
+      PGID: "65534"
       TZ: "GB"
       NZBGET_USER: "{{ nzbget_username }}"
       NZBGET_PASS: "{{ nzbget_password }}"

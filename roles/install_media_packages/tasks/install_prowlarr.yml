@@ -28,8 +28,8 @@
     name: prowlarr
     image: lscr.io/linuxserver/prowlarr:latest
     env:
-      PUID: "1000"
-      PGID: "1000"
+      PUID: "65534"
+      PGID: "65534"
       TZ: "GB"
     volumes:
       - "{{ prowlarr_config }}:/config"
