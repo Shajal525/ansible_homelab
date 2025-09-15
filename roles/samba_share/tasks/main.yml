@@ -27,7 +27,7 @@
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.username }}"
-    group: "{{ item.username }}"
+    group: "{{ item.group | default(item.username) }}"
     mode: '0777'
   loop: "{{ shares }}"
 

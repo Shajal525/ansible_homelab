@@ -50,6 +50,15 @@ shares:
     guest_ok: "yes"
     public: "yes"
     writeable: "yes"
-    username: "shajal"
-    password: "{{ vm_password }}"
+    username: "nobody"
+    group: "nogroup"
+    password: ""
+  - name: Games
+    path: "/mnt/storage/NonCloudDataStorage/Games/"
+    guest_ok: "yes"
+    public: "yes"
+    writeable: "yes"
+    username: "nobody"
+    group: "nogroup"
+    password: ""
 
