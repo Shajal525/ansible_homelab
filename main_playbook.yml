@@ -24,9 +24,9 @@
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
     # - install_traefik
-    - install_portainer
+    # - install_portainer
     # - install_homarr
-    # - install_immich
+    - install_immich
     # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
