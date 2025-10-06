@@ -16,3 +16,6 @@
 [proxmoxhost]
 192.168.8.2 ansible_connection=ssh ansible_user="{{ host_username }}" ansible_password="{{ host_password }}"
 
+[vps_server1]
+51.38.68.123 ansible_connection=ssh ansible_user="{{ vm_username }}"  ansible_ssh_private_key_file="{{ ssh_key_path }}" ansible_ssh_port="{{ ssh_port }}"
+

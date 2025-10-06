@@ -1,0 +1,9 @@
+---
+- name: Update and generate SSL files
+  hosts: vps_server1
+  become: true
+  gather_facts: false
+
+  roles:
+    - install_n8n
+
