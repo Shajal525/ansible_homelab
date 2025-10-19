@@ -127,7 +127,7 @@
 - name: Docmost database backup
   docker_container:
     name: docmost_pgbackups
-    image: debian:bookworm-slim
+    image: ubuntu:24.04
     hostname: docmost_pgbackups
     env:
       POSTGRES_USER: "{{ docmost_db_user }}"
