@@ -104,16 +104,24 @@
     state: started
   tags: docmost
 
-- name: Template the DB backup initialization script
-  template:
-    src: templates/db_backup_entrypoint.sh.j2
-    dest: "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh"
-    mode: '0755'
-
 - name: Copy notification script
   template:
     src: ../../templates/matrix_notify.py.j2
     dest: "{{ docmost_db_backups_sripts }}/matrix_notify.py"
+    mode: '0755'
+
+- name: Template the DB backup initialization script
+  vars:
+    container_name: "docmost_db"
+    db_backup_retain: "7"
+    db_name: "{{ docmost_db_name }}"
+    db_user: "{{ docmost_db_user }}"
+    db_to_backup_password: "{{ docmost_db_password }}"
+    backup_schedule: "0 2 * * *"
+    notification_message: "Docmost DB backup"
+  template:
+    src: ../../templates//db_backup_entrypoint.sh.j2
+    dest: "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh"
     mode: '0755'
 
 - name: Docmost database backup

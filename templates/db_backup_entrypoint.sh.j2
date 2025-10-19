@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+# Install necessary packages (glibc-based)
+apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client python3 python3-matrix-nio coreutils tzdata cron && rm -rf /var/lib/apt/lists/*
+
+# Prepare log file
+touch /var/log/cron.log
+
+# Write the backup script
+cat >/backup.sh <<'EOF'
+#!/bin/sh
+set -eu
+now="$(date +%Y%m%d-%H%M%S)"
+mkdir -p /backups
+export PGPASSWORD="{{ db_to_backup_password }}"
+
+pg_dump -h "{{ container_name }}" -p "3000" -U "{{ db_user }}" -d "{{ db_name }}" \
+  -F p --no-owner --no-privileges | gzip -c > "/backups/{{ db_name }}-${now}.sql.gz"
+
+gzip -t "/backups/{{ db_name }}-${now}.sql.gz" || exit 1
+find "/backups" -type f -name "{{ db_name }}-*.sql.gz" -mtime +${{ db_backup_retain }} -delete
+EOF
+
+chmod +x /backup.sh
+
+# Configure cron job
+echo "{{ backup_schedule }} /bin/sh /backup.sh >> /var/log/cron.log 2>&1" ; echo EXIT:$? | python3 /notifier/matrix_notify.py "{{ notification_message }}" > /etc/cron.d/db_backup
+crontab /etc/cron.d/db_backup
+
+# Start cron in foreground
+cron -f -L 8

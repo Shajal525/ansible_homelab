@@ -11,8 +11,6 @@ docmost_db_name: "{{ vm_username }}"
 docmost_db_user: "{{ vm_username }}"
 docmost_db_password: "{{ db_password }}"
 docmost_domain: "docmost.{{ subdomain }}"
-docmost_db_backup_retain: 7  # days
-docmost_backup_schedule: "0 2 * * *"  # daily at 2 AM
 
 docmost_port: 3000
 
