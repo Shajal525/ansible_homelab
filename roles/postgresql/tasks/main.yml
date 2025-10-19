@@ -41,11 +41,11 @@
       com.docker.compose.project: "postgresql"
       com.docker.compose.service: "adminer"
       traefik.enable: "true"
-      traefik.http.routers.postgresql-secure.entrypoints: "https"
-      traefik.http.routers.postgresql-secure.rule: "Host(`{{ adminer_domain }}`)"
-      traefik.http.routers.postgresql-secure.tls: "true"
-      traefik.http.routers.postgresql.service: "adminer"
-      traefik.http.services.postgresql.loadbalancer.server.port: "8080"
+      traefik.http.routers.adminer-secure.entrypoints: "https"
+      traefik.http.routers.adminer-secure.rule: "Host(`{{ adminer_domain }}`)"
+      traefik.http.routers.adminer-secure.tls: "true"
+      traefik.http.routers.adminer.service: "adminer"
+      traefik.http.services.adminer.loadbalancer.server.port: "8080"
     networks:
       - name: traefik_proxy
     restart_policy: unless-stopped

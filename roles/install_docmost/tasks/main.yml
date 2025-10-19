@@ -35,6 +35,7 @@
     name: docmost_db
     image: postgres:16-alpine
     hostname: docmost_db
+    user: "1000:1000"
     env:
       POSTGRES_DB: "{{ docmost_db_name }}"
       POSTGRES_USER: "{{ docmost_db_user }}"
@@ -55,6 +56,7 @@
     name: docmost_redis
     image: "redis:7.2-alpine"
     hostname: docmost_redis
+    user: "1000:1000"
     volumes:
       - "{{ docmost_redis }}:/data"
     labels:
@@ -71,6 +73,7 @@
     name: docmost
     image: "docmost/docmost:latest"
     hostname: docmost
+    user: "1000:1000"
     env:
       APP_URL: "https://{{ docmost_domain }}"
       APP_SECRET: "{{ docmost_app_secret }}"
@@ -85,12 +88,12 @@
       com.docker.compose.project: "docmost_stack"
       com.docker.compose.service: "docmost"
       traefik.enable: "true"
-      traefik.http.routers.n8n-secure.entrypoints: "https"
-      traefik.http.routers.n8n-secure.rule: "Host(`{{ docmost_domain }}`)"
-      traefik.http.routers.n8n-secure.tls: "true"
+      traefik.http.routers.docmost-secure.entrypoints: "https"
+      traefik.http.routers.docmost-secure.rule: "Host(`{{ docmost_domain }}`)"
+      traefik.http.routers.docmost-secure.tls: "true"
       traefik.docker.network: "traefik_proxy"
       # tsdproxy.enable: "true"
-      # tsdproxy.name: "n8n"
+      # tsdproxy.name: "docmost"
       # tsdproxy.scheme: "https"
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "5678"
