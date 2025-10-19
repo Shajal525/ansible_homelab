@@ -5,9 +5,15 @@ ssh_key_path: "{{ ssh_directory }}id_rsa"
 ssh_port: 22
 shell: /bin/bash
 base_storage_path: "/mnt/cache/Apps/Docker"
+base_db_path: "/mnt/cache/Apps/DatabaseFiles"
 my_storage_path: "/mnt/storage/DataStorage"
 my_non_cloud_storage_path: "/mnt/storage/NonCloudDataStorage"
 my_app_storage_path: "/mnt/cache/Apps"
+
+matrix_url: "https://matrix.shajalslab.top"
+matrix_user_id: "@homelab:matrix.shajalslab.top"
+matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.shajalslab.top"
+matrix_access_token: "{{ matrix_access_token }}"
 
 subdomain: "shajalslab.top"
 cloudflare_tunnel_name: "homelab_cloud_tunnel"

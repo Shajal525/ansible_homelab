@@ -1,0 +1,141 @@
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  tags: docmost
+
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
+
+- name: Create Docmost directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ docmost_data }}"
+    - "{{ docmost_db_backups }}"
+    - "{{ docmost_db_backups_sripts }}"
+    - "{{ docmost_db }}"
+    - "{{ docmost_redis }}"
+  tags: docmost
+
+
+- name: Deploy PostgreSQL (db)
+  docker_container: 
+    name: docmost_db
+    image: postgres:16-alpine
+    hostname: docmost_db
+    env:
+      POSTGRES_DB: "{{ docmost_db_name }}"
+      POSTGRES_USER: "{{ docmost_db_user }}"
+      POSTGRES_PASSWORD: "{{ docmost_db_password }}"
+    volumes:
+      - "{{ docmost_db }}:/var/lib/postgresql/data"
+    labels:
+      com.docker.compose.project: "docmost_stack"
+      com.docker.compose.service: "docmost_db"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+  tags: docmost
+
+- name: Deploy Redis
+  docker_container:
+    name: docmost_redis
+    image: "redis:7.2-alpine"
+    hostname: docmost_redis
+    volumes:
+      - "{{ docmost_redis }}:/data"
+    labels:
+      com.docker.compose.project: "docmost_stack"
+      com.docker.compose.service: "docmost_redis"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+  tags: docmost
+
+- name: Deploy Docmost app
+  docker_container:
+    name: docmost
+    image: "docmost/docmost:latest"
+    hostname: docmost
+    env:
+      APP_URL: "https://{{ docmost_domain }}"
+      APP_SECRET: "{{ docmost_app_secret }}"
+      DATABASE_URL: "postgresql://{{ docmost_db_user }}:{{ docmost_db_password }}@docmost_db:5432/{{ docmost_db_name }}?schema=public"
+      REDIS_URL: "redis://docmost_redis:6379"
+      PORT: "3000"
+    ports:
+      # - "{{ docmost_port }}:3000"
+    volumes:
+      - "{{ docmost_data }}:/app/data/storage"
+    labels:
+      com.docker.compose.project: "docmost_stack"
+      com.docker.compose.service: "docmost"
+      traefik.enable: "true"
+      traefik.http.routers.n8n-secure.entrypoints: "https"
+      traefik.http.routers.n8n-secure.rule: "Host(`{{ docmost_domain }}`)"
+      traefik.http.routers.n8n-secure.tls: "true"
+      traefik.docker.network: "traefik_proxy"
+      # tsdproxy.enable: "true"
+      # tsdproxy.name: "n8n"
+      # tsdproxy.scheme: "https"
+      # tsdproxy.tlsvalidate: "false"
+      # tsdproxy.container_port: "5678"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+  tags: docmost
+
+- name: Template the DB backup initialization script
+  template:
+    src: templates/db_backup_entrypoint.sh.j2
+    dest: "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh"
+    mode: '0755'
+
+- name: Copy notification script
+  template:
+    src: ../../templates/matrix_notify.py.j2
+    dest: "{{ docmost_db_backups_sripts }}/matrix_notify.py"
+    mode: '0755'
+
+- name: Docmost database backup
+  docker_container:
+    name: docmost_pgbackups
+    image: debian:bookworm-slim
+    hostname: docmost_pgbackups
+    env:
+      POSTGRES_USER: "{{ docmost_db_user }}"
+      POSTGRES_PASSWORD: "{{ docmost_db_password }}"
+    volumes:
+      - "{{ docmost_db_backups }}:/backups:rw"
+      - "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh:/docker-entrypoint-initdb.d/init.sh:ro"
+      - "{{ docmost_db_backups_sripts }}/matrix_notify.py:/notifier/matrix_notify.py:ro"
+    command: ["/docker-entrypoint-initdb.d/init.sh"]
+    labels:
+      com.docker.compose.project: "docmost_stack"
+      com.docker.compose.service: "docmost_pgbackups"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+  tags: docmost
+
+- name: Docmost deployed
+  debug:
+    msg: "Docmost is running successfully"
+  tags: docmost

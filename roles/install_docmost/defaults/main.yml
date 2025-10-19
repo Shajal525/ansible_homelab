@@ -1,0 +1,21 @@
+docmost_base_path: "{{ base_storage_path }}/docmost"
+docmost_db_path: "{{ base_db_path }}/docmost"
+
+docmost_data: "{{ docmost_base_path }}/data"
+docmost_db_backups: "{{ docmost_base_path }}/db_backups"
+docmost_db_backups_sripts: "{{ docmost_base_path }}/db_backups_scripts"
+docmost_db: "{{ docmost_db_path }}/db"
+docmost_redis: "{{ docmost_db_path }}/redis"
+
+docmost_db_name: "{{ vm_username }}"
+docmost_db_user: "{{ vm_username }}"
+docmost_db_password: "{{ db_password }}"
+docmost_domain: "docmost.{{ subdomain }}"
+docmost_db_backup_retain: 7  # days
+docmost_backup_schedule: "0 2 * * *"  # daily at 2 AM
+
+docmost_port: 3000
+
+docmost_app_secret: "{{ complex_db_secret }}"
+
+
