@@ -5,6 +5,8 @@ ssh_key_path: "{{ ssh_directory }}id_rsa"
 ssh_port: 22
 shell: /bin/bash
 base_storage_path: "/mnt/cache/Apps/Docker"
+base_cloud_storage_path: "/mnt/storage/Apps/CloudData/Docker"
+base_non_cloud_storage_path: "/mnt/storage/Apps/NonCloudData/Docker"
 base_db_path: "/mnt/cache/Apps/DatabaseFiles"
 my_storage_path: "/mnt/storage/DataStorage"
 my_non_cloud_storage_path: "/mnt/storage/NonCloudDataStorage"

@@ -1,9 +1,10 @@
-docmost_base_path: "{{ base_storage_path }}/docmost"
-docmost_db_path: "{{ base_db_path }}/docmost"
+docmost_base_path: "{{ base_cloud_storage_path }}/docmost"
+docmost_db_path: "{{ base_non_cloud_storage_path }}/docmost"
 
 docmost_data: "{{ docmost_base_path }}/data"
 docmost_db_backups: "{{ docmost_base_path }}/db_backups"
 docmost_db_backups_sripts: "{{ docmost_base_path }}/db_backups_scripts"
+
 docmost_db: "{{ docmost_db_path }}/db"
 docmost_redis: "{{ docmost_db_path }}/redis"
 
