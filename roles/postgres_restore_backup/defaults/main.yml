@@ -1,7 +1,7 @@
 postgres_restore_base_path: "{{ base_cloud_storage_path }}/postgres_restore"
 
 # This is for Docmost PostgreSQL restore
-pg_dump_gz_path: "{{ base_cloud_storage_path }}/docmost/db_backups/shajal-20251020-115719.sql.gz" #replace_with_actual_filename.sql.gz"
+pg_backup_directory: "{{ base_cloud_storage_path }}/docmost/db_backups/"
 pg_database: "{{ vm_username }}"
 pg_host: "docmost_db"
 pg_port: 5432

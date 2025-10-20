@@ -1,11 +1,33 @@
 ---
-- name: Assert dump file exists
-  stat:
-    path: "{{ pg_dump_gz_path }}"
-  register: dump_stat
-  failed_when: not dump_stat.stat.exists
-  changed_when: false
-  become: true
+- name: Find files in backup directory
+  find:
+    paths: "{{ pg_backup_directory }}"
+    file_type: file
+    recurse: false
+  register: found
+  tags: postgres_restore
+
+- name: Abort when directory has no files
+  fail:
+    msg: "No files found in {{ pg_backup_directory }} to restore."
+  when: found.matched | int == 0
+  tags: postgres_restore
+
+- name: Set newest file fact
+  set_fact:
+    newest_file: "{{ (found.files | sort(attribute='mtime') | last).path if found.files | length > 0 else None }}"
+  tags: postgres_restore
+
+- name: Abort when could not determine newest file
+  fail:
+    msg: "Could not determine newest file in {{ pg_backup_directory }} to restore."
+  when: newest_file is none
+  tags: postgres_restore
+
+- name: Debug newest file
+  debug:
+    msg: "Newest backup file is {{ newest_file }}"
+  when: newest_file is not none
   tags: postgres_restore
 
 - name: Create directories
@@ -21,7 +43,7 @@
 
 - name: Copy gzip file to restore path
   copy:
-    src: "{{ pg_dump_gz_path }}"
+    src: "{{ newest_file }}"
     dest: "{{ postgres_restore_base_path }}/backup_file.sql.gz"
     owner: 1000
     group: 1000
