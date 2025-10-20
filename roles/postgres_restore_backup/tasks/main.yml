@@ -1,0 +1,86 @@
+---
+- name: Assert dump file exists
+  stat:
+    path: "{{ pg_dump_gz_path }}"
+  register: dump_stat
+  failed_when: not dump_stat.stat.exists
+  changed_when: false
+  become: true
+  tags: postgres_restore
+
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ postgres_restore_base_path }}"
+  tags: postgres_restore
+
+- name: Copy gzip file to restore path
+  copy:
+    src: "{{ pg_dump_gz_path }}"
+    dest: "{{ postgres_restore_base_path }}/backup_file.sql.gz"
+    owner: 1000
+    group: 1000
+    mode: "0755"
+    follow: true
+    remote_src: true
+  become: true
+  tags: postgres_restore
+
+- name: Template the DB restore script
+  vars:
+    local_pg_host: "{{ pg_host}}"
+    local_pg_port: "{{ pg_port }}"
+    local_pg_database: "{{ pg_database }}"
+    local_pg_user: "{{ pg_user }}"
+    local_pg_password: "{{ pg_password }}"
+    local_pg_drop_before_restore: "{{ pg_drop_before_restore }}"
+  template:
+    src: ../../templates/restore_postgres_db.sh.j2
+    dest: "{{ postgres_restore_base_path }}/restore_postgres_db.sh"
+    mode: '0755'
+  tags: postgres_restore
+
+- name: Postgres database restore
+  docker_container:
+    name: postgres_restore
+    image: ubuntu:24.04
+    hostname: postgres_restore
+    volumes:
+      - "{{ postgres_restore_base_path }}:/scripts:rw"
+    command: ["/scripts/restore_postgres_db.sh"]
+    labels:
+      com.docker.compose.project: "postgres_restore_stack"
+      com.docker.compose.service: "postgres_restore"
+    networks:
+      - name: traefik_proxy
+    restart_policy: "no"
+    recreate: true
+    # auto_remove: true
+    state: started
+  register: restore_result
+  tags: postgres_restore
+
+- name: Show restore logs
+  debug:
+    var: restore_result.container.State
+
+- name: Check container exit code
+  command: docker inspect postgres_restore --format='{{'{{.State.ExitCode}}'}}'
+  register: exit_code
+
+- name: Fail if restore was not successful
+  fail:
+    msg: "Database restore failed with exit code {{ exit_code.stdout }}"
+  when: exit_code.stdout != '0'
+
+- name: Database Restored message
+  debug:
+    msg: "Database restored successfully"
+  when: exit_code.stdout == '0'
+  tags: postgres_restore
+

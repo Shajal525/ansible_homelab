@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+apt-get update
+apt-get install -y --no-install-recommends gzip postgresql-client
+rm -rf /var/lib/apt/lists/*
+
+{% if local_pg_drop_before_restore == true %}
+    # terminate sessions, drop and recreate
+    PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d postgres -v ON_ERROR_STOP=1 -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{{ local_pg_database }}' AND pid <> pg_backend_pid();"
+    PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d postgres -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS \"{{ local_pg_database }}\";"
+    PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"{{ local_pg_database }}\";"
+{% endif %}
+
+gunzip -c -- /scripts/backup_file.sql.gz | PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d "{{ local_pg_database }}" -v ON_ERROR_STOP=1

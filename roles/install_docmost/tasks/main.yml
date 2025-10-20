@@ -129,9 +129,6 @@
     name: docmost_pgbackups
     image: ubuntu:24.04
     hostname: docmost_pgbackups
-    env:
-      POSTGRES_USER: "{{ docmost_db_user }}"
-      POSTGRES_PASSWORD: "{{ docmost_db_password }}"
     volumes:
       - "{{ docmost_db_backups }}:/backups:rw"
       - "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh:/docker-entrypoint-initdb.d/init.sh:ro"
