@@ -42,8 +42,8 @@
     # - install_n8n
     # - system_monitoring
     # - pangolin_newt
-    # - install_docmost
-    - postgres_restore_backup
+    - install_docmost
+    # - postgres_restore_backup
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

@@ -3,7 +3,7 @@ set -eu
 
 # Install necessary packages (glibc-based)
 apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client python3 python3-matrix-nio coreutils tzdata cron && rm -rf /var/lib/apt/lists/*
+    postgresql-client python3 python3-matrix-nio coreutils tzdata cron ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Prepare log file
 touch /var/log/cron.log
@@ -27,7 +27,7 @@ EOF
 chmod +x /backup.sh
 
 # Configure cron job
-echo "{{ backup_schedule }} /bin/sh /backup.sh >> /var/log/cron.log 2>&1" ; echo EXIT:$? | python3 /notifier/matrix_notify.py "{{ notification_message }}" > /etc/cron.d/db_backup
+echo "{{ backup_schedule }} /bin/sh /backup.sh >> /var/log/cron.log 2>&1 ; echo EXIT:$? | python3 /notifier/matrix_notify.py \"{{ notification_message }}\"" > /etc/cron.d/db_backup
 crontab /etc/cron.d/db_backup
 
 # Start cron in foreground
