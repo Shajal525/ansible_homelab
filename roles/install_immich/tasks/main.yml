@@ -25,6 +25,9 @@
     - "{{ upload_location }}"
     - "{{ db_data_location }}"
     - "{{ immich_compose_dir }}"
+    # - "{{ immich_cloud_base_path }}"
+    # - "{{ immich_db_backup_location }}"
+    # - "{{ immich_db_backup_scripts }}"
 
 - name: Delete compose file if it exists
   ansible.builtin.file:
@@ -133,6 +136,25 @@
     chdir: "{{ immich_compose_dir }}"
   changed_when: true
   when: immich_running.stdout == ""
+
+# - name: Include common backup task to backup postgres db
+#   include_role:
+#     name: common
+#     tasks_from: db_backup_image
+#   vars:
+#     db_backups_sripts_folder: "{{ immich_db_backup_scripts }}"
+#     container_name_running_postgresdb: "immich_postgres"
+#     db_backup_retain_for_days: "30"
+#     db_to_backup_name: "{{ db_database_name }}"
+#     db_to_backup_user: "{{ db_username }}"
+#     db_to_backup_password: "{{ db_password }}"
+#     backup_schedule_cron: "0 1 * * *"
+#     notification_message_subject: "Immich DB backup"
+#     backup_container_name: "immich_pgbackups"
+#     backup_container_stack_name: "immich"
+#     backup_folder_path: "{{ immich_db_backup_location }}"
+#     backup_image: "ubuntu:24.04"
+#   tags: immich
 
 - name: Display Immich status
   debug:
