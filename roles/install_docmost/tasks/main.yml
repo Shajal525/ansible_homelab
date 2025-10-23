@@ -104,43 +104,23 @@
     state: started
   tags: docmost
 
-- name: Copy notification script
-  template:
-    src: ../../templates/matrix_notify.py.j2
-    dest: "{{ docmost_db_backups_sripts }}/matrix_notify.py"
-    mode: '0755'
-
-- name: Template the DB backup initialization script
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
   vars:
-    container_name: "docmost_db"
-    db_backup_retain: "7"
-    db_name: "{{ docmost_db_name }}"
-    db_user: "{{ docmost_db_user }}"
+    db_backups_sripts_folder: "{{ docmost_db_backups_sripts }}"
+    container_name_running_postgresdb: "docmost_db"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ docmost_db_name }}"
+    db_to_backup_user: "{{ docmost_db_user }}"
     db_to_backup_password: "{{ docmost_db_password }}"
-    backup_schedule: "0 2 * * *"
-    notification_message: "Docmost DB backup"
-  template:
-    src: ../../templates//db_backup_entrypoint.sh.j2
-    dest: "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh"
-    mode: '0755'
-
-- name: Docmost database backup
-  docker_container:
-    name: docmost_pgbackups
-    image: ubuntu:24.04
-    hostname: docmost_pgbackups
-    volumes:
-      - "{{ docmost_db_backups }}:/backups:rw"
-      - "{{ docmost_db_backups_sripts }}/db_backup_entrypoint.sh:/docker-entrypoint-initdb.d/init.sh:ro"
-      - "{{ docmost_db_backups_sripts }}/matrix_notify.py:/notifier/matrix_notify.py:ro"
-    command: ["/docker-entrypoint-initdb.d/init.sh"]
-    labels:
-      com.docker.compose.project: "docmost_stack"
-      com.docker.compose.service: "docmost_pgbackups"
-    networks:
-      - name: traefik_proxy
-    restart_policy: unless-stopped
-    state: started
+    backup_schedule_cron: "0 2 * * *"
+    notification_message_subject: "Docmost DB backup"
+    backup_container_name: "docmost_pgbackups"
+    backup_container_stack_name: "docmost_stack"
+    backup_folder_path: "{{ docmost_db_backups }}"
+    backup_image: "ubuntu:24.04"
   tags: docmost
 
 - name: Docmost deployed
