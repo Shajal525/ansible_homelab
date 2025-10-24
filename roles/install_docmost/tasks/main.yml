@@ -121,6 +121,28 @@
     backup_container_stack_name: "docmost_stack"
     backup_folder_path: "{{ docmost_db_backups }}"
     backup_image: "ubuntu:24.04"
+  when: docmost_backup_db | default(false)
+  tags: docmost
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: docmost_backup_db | default(false)
+  tags: docmost
+
+- name: Restore Docmost PostgreSQL database from backup
+  include_role:
+    name: restore_backup
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ docmost_db_backups_sripts }}"
+    pg_backup_directory: "{{ docmost_db_backups }}/"
+    pg_database: "{{ docmost_db_name }}"
+    pg_host: "docmost_db"
+    pg_port: 5432
+    pg_user: "{{ docmost_db_user }}"
+    pg_password: "{{ docmost_db_password }}"
+  when: docmost_restore_db | default(false)
   tags: docmost
 
 - name: Docmost deployed

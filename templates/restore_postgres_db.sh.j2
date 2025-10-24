@@ -12,9 +12,12 @@ rm -rf /var/lib/apt/lists/*
     PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"{{ local_pg_database }}\";"
 {% endif %}
 
-DB_TO_USE="{{ local_pg_host }}"
-{% if is_immich is defined %}
+DB_TO_USE="{{ local_pg_database }}"
+{% if is_immich is defined and is_immich %}
     DB_TO_USE="postgres"
 {% endif %}
+
+echo "$DB_TO_USE! Restoring database from backup..."
+
 
 gunzip -c -- /scripts/backup_file.sql.gz | PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d "$DB_TO_USE" -v ON_ERROR_STOP=1

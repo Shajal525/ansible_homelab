@@ -5,11 +5,11 @@ immich_version: "release"
 immich_external_library_path: "{{ my_storage_path }}"
 upload_location: "{{ immich_external_library_path }}/Immich"
 
-immich_base_path: "{{ base_non_cloud_storage_path }}/immich"
+immich_base_path: "{{ base_local_ssd_storage_path }}/immich"
 db_data_location: "{{ immich_base_path }}/dbdata"
 immich_compose_dir: "{{ immich_base_path }}/compose"
 
-# immich_cloud_base_path: "{{ base_cloud_storage_path }}/immich"
+# immich_cloud_base_path: "{{ base_app_storage_path }}/immich"
 # immich_db_backup_location: "{{ immich_cloud_base_path }}/dbbackups"
 # immich_db_backup_scripts: "{{ immich_cloud_base_path }}/scripts"
 

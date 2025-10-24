@@ -1,5 +1,5 @@
-docmost_base_path: "{{ base_cloud_storage_path }}/docmost"
-docmost_db_path: "{{ base_non_cloud_storage_path }}/docmost"
+docmost_base_path: "{{ base_app_storage_path }}/docmost"
+docmost_db_path: "{{ base_local_ssd_storage_path }}/docmost"
 
 docmost_data: "{{ docmost_base_path }}/data"
 docmost_db_backups: "{{ docmost_base_path }}/db_backups"
@@ -16,5 +16,8 @@ docmost_domain: "docmost.{{ subdomain }}"
 docmost_port: 3000
 
 docmost_app_secret: "{{ complex_db_secret }}"
+
+docmost_backup_db: true
+docmost_restore_db: false
 
 

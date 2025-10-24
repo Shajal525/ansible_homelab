@@ -1,0 +1,24 @@
+postgres_restore_base_path: "{{ base_app_storage_path }}/postgres_restore"
+
+# This is for Docmost PostgreSQL restore
+# pg_backup_directory: "{{ base_app_storage_path }}/docmost/db_backups/"
+# pg_database: "{{ vm_username }}"
+# pg_host: "docmost_db"
+# pg_port: 5432
+# pg_user: "{{ vm_username }}"
+# pg_password: "{{ db_password }}"
+#end
+
+# This is for Docmost PostgreSQL restore
+# pg_backup_directory: "{{ my_storage_path }}/Immich/backups/"
+# pg_database: "{{ vm_username }}"
+# pg_host: "immich_postgres"
+# pg_port: 5432
+# pg_user: "{{ vm_username }}"
+# pg_password: "{{ db_password }}"
+# is_immich: true
+#end
+
+
+pg_drop_before_restore: true
+
