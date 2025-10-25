@@ -8,6 +8,7 @@ base_storage_path: "/mnt/cache/Apps/Docker"
 base_app_storage_path: "/mnt/storage/Apps/CloudData/Docker"
 
 base_local_ssd_storage_path: "/home/shajal/Apps/Docker"
+
 base_db_path: "/mnt/cache/Apps/DatabaseFiles"
 my_storage_path: "/mnt/storage/DataStorage"
 my_non_cloud_storage_path: "/mnt/storage/NonCloudDataStorage"
