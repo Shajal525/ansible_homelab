@@ -132,7 +132,7 @@
 
 - name: Restore PostgreSQL database from backup
   include_role:
-    name: restore_backup
+    name: common
     tasks_from: postgresdb_restore
   vars:
     postgres_restore_base_path: "{{ docmost_db_backups_sripts }}"
