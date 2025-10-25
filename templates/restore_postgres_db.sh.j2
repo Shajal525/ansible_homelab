@@ -17,7 +17,9 @@ DB_TO_USE="{{ local_pg_database }}"
     DB_TO_USE="postgres"
 {% endif %}
 
-echo "$DB_TO_USE! Restoring database from backup..."
+echo "host: {{ local_pg_host }}, port: {{ local_pg_port }}, user: {{ local_pg_user }}, database: $DB_TO_USE"
 
 
-gunzip -c -- /scripts/backup_file.sql.gz | PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d "$DB_TO_USE" -v ON_ERROR_STOP=1
+gunzip -c -- /scripts/backup_file.sql.gz | PGPASSWORD="{{ local_pg_password }}" psql -h "{{ local_pg_host }}" -p "{{ local_pg_port }}" -U "{{ local_pg_user }}" -d "$DB_TO_USE" 
+
+#-v ON_ERROR_STOP=1

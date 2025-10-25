@@ -127,10 +127,10 @@
 - name: Wait for 10 seconds for DB backup to finish
   pause:
     seconds: 10
-  when: docmost_backup_db | default(false)
+  when: docmost_backup_db | default(false) and docmost_restore_db | default(false)
   tags: docmost
 
-- name: Restore Docmost PostgreSQL database from backup
+- name: Restore PostgreSQL database from backup
   include_role:
     name: restore_backup
     tasks_from: postgresdb_restore
@@ -142,6 +142,7 @@
     pg_port: 5432
     pg_user: "{{ docmost_db_user }}"
     pg_password: "{{ docmost_db_password }}"
+    pg_drop_before_restore: true
   when: docmost_restore_db | default(false)
   tags: docmost
 

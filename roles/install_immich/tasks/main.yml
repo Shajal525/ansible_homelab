@@ -25,9 +25,9 @@
     - "{{ upload_location }}"
     - "{{ db_data_location }}"
     - "{{ immich_compose_dir }}"
-    # - "{{ immich_cloud_base_path }}"
-    # - "{{ immich_db_backup_location }}"
-    # - "{{ immich_db_backup_scripts }}"
+    - "{{ immich_cloud_base_path }}"
+    - "{{ immich_my_backup_location }}"
+    - "{{ immich_tmp_dir }}"
 
 - name: Delete compose file if it exists
   ansible.builtin.file:
@@ -108,9 +108,9 @@
       EXTERNAL_STORAGE_PATH={{ immich_external_library_path }}
       UPLOAD_LOCATION={{ upload_location }}
       DB_DATA_LOCATION={{ db_data_location }}
-      DB_PASSWORD={{ db_password }}
-      DB_USERNAME={{ db_username }}
-      DB_DATABASE_NAME={{ db_database_name }}
+      DB_PASSWORD={{ immich_db_password }}
+      DB_USERNAME={{ immich_db_username }}
+      DB_DATABASE_NAME={{ immich_db_name }}
       IMMICH_VERSION={{ immich_version }}
     owner: root
     group: root
@@ -137,24 +137,49 @@
   changed_when: true
   when: immich_running.stdout == ""
 
-# - name: Include common backup task to backup postgres db
-#   include_role:
-#     name: common
-#     tasks_from: db_backup_image
-#   vars:
-#     db_backups_sripts_folder: "{{ immich_db_backup_scripts }}"
-#     container_name_running_postgresdb: "immich_postgres"
-#     db_backup_retain_for_days: "30"
-#     db_to_backup_name: "{{ db_database_name }}"
-#     db_to_backup_user: "{{ db_username }}"
-#     db_to_backup_password: "{{ db_password }}"
-#     backup_schedule_cron: "0 1 * * *"
-#     notification_message_subject: "Immich DB backup"
-#     backup_container_name: "immich_pgbackups"
-#     backup_container_stack_name: "immich"
-#     backup_folder_path: "{{ immich_db_backup_location }}"
-#     backup_image: "ubuntu:24.04"
+# - name: Wait for 10 seconds before restoring database
+#   pause:
+#     seconds: 10
+#   when: immich_restore_db | default(false)
 #   tags: immich
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ immich_tmp_dir }}"
+    pg_backup_directory: "{{ immich_my_backup_location }}/"
+    # pg_backup_directory: "{{ immich_backup_directory }}/"
+    pg_database: "{{ immich_db_name }}"
+    pg_host: "immich_postgres"
+    pg_port: 5432
+    pg_user: "{{ immich_db_username }}"
+    pg_password: "{{ immich_db_password }}"
+    pg_drop_before_restore: true
+    is_immich: false
+  when: immich_restore_db | default(false)
+  tags: immich
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backups_sripts_folder: "{{ immich_tmp_dir }}"
+    container_name_running_postgresdb: "immich_postgres"
+    db_backup_retain_for_days: "10"
+    db_to_backup_name: "{{ immich_db_name }}"
+    db_to_backup_user: "{{ immich_db_username }}"
+    db_to_backup_password: "{{ immich_db_password }}"
+    backup_schedule_cron: "0 1 * * *"
+    notification_message_subject: "Immich DB backup"
+    backup_container_name: "immich_pgbackups"
+    backup_container_stack_name: "immich"
+    backup_folder_path: "{{ immich_my_backup_location }}"
+    backup_image: "ubuntu:24.04"
+  when: immich_backup_db | default(false)
+  tags: immich
 
 - name: Display Immich status
   debug:
