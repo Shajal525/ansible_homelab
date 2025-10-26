@@ -4,9 +4,9 @@ import asyncio
 import sys
 
 async def send_notification(subject, exit_status, output):
-    client = AsyncClient("{{ matrix_url }}", "{{ matrix_user_id }}")
-    client.access_token = "{{ matrix_access_token }}"
-    room_id = "{{ matrix_room_id }}"
+    client = AsyncClient("{{ matrix_url_l }}", "{{ matrix_user_id_l }}")
+    client.access_token = "{{ matrix_access_token_l }}"
+    room_id = "{{ matrix_room_id_l }}"
 
     status = "✅ SUCCESS" if exit_status == 0 else "❌ FAILED"
 
