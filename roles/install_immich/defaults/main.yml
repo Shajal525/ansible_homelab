@@ -20,5 +20,5 @@ immich_db_name: "{{ vm_username }}"
 
 immich_domain: "immich.{{ subdomain }}"
 
-immich_restore_db: true
 immich_backup_db: true
+immich_restore_db: false
