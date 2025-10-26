@@ -1,14 +1,22 @@
-matrix_base_path: "{{ base_storage_path }}/matrix"
+matrix_base_path: "{{ base_app_storage_path }}/matrix"
 matrix_data_dir: "{{ matrix_base_path }}/data"
-postgres_data_dir: "{{ matrix_base_path }}/matrixdb"
+matrix_db_backups: "{{ matrix_base_path }}/backups"
+
+
+matrix_local_dir: "{{ base_local_ssd_storage_path }}/matrix"
+postgres_data_dir: "{{ matrix_local_dir }}/matrixdb"
+matrix_backup_scripts: "{{ matrix_local_dir }}/db_backup_scripts"
+
 matrix_db_name: "matrix_db"
 matrix_db_user: "{{ vm_username }}"
 matrix_db_password: "{{ vm_password }}"
-matrix_domain: "matrix.{{ subdomain }}"
 
+matrix_domain: "matrix.{{ subdomain }}"
 
 matrix_email_from: "shajal525@gmail.com"
 matrix_email_smtp_user: "shajal525@gmail.com"
 matrix_email_smtp_password: "{{ gmail_smtp_password }}"
 ip_address: "{{ vm_ip_address }}"
 
+matrix_backup_db: true
+matrix_restore_db: false

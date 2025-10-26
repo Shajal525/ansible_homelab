@@ -33,7 +33,6 @@
     # - rustdesk
     # - cloud_sync_cron
     # - samba_share
-    # - install_matrix_synapse
     # - install_uptimeKuma
     # - notification_script
     # - install_n8n
@@ -42,7 +41,8 @@
     # - install_docmost
     # - install_immich
     # - install_homarr
-    - install_linkwarden
+    # - install_linkwarden
+    - install_matrix_synapse
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

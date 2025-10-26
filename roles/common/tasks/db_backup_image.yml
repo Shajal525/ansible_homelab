@@ -1,7 +1,7 @@
 ---
 - name: Copy notification script
   template:
-    src: ../../templates/matrix_notify.py.j2
+    src: templates/matrix_notify.py.j2
     dest: "{{ db_backups_sripts_folder }}/matrix_notify.py"
     mode: '0755'
   tags: db_backup
@@ -16,7 +16,7 @@
     backup_schedule: "{{ backup_schedule_cron }}"
     notification_message: "{{ notification_message_subject }}"
   template:
-    src: ../../templates//db_backup_entrypoint.sh.j2
+    src: templates/db_backup_entrypoint.sh.j2
     dest: "{{ db_backups_sripts_folder }}/db_backup_entrypoint.sh"
     mode: '0755'
   tags: db_backup
