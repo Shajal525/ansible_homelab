@@ -1,8 +1,10 @@
 linkwarden_base_path: "{{ base_app_storage_path }}/linkwarden"
 linkwarden_data_dir: "{{ linkwarden_base_path }}/data"
+linkwarden_db_backups: "{{ linkwarden_base_path }}/backups"
 
 linkwarden_ssd_path: "{{ base_local_ssd_storage_path }}/linkwarden"
 postgres_data_dir: "{{ linkwarden_ssd_path }}/linkwardendb"
+linkwarden_db_backups_sripts: "{{ linkwarden_ssd_path }}/db_backups_scripts"
 
 nextauth_secret: "{{ vm_password }}"
 
@@ -11,3 +13,6 @@ linkwarden_db_user: "{{ vm_username }}"
 linkwarden_db_password: "{{ vm_password }}"
 
 linkwarden_domain: "linkwarden.{{ subdomain }}"
+
+linkwarden_backup_db: true
+linkwarden_db_restore: false

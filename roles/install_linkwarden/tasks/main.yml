@@ -31,6 +31,8 @@
     - "{{ base_storage_path }}"
     - "{{ linkwarden_data_dir }}"
     - "{{ postgres_data_dir }}"
+    - "{{ linkwarden_db_backups }}"
+    - "{{ linkwarden_db_backups_sripts }}"
 
 - name: Deploy LinkWarden Postgres DB container
   docker_container:
@@ -46,6 +48,7 @@
       com.docker.compose.project: "linkwarden_stack"
       com.docker.compose.service: "postgres_linkwarden"
     networks:
+      - name: traefik_proxy
       - name: linkwarden_network
     restart_policy: unless-stopped
     state: started
@@ -56,7 +59,7 @@
     image: ghcr.io/linkwarden/linkwarden:latest
     env:
       NEXTAUTH_SECRET: "{{ nextauth_secret }}"
-      NEXTAUTH_URL: "http://localhost:3000/api/v1/auth"
+      NEXTAUTH_URL: "https://{{ linkwarden_domain }}/api/v1/auth"
       DATABASE_URL: "postgresql://{{ linkwarden_db_user }}:{{linkwarden_db_password}}@postgres_linkwarden:5432/{{ linkwarden_db_name }}"
     volumes:
       - "{{ linkwarden_data_dir }}:/data/data"
@@ -81,6 +84,48 @@
       - name: pangolin_network
     restart_policy: unless-stopped
     state: started
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backups_sripts_folder: "{{ linkwarden_db_backups_sripts }}"
+    container_name_running_postgresdb: "postgres_linkwarden"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ linkwarden_db_name }}"
+    db_to_backup_user: "{{ linkwarden_db_user }}"
+    db_to_backup_password: "{{ linkwarden_db_password }}"
+    backup_schedule_cron: "0 2 15 * *"
+    notification_message_subject: "LinkWarden DB backup"
+    backup_container_name: "linkwarden_pgbackups"
+    backup_container_stack_name: "linkwarden_stack"
+    backup_folder_path: "{{ linkwarden_db_backups }}"
+    backup_image: "ubuntu:24.04"
+  when: linkwarden_backup_db | default(false)
+  tags: linkwarden
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: linkwarden_backup_db | default(false) and linkwarden_db_restore | default(false)
+  tags: linkwarden
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ linkwarden_db_backups_sripts }}"
+    pg_backup_directory: "{{ linkwarden_db_backups }}/"
+    pg_database: "{{ linkwarden_db_name }}"
+    pg_host: "postgres_linkwarden"
+    pg_port: 5432
+    pg_user: "{{ linkwarden_db_user }}"
+    pg_password: "{{ linkwarden_db_password }}"
+    pg_drop_before_restore: true
+  when: linkwarden_db_restore | default(false)
+  tags: linkwarden
 
 - name: LinkWarden deployed
   debug:

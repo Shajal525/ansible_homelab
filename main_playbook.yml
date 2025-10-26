@@ -25,8 +25,6 @@
     # Wait until certificates are generated. command: "docker logs traefik"
     # - install_traefik
     # - install_portainer
-    # - install_homarr
-    # - install_immich
     # - install_media_packages
     # - install_nextcloud
     # - install_syncthing
@@ -37,12 +35,14 @@
     # - samba_share
     # - install_matrix_synapse
     # - install_uptimeKuma
-    # - install_linkwarden
     # - notification_script
     # - install_n8n
     # - system_monitoring
     # - pangolin_newt
     # - install_docmost
+    # - install_immich
+    # - install_homarr
+    - install_linkwarden
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
