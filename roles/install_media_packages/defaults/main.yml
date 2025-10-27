@@ -54,6 +54,14 @@ aria2_pro_config: "{{ aria2_pro_base_path }}/config"
 
 aria2_pro_secret: "{{ vm_password }}"
 
+# Jellyseerr
+jellyseerr_base_path: "{{ media_config_nas_base_path }}/jellyseerr"
+jellyseerr_config: "{{ jellyseerr_base_path }}/config"
+
+jellyseerr_local_ssd_path: "{{ media_config_local_path }}/jellyseerr"
+jellyseerr_cache: "{{ jellyseerr_local_ssd_path }}/cache"
+jellyseerr_logs: "{{ jellyseerr_local_ssd_path }}/logs"
+
 # config_path: "{{ media_config_nas_base_path }}/config"
 
 
@@ -66,7 +74,6 @@ jellystat_jwt_key: "{{ vm_password }}"
 
 
 
-jellyseerr_config: "{{ config_path }}/jellyseerr"
 
 
 
