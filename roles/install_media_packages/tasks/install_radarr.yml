@@ -18,11 +18,13 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ radarr_config }}"
+    - "{{ radarr_logs }}"
+    - "{{ radarr_metadata }}"
     - "{{ media_data_path }}"
     - "{{ media_data_path }}/movies"
     - "{{ media_data_path }}/downloads"
@@ -31,12 +33,15 @@
   docker_container:
     name: radarr
     image: lscr.io/linuxserver/radarr:latest
+    user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
       TZ: "GB"
     volumes:
       - "{{ radarr_config }}:/config"
+      - "{{ radarr_logs }}:/config/logs"
+      - "{{ radarr_metadata }}:/config/MediaCover"
       - "{{ media_data_path }}/movies:/movies"
       - "{{ media_data_path }}/downloads:/downloads"
     labels:
@@ -61,7 +66,7 @@
     state: started
 
 - name: Fix folder ownership
-  shell: "sudo docker exec -it radarr chown abc:users {{ item }}"
+  shell: "sudo docker exec -it radarr chown nobody:nogroup {{ item }}"
   loop:
     - "/movies"
     - "/downloads"

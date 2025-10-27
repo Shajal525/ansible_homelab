@@ -18,8 +18,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ jellyfin_config }}"
@@ -36,7 +36,7 @@
     name: jellyfin
     image: jellyfin/jellyfin:latest
     hostname: jellyfin
-    user: "www-data:www-data"
+    user: "nobody:nogroup"
     env:
       JELLYFIN_PublishedServerUrl: "https://{{ jellyfin_domain }}"
     volumes:
@@ -70,13 +70,13 @@
     restart_policy: unless-stopped
     state: started
 
-# - name: Fix folder ownership
-#   shell: "sudo docker exec -it jellyfin chown abc:users {{ item }}"
-#   loop:
-#     - "/data"
-#     - "/data/movies"
-#     - "/data/series"
-#     - "/data/others"
+- name: Fix folder ownership
+  shell: "sudo docker exec -it jellyfin chown nobody:nogroup {{ item }}"
+  loop:
+    - "/data"
+    - "/data/movies"
+    - "/data/series"
+    - "/data/others"
 
 - name: Jellyfin deployed
   debug:

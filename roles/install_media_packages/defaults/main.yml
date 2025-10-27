@@ -13,6 +13,19 @@ jellyfin_cache: "{{ jellyfin_local_ssd_path }}/cache"
 jellyfin_logs: "{{ jellyfin_local_ssd_path }}/logs"
 jellyfin_metadata: "{{ jellyfin_local_ssd_path }}/metadata"
 
+sonarr_base_path: "{{ media_base_path }}/sonarr"
+sonarr_config: "{{ sonarr_base_path }}/config"
+
+sonarr_local_ssd_path: "{{ media_local_ssd_path }}/sonarr"
+sonarr_logs: "{{ sonarr_local_ssd_path }}/logs"
+sonarr_metadata: "{{ sonarr_local_ssd_path }}/MediaCover"
+
+radarr_base_path: "{{ media_base_path }}/radarr"
+radarr_config: "{{ radarr_base_path }}/config"
+
+radarr_local_ssd_path: "{{ media_local_ssd_path }}/radarr"
+radarr_logs: "{{ radarr_local_ssd_path }}/logs"
+radarr_metadata: "{{ radarr_local_ssd_path }}/MediaCover"
 
 # config_path: "{{ media_base_path }}/config"
 
@@ -24,9 +37,7 @@ jellystat_db_username: "{{ vm_username }}"
 jellystat_db_password: "{{ vm_password }}"
 jellystat_jwt_key: "{{ vm_password }}"
 
-sonarr_config: "{{ config_path }}/sonarr"
 
-radarr_config: "{{ config_path }}/radarr"
 
 prowlarr_config: "{{ config_path }}/prowlarr"
 jellyseerr_config: "{{ config_path }}/jellyseerr"

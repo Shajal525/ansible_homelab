@@ -18,11 +18,13 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ sonarr_config }}"
+    - "{{ sonarr_logs }}"
+    - "{{ sonarr_metadata }}"
     - "{{ media_data_path }}"
     - "{{ media_data_path }}/series"
     - "{{ media_data_path }}/downloads"
@@ -31,12 +33,15 @@
   docker_container:
     name: sonarr
     image: lscr.io/linuxserver/sonarr:latest
+    user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
       TZ: "GB"
     volumes:
       - "{{ sonarr_config }}:/config"
+      - "{{ sonarr_logs }}:/config/logs"
+      - "{{ sonarr_metadata }}:/config/MediaCover"
       - "{{ media_data_path }}/series:/series"
       - "{{ media_data_path }}/downloads:/downloads"
     labels:
@@ -61,7 +66,7 @@
     state: started
 
 - name: Fix folder ownership
-  shell: "sudo docker exec -it sonarr chown abc:users {{ item }}"
+  shell: "sudo docker exec -it sonarr chown nobody:nogroup {{ item }}"
   loop:
     - "/series"
     - "/downloads"
