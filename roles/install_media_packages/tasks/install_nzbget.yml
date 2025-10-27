@@ -18,8 +18,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ nzbget_config }}"
@@ -36,6 +36,7 @@
   docker_container:
     name: nzbget
     image: lscr.io/linuxserver/nzbget:latest
+    user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
@@ -67,7 +68,7 @@
     state: started
 
 - name: Fix folder ownership
-  shell: "sudo docker exec -it nzbget chown abc:users {{ item }}"
+  shell: "sudo docker exec -it nzbget chown nobody:nogroup {{ item }}"
   loop:
     - "/downloads/completed"
     - "/downloads/incomplit"
