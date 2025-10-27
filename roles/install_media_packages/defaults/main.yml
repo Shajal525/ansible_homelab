@@ -44,9 +44,15 @@ qbittorrent_config: "{{ media_config_nas_base_path }}/qbittorrent"
 # NZBGet
 nzbget_base_path: "{{ media_config_nas_base_path }}/nzbget"
 nzbget_config: "{{ nzbget_base_path }}/config"
+
 nzbget_username: "{{ vm_username }}"
 nzbget_password: "{{ vm_password }}"
 
+# Aria2 Pro
+aria2_pro_base_path: "{{ media_config_nas_base_path }}/aria2_pro"
+aria2_pro_config: "{{ aria2_pro_base_path }}/config"
+
+aria2_pro_secret: "{{ vm_password }}"
 
 # config_path: "{{ media_config_nas_base_path }}/config"
 
@@ -64,10 +70,7 @@ jellyseerr_config: "{{ config_path }}/jellyseerr"
 
 
 
-
-aria_config: "{{ config_path }}/aria"
 aria_domain: "aria.{{ subdomain }}"
-aria_secret: "{{ vm_password }}"
 flaresolverr_domain: "flaresolverr.{{ subdomain }}"
 jellyfin_domain: "jellyfin.{{ subdomain }}"
 jellyseerr_domain: "jellyseerr.{{ subdomain }}"

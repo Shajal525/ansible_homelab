@@ -19,5 +19,4 @@ matrix_email_smtp_password: "{{ gmail_smtp_password }}"
 ip_address: "{{ vm_ip_address }}"
 
 matrix_backup_db: true
-# After each restore, need to get the Access Token for user 'homelab' and update notification templates to receive notifications.
 matrix_restore_db: false

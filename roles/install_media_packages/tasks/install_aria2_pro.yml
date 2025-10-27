@@ -18,24 +18,25 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
-    - "{{ aria_config }}"
+    - "{{ aria2_pro_config }}"
     - "{{ media_data_path }}/downloads/aria"
 
 - name: Deploy Aria2-AriaNG container
   docker_container:
     name: aria
     image: hurlenko/aria2-ariang
+    # user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
-      RPC_SECRET: "{{ aria_secret }}"
+      RPC_SECRET: "{{ aria2_pro_secret }}"
       ARIA2RPCPORT: "443"
     volumes:
-      - "{{ aria_config }}:/aria2/conf"
+      - "{{ aria2_pro_config }}:/aria2/conf"
       - "{{ media_data_path }}/downloads/aria:/aria2/data"
     # ports:
     #  - 443:8080

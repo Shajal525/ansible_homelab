@@ -1,7 +1,4 @@
 ---
-# - include_tasks: install_flaresolverr.yml
-# - include_tasks: install_jellyseerr.yml
-# - include_tasks: install_aria2_pro.yml
 # - include_tasks: install_jellystat.yml
 # New improved with backups
 # - include_tasks: install_jellyfin.yml
@@ -9,5 +6,8 @@
 # - include_tasks: install_radarr.yml
 # - include_tasks: install_prowlarr.yml
 # - include_tasks: install_qbittorrent.yml
-- include_tasks: install_nzbget.yml
+# - include_tasks: install_nzbget.yml
+# - include_tasks: install_aria2_pro.yml
+# - include_tasks: install_flaresolverr.yml
+- include_tasks: install_jellyseerr.yml
 
