@@ -17,8 +17,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ qbittorrent_config }}"
@@ -33,6 +33,7 @@
   docker_container:
     name: qbittorrent
     image: lscr.io/linuxserver/qbittorrent:latest
+    user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
@@ -41,9 +42,9 @@
     volumes:
       - "{{ qbittorrent_config }}:/config"
       - "{{ media_data_path }}/downloads/qbittorrent:/downloads"
-    ports:
-      - 6881:6881
-      - 6881:6881/udp
+    # ports:
+    #   - 6881:6881
+    #   - 6881:6881/udp
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "qbittorrent"
@@ -70,7 +71,7 @@
     msg: "qBittorrent is running successfully"
 
 - name: Fix folder ownership
-  shell: "sudo docker exec -it qbittorrent chown abc:users {{ item }}"
+  shell: "sudo docker exec -it qbittorrent chown nobody:nogroup {{ item }}"
   loop:
     - "/downloads/completed"
     - "/downloads/incomplit"

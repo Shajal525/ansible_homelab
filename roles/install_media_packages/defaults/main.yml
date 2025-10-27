@@ -37,6 +37,10 @@ prowlarr_config: "{{ prowlarr_base_path }}/config"
 prowlarr_local_ssd_path: "{{ media_local_ssd_path }}/prowlarr"
 prowlarr_logs: "{{ prowlarr_local_ssd_path }}/logs"
 
+# qBittorrent
+qbittorrent_base_path: "{{ media_base_path }}/qbittorrent"
+qbittorrent_config: "{{ media_base_path }}/qbittorrent"
+
 # config_path: "{{ media_base_path }}/config"
 
 
@@ -55,7 +59,6 @@ nzbget_config: "{{ config_path }}/nzbget"
 nzbget_username: "{{ vm_username }}"
 nzbget_password: "{{ vm_password }}"
 
-qbittorrent_config: "{{ config_path }}/qbittorrent"
 
 
 aria_config: "{{ config_path }}/aria"
