@@ -1,11 +1,21 @@
 ssl_cert_dir: "/etc/ssl/openssl/certs"
 ip_address: "{{ vm_ip_address }}"
 
-media_base_path: "{{ base_storage_path }}/media"
-media_data_path: "{{ my_non_cloud_storage_path }}/Media"
-config_path: "{{ media_base_path }}/config"
+media_base_path: "{{ base_app_storage_path }}/media"
+media_data_path: "{{ my_non_cloud_nas_storage_path }}/Media"
+media_local_ssd_path: "{{ base_local_ssd_storage_path }}/Media"
 
-jellyfin_config: "{{ config_path }}/jellyfin"
+jellyfin_base_path: "{{ media_base_path }}/jellyfin"
+jellyfin_config: "{{ jellyfin_base_path }}/config"
+
+jellyfin_local_ssd_path: "{{ media_local_ssd_path }}/jellyfin"
+jellyfin_cache: "{{ jellyfin_local_ssd_path }}/cache"
+jellyfin_logs: "{{ jellyfin_local_ssd_path }}/logs"
+jellyfin_metadata: "{{ jellyfin_local_ssd_path }}/metadata"
+
+
+# config_path: "{{ media_base_path }}/config"
+
 
 jellystat_path: "{{ config_path }}/jellystat"
 jellystat_config: "{{ jellystat_path }}/config"

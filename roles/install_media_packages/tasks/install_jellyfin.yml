@@ -23,6 +23,9 @@
     mode: "0755"
   loop:
     - "{{ jellyfin_config }}"
+    - "{{ jellyfin_logs }}"
+    - "{{ jellyfin_metadata }}"
+    - "{{ jellyfin_cache }}"
     - "{{ media_data_path }}"
     - "{{ media_data_path }}/movies"
     - "{{ media_data_path }}/series"
@@ -31,20 +34,21 @@
 - name: Deploy Jellyfin using Docker Compose
   docker_container:
     name: jellyfin
-    image: lscr.io/linuxserver/jellyfin:latest
+    image: jellyfin/jellyfin:latest
     hostname: jellyfin
+    user: "www-data:www-data"
     env:
-      PUID: "1000"
-      PGID: "1000"
-      TZ: "GB"
-      # JELLYFIN_PublishedServerUrl: "https://{{ jellyfin_domain }}" #optional
+      JELLYFIN_PublishedServerUrl: "https://{{ jellyfin_domain }}"
     volumes:
+      - "{{ jellyfin_logs }}:/config/log"
+      - "{{ jellyfin_metadata }}:/config/metadata"
+      - "{{ jellyfin_cache }}:/cache"
       - "{{ jellyfin_config }}:/config"
       - "{{ media_data_path }}:/data"
-    ports:
-      - "8920:8920" #optional
-      - "7359:7359/udp" #optional
-      - "1900:1900/udp" #optional
+    # ports:
+    #   - "8920:8920" #optional
+    #   - "7359:7359/udp" #optional
+    #   - "1900:1900/udp" #optional
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "jellyfin"
@@ -66,13 +70,13 @@
     restart_policy: unless-stopped
     state: started
 
-- name: Fix folder ownership
-  shell: "sudo docker exec -it jellyfin chown abc:users {{ item }}"
-  loop:
-    - "/data"
-    - "/data/movies"
-    - "/data/series"
-    - "/data/others"
+# - name: Fix folder ownership
+#   shell: "sudo docker exec -it jellyfin chown abc:users {{ item }}"
+#   loop:
+#     - "/data"
+#     - "/data/movies"
+#     - "/data/series"
+#     - "/data/others"
 
 - name: Jellyfin deployed
   debug:

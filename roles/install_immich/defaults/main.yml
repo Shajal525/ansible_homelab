@@ -2,7 +2,7 @@ ssl_cert_dir: "/etc/ssl/openssl/certs"
 ip_address: "{{ vm_ip_address }}"
 
 immich_version: "release"
-immich_external_library_path: "{{ my_storage_path }}"
+immich_external_library_path: "{{ my_cloud_nas_storage_path }}"
 upload_location: "{{ immich_external_library_path }}/Immich"
 # immich_backup_directory: "{{ upload_location }}/backups"
 

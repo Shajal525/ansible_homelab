@@ -43,7 +43,7 @@
     # - install_homarr
     # - install_linkwarden
     # - install_matrix_synapse
-    # - install_media_packages
+    - install_media_packages
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
