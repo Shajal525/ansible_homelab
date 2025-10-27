@@ -5,6 +5,7 @@ media_base_path: "{{ base_app_storage_path }}/media"
 media_data_path: "{{ my_non_cloud_nas_storage_path }}/Media"
 media_local_ssd_path: "{{ base_local_ssd_storage_path }}/Media"
 
+# Jellyfin
 jellyfin_base_path: "{{ media_base_path }}/jellyfin"
 jellyfin_config: "{{ jellyfin_base_path }}/config"
 
@@ -13,6 +14,7 @@ jellyfin_cache: "{{ jellyfin_local_ssd_path }}/cache"
 jellyfin_logs: "{{ jellyfin_local_ssd_path }}/logs"
 jellyfin_metadata: "{{ jellyfin_local_ssd_path }}/metadata"
 
+# Sonarr
 sonarr_base_path: "{{ media_base_path }}/sonarr"
 sonarr_config: "{{ sonarr_base_path }}/config"
 
@@ -20,12 +22,20 @@ sonarr_local_ssd_path: "{{ media_local_ssd_path }}/sonarr"
 sonarr_logs: "{{ sonarr_local_ssd_path }}/logs"
 sonarr_metadata: "{{ sonarr_local_ssd_path }}/MediaCover"
 
+# Radarr
 radarr_base_path: "{{ media_base_path }}/radarr"
 radarr_config: "{{ radarr_base_path }}/config"
 
 radarr_local_ssd_path: "{{ media_local_ssd_path }}/radarr"
 radarr_logs: "{{ radarr_local_ssd_path }}/logs"
 radarr_metadata: "{{ radarr_local_ssd_path }}/MediaCover"
+
+# Prowlarr
+prowlarr_base_path: "{{ media_base_path }}/prowlarr"
+prowlarr_config: "{{ prowlarr_base_path }}/config"
+
+prowlarr_local_ssd_path: "{{ media_local_ssd_path }}/prowlarr"
+prowlarr_logs: "{{ prowlarr_local_ssd_path }}/logs"
 
 # config_path: "{{ media_base_path }}/config"
 
@@ -39,7 +49,6 @@ jellystat_jwt_key: "{{ vm_password }}"
 
 
 
-prowlarr_config: "{{ config_path }}/prowlarr"
 jellyseerr_config: "{{ config_path }}/jellyseerr"
 
 nzbget_config: "{{ config_path }}/nzbget"

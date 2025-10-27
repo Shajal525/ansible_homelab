@@ -17,22 +17,25 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
     - "{{ prowlarr_config }}"
+    - "{{ prowlarr_logs }}"
 
 - name: Deploy Prowlarr container
   docker_container:
     name: prowlarr
     image: lscr.io/linuxserver/prowlarr:latest
+    user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
       TZ: "GB"
     volumes:
       - "{{ prowlarr_config }}:/config"
+      - "{{ prowlarr_logs }}:/config/logs"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "prowlarr"
