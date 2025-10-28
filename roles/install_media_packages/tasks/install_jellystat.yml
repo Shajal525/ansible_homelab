@@ -23,18 +23,18 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "nobody"
+    group: "nogroup"
     mode: "0755"
   loop:
-    - "{{ jellystat_path }}"
-    - "{{ jellystat_config }}"
-    - "{{ jellystat_db_config }}"
+    - "{{ jellystat_db_data }}"
+    - "{{ jellystat_db_backups }}"
 
 - name: Deploy Jellystat Postgres DB container
   docker_container:
     name: jellystat-db
     image: postgres:15.2
+    user: "nobody:nogroup"
     log_driver: "json-file"
     log_options:
       max-file: "5"
@@ -43,7 +43,7 @@
       POSTGRES_USER: "{{ jellystat_db_username }}"
       POSTGRES_PASSWORD: "{{ jellystat_db_password }}"
     volumes:
-      - "{{ jellystat_db_config }}/config:/var/lib/postgresql/data"
+      - "{{ jellystat_db_data }}:/var/lib/postgresql/data"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "jellystat-db"
@@ -56,6 +56,7 @@
   docker_container:
     name: jellystat
     image: cyfershepard/jellystat:latest
+    user: "nobody:nogroup"
     log_driver: "json-file"
     log_options:
       max-file: "5"
@@ -68,7 +69,7 @@
       JWT_SECRET: "{{ jellystat_jwt_key }}"
       TZ: "GB"
     volumes:
-      - "{{ jellystat_config }}/db:/app/backend/backup-data"
+      - "{{ jellystat_db_backups }}:/app/backend/backup-data"
     labels:
       com.docker.compose.project: "media_stack"
       com.docker.compose.service: "jellystat"

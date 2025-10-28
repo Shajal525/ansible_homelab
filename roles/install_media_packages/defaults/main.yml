@@ -62,18 +62,16 @@ jellyseerr_local_ssd_path: "{{ media_config_local_path }}/jellyseerr"
 jellyseerr_cache: "{{ jellyseerr_local_ssd_path }}/cache"
 jellyseerr_logs: "{{ jellyseerr_local_ssd_path }}/logs"
 
-# config_path: "{{ media_config_nas_base_path }}/config"
+# Jellystat
+jellystat_base_path: "{{ media_config_nas_base_path }}/jellystat"
+jellystat_db_backups: "{{ jellystat_base_path }}/backups"
 
+jellystat_local_ssd_path: "{{ media_config_local_path }}/jellystat"
+jellystat_db_data: "{{ jellystat_local_ssd_path }}/db"
 
-jellystat_path: "{{ config_path }}/jellystat"
-jellystat_config: "{{ jellystat_path }}/config"
-jellystat_db_config: "{{ config_path }}/postgres_db"
 jellystat_db_username: "{{ vm_username }}"
 jellystat_db_password: "{{ vm_password }}"
 jellystat_jwt_key: "{{ vm_password }}"
-
-
-
 
 
 
