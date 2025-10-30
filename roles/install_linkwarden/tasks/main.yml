@@ -96,7 +96,7 @@
     db_to_backup_name: "{{ linkwarden_db_name }}"
     db_to_backup_user: "{{ linkwarden_db_user }}"
     db_to_backup_password: "{{ linkwarden_db_password }}"
-    backup_schedule_cron: "0 2 15 * *"
+    backup_schedule_cron: "15 2 * * *"
     notification_message_subject: "LinkWarden DB backup"
     backup_container_name: "linkwarden_pgbackups"
     backup_container_stack_name: "linkwarden_stack"
