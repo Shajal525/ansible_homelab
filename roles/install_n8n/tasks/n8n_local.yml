@@ -1,0 +1,145 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  tags: n8n
+
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
+  register: network_check
+  failed_when: network_check.rc != 0
+  changed_when: false
+  loop: 
+    - traefik_proxy
+    - pangolin_network
+  tags: n8n
+
+- name: Create N8N directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ n8n_config_dir }}"
+    - "{{ n8n_db_dir }}"
+    - "{{ n8n_db_backups_sripts }}"
+    - "{{ n8n_files_dir }}"
+    - "{{ n8n_db_backups }}"
+  tags: n8n
+
+- name: Deploy PostgreSQL (db)
+  docker_container: 
+    name: n8n_db
+    image: postgres:16
+    hostname: n8n_db
+    user: "1000:1000"
+    env:
+      POSTGRES_DB: "{{ n8n_db_name }}"
+      POSTGRES_USER: "{{ n8n_db_user }}"
+      POSTGRES_PASSWORD: "{{ n8n_db_password }}"
+    volumes:
+      - "{{ n8n_db_dir }}:/var/lib/postgresql/data"
+    labels:
+      com.docker.compose.project: "n8n_stack"
+      com.docker.compose.service: "n8n_db"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+  tags: n8n
+
+- name: Deploy N8N container
+  docker_container:
+    name: n8n
+    image: docker.n8n.io/n8nio/n8n
+    hostname: n8n
+    user: "1000:1000"
+    env:
+      N8N_ENCRYPTION_KEY: "{{ n8n_encryption_key_local }}"
+      DB_TYPE: "postgresdb"
+      DB_POSTGRESDB_DATABASE: "{{ n8n_db_name }}"
+      DB_POSTGRESDB_HOST: "n8n_db"
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_USER: "{{ n8n_db_user }}"
+      DB_POSTGRESDB_PASSWORD: "{{ n8n_db_password }}"
+      DB_POSTGRESDB_POOL_SIZE: "2"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+      N8N_HOST: "{{ n8n_domain }}"
+      N8N_PROTOCOL: "https"
+      N8N_RUNNERS_ENABLED: "false"
+      NODE_ENV: "production"
+      WEBHOOK_URL: "https://{{ n8n_domain }}/"
+      GENERIC_TIMEZONE: "{{ n8n_timezone}}"
+      TZ: "{{ n8n_timezone }}"
+      # N8N_BINARY_DATA_STORAGE_PATH: "{{ n8n_binary_data_dir }}"
+    volumes:
+      - "{{ n8n_config_dir }}:/home/node/.n8n"
+      - "{{ n8n_files_dir }}:/files"
+    # ports:
+    #   - "5678:5678"
+    labels:
+      com.docker.compose.project: "n8n_stack"
+      com.docker.compose.service: "n8n"
+      traefik.enable: "true"
+      traefik.http.routers.n8n-secure.entrypoints: "https"
+      traefik.http.routers.n8n-secure.rule: "Host(`{{ n8n_domain }}`)"
+      traefik.http.routers.n8n-secure.tls: "true"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+  tags: n8n
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backups_sripts_folder: "{{ n8n_db_backups_sripts }}"
+    container_name_running_postgresdb: "n8n_db"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ n8n_db_name }}"
+    db_to_backup_user: "{{ n8n_db_user }}"
+    db_to_backup_password: "{{ n8n_db_password }}"
+    backup_schedule_cron: "45 2 * * *"
+    notification_message_subject: "n8n DB backup"
+    backup_container_name: "n8n_pgbackups"
+    backup_container_stack_name: "n8n_stack"
+    backup_folder_path: "{{ n8n_db_backups }}"
+    backup_image: "ubuntu:24.04"
+  when: n8n_backup_db | default(false)
+  tags: n8n
+
+- name: Wait for 10 seconds for DB backup to finish before restore
+  pause:
+    seconds: 10
+  when: n8n_backup_db | default(false) and n8n_restore_db | default(false)
+  tags: n8n
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ n8n_db_backups_sripts }}"
+    pg_backup_directory: "{{ n8n_db_backups }}/"
+    pg_database: "{{ n8n_db_name }}"
+    pg_host: "n8n_db"
+    pg_port: 5432
+    pg_user: "{{ n8n_db_user }}"
+    pg_password: "{{ n8n_db_password }}"
+    pg_drop_before_restore: true
+  when: n8n_restore_db | default(false)
+  tags: n8n
+
+- name: N8N deployed
+  debug:
+    msg: "N8N is running successfully"
+  tags: n8n
+

@@ -1,0 +1,49 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create N8N directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ n8n_config_dir }}"
+    - "{{ n8n_files_dir }}"
+    - "{{ n8n_binary_data_dir }}"
+    - "{{ n8n_nodes_dir }}"
+
+- name: Deploy N8N container
+  docker_container:
+    name: n8n
+    image: docker.n8n.io/n8nio/n8n
+    hostname: n8n
+    env:
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+      N8N_HOST: "{{ n8n_domain }}"
+      N8N_PORT: "{{ n8n_port }}"
+      N8N_PROTOCOL: "https"
+      N8N_RUNNERS_ENABLED: "false"
+      NODE_ENV: "production"
+      WEBHOOK_URL: "https://{{ n8n_domain }}/"
+      GENERIC_TIMEZONE: "{{ n8n_timezone}}"
+      TZ: "{{ n8n_timezone }}"
+      N8N_BINARY_DATA_STORAGE_PATH: "{{ n8n_binary_data_dir }}"
+    volumes:
+      - "{{ n8n_config_dir }}:/home/node/.n8n"
+      - "{{ n8n_nodes_dir }}:/home/node/.n8n/nodes"
+      - "{{ n8n_files_dir }}:/files"
+    ports:
+      - "5678:5678"
+    restart_policy: unless-stopped
+    state: started
+
+- name: N8N deployed
+  debug:
+    msg: "N8N is running successfully"
+

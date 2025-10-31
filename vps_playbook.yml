@@ -5,5 +5,7 @@
   gather_facts: false
 
   roles:
-    - install_n8n
+    - role: install_n8n
+      vars:
+        host_type: "vps" # options: local, vps
 
