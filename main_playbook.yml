@@ -25,7 +25,6 @@
     # Wait until certificates are generated. command: "docker logs traefik"
     # - role: install_traefik
     # - role: install_portainer
-    # - role: install_nextcloud
     # - role: install_syncthing
     # - role: install_rclone
     # - role: postgresql
@@ -43,9 +42,10 @@
     # - role: install_linkwarden
     # - role: install_matrix_synapse
     # - role: install_media_packages
-    - role: install_n8n
-      vars:
-        host_type: "local"  # options: local, vps
+    # - role: install_n8n
+    #   vars:
+    #     host_type: "local"  # options: local, vps
+    - role: install_nextcloud
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

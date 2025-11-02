@@ -3,13 +3,13 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure external networks exist
   docker_network:
     name: "{{ item }}"
     state: present
-    internal: no
+    internal: false
     driver: bridge
   loop: 
     - traefik_proxy
@@ -19,36 +19,57 @@
   file:
     path: "{{ item }}"
     state: directory
+    owner: "nobody"
+    group: "nogroup"
+    mode: "0755"
+  loop:
+    - "{{ nextcloud_db_backup_directory }}"
+    - "{{ nextcloud_db_data_directory }}"
+  tags: nextcloud
+
+- name: Create Nextcloud data directory
+  file:
+    path: "{{ item }}"
+    state: directory
     owner: "www-data"
     group: "www-data"
     mode: "0755"
   loop:
-    - "{{ nextcloud_base_directory }}"
     - "{{ nextcloud_data_directory }}"
-    - "{{ nextcloud_db_data_directory }}"
     - "{{ nextcloud_config_directory }}"
+    - "{{ nextcloud_local_configs_directory }}"
+  tags: nextcloud
 
-
-- name: Deploy MySQL container
+- name: Deploy Postgres DB container
   docker_container:
-    name: nextcloud_db
-    image: mysql:latest
-    hostname: nextcloud_db
+    name: nextcloud_db_postgres
+    image: postgres:15
+    hostname: nextcloud_db_postgres
+    user: "nobody:nogroup"
     env:
-      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
-      MYSQL_PASSWORD: "{{ db_password }}"
-      MYSQL_DATABASE: "{{ db_name }}"
-      MYSQL_USER: "{{ db_user }}"
+      POSTGRES_DB: "{{ nextcloud_db_name }}"
+      POSTGRES_USER: "{{ nextcloud_db_user }}"
+      POSTGRES_PASSWORD: "{{ nextcloud_db_password }}"
+      # POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
-      - "{{ nextcloud_db_data_directory }}:/var/lib/mysql"
+      - "{{ nextcloud_db_data_directory }}:/var/lib/postgresql/data"
     labels:
       com.docker.compose.project: "nextcloud_stack"
-      com.docker.compose.service: "nextcloud_db"
+      com.docker.compose.service: "nextcloud_db_postgres"
     networks:
       - name: traefik_proxy
     restart_policy: unless-stopped
     state: started
+  tags: nextcloud
 
+- name: Wait for PostgreSQL to be ready
+  command: >
+    docker exec nextcloud_db_postgres pg_isready -U {{ nextcloud_db_user }} -d {{ nextcloud_db_name }}
+  register: pg_ready
+  until: pg_ready.rc == 0
+  retries: 30
+  delay: 10
+  tags: nextcloud
 
 - name: Deploy Redis container
   docker_container:
@@ -63,6 +84,7 @@
       - name: traefik_proxy
     restart_policy: unless-stopped
     state: started
+  tags: nextcloud
 
 - name: Deploy Nextcloud container
   docker_container:
@@ -70,23 +92,23 @@
     image: nextcloud:latest
     hostname: nextcloud
     env:
-      MYSQL_HOST: "nextcloud_db"
-      MYSQL_PASSWORD: "{{ db_password }}"
-      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
-      MYSQL_DATABASE: "{{ db_name }}"
-      MYSQL_USER: "{{ db_user }}"
+      POSTGRES_HOST: "nextcloud_db_postgres"
+      POSTGRES_DB: "{{ nextcloud_db_name }}"
+      POSTGRES_USER: "{{ nextcloud_db_user }}"
+      POSTGRES_PASSWORD: "{{ nextcloud_db_password }}"
+      NC_setup_create_db_user: "false"
       REDIS_HOST: "nextcloud_redis"
       REDIS_HOST_PASSWORD: "{{ redis_password }}"
-      NEXTCLOUD_ADMIN_USER: "{{ nextcloud_username }}"
-      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_password }}"
       NEXTCLOUD_TRUSTED_DOMAINS: "{{ nextcloud_domain }} {{ nextcloud_domain2 }}"
-      NEXTCLOUD_FPM: "true"
+      PHP_UPLOAD_LIMIT: "16G"
+      APACHE_BODY_LIMIT: "0"
+      TRUSTED_PROXIES: 172.16.0.0/12 192.168.1.0/16 100.0.0.0/8 10.0.0.0/8 fc00::/7 fe80::/10 2001:db8::/32
+      OVERWRITEHOST: "{{ nextcloud_domain }}"
       OVERWRITEPROTOCOL: "https"
       OVERWRITECLIURL: "https://{{ nextcloud_domain }}"
-      OVERWRITEHOST: "{{ nextcloud_domain }}"
-      TRUSTED_PROXIES: 172.16.0.0/12 192.168.1.0/16 100.0.0.0/8 10.0.0.0/8 fc00::/7 fe80::/10 2001:db8::/32
     volumes:
-      - "{{ nextcloud_config_directory }}:/var/www/html"
+      - "{{ nextcloud_local_configs_directory }}:/var/www/html"
+      - "{{ nextcloud_config_directory }}:/var/www/html/config"
       - "{{ nextcloud_data_directory }}:/var/www/html/data"
     labels:
       com.docker.compose.project: "nextcloud_stack"
@@ -98,17 +120,14 @@
       traefik.http.routers.nextcloud-secure.service: "nextcloud"
       traefik.http.services.nextcloud.loadbalancer.server.port: "80"
       traefik.docker.network: "traefik_proxy"
-      # tsdproxy.enable: "true"
-      # tsdproxy.name: "nextcloud"
-      # tsdproxy.scheme: "http"
-      # tsdproxy.tlsvalidate: "false"
-      # tsdproxy.container_port: "80"
     networks:
       - name: traefik_proxy
       - name: pangolin_network
     restart_policy: unless-stopped
     state: started
+  tags: nextcloud
 
 - name: Display success message
   debug:
     msg: "Nextcloud with Redis cache has been successfully deployed!"
+  tags: nextcloud
