@@ -25,6 +25,7 @@
   loop:
     - "{{ nextcloud_db_backup_directory }}"
     - "{{ nextcloud_db_data_directory }}"
+    - "{{ nextcloud_backup_scripts }}"
   tags: nextcloud
 
 - name: Create Nextcloud data directory
@@ -43,7 +44,7 @@
 - name: Deploy Postgres DB container
   docker_container:
     name: nextcloud_db_postgres
-    image: postgres:15
+    image: postgres:latest
     hostname: nextcloud_db_postgres
     user: "nobody:nogroup"
     env:
@@ -125,6 +126,49 @@
       - name: pangolin_network
     restart_policy: unless-stopped
     state: started
+  tags: nextcloud
+
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backups_sripts_folder: "{{ nextcloud_backup_scripts }}"
+    container_name_running_postgresdb: "nextcloud_db_postgres"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ nextcloud_db_name }}"
+    db_to_backup_user: "{{ nextcloud_db_user }}"
+    db_to_backup_password: "{{ nextcloud_db_password }}"
+    backup_schedule_cron: "0 3 * * *"
+    notification_message_subject: "nextcloud DB backup"
+    backup_container_name: "nextcloud_pgbackups"
+    backup_container_stack_name: "nextcloud_stack"
+    backup_folder_path: "{{ nextcloud_db_backup_directory }}"
+    backup_image: "ubuntu:25.10"
+  when: nextcloud_backup_db | default(false)
+  tags: nextcloud
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: nextcloud_backup_db | default(false) and nextcloud_restore_db | default(false)
+  tags: linkwarden
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ nextcloud_backup_scripts }}"
+    pg_backup_directory: "{{ nextcloud_db_backup_directory }}/"
+    pg_database: "{{ nextcloud_db_name }}"
+    pg_host: "nextcloud_db_postgres"
+    pg_port: 5432
+    pg_user: "{{ nextcloud_db_user }}"
+    pg_password: "{{ nextcloud_db_password }}"
+    pg_drop_before_restore: true
+  when: nextcloud_restore_db | default(false)
   tags: nextcloud
 
 - name: Display success message
