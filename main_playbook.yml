@@ -24,9 +24,7 @@
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
     # - role: install_traefik
-    # - role: install_portainer
     # - role: install_syncthing
-    # - role: install_rclone
     # - role: postgresql
     # - role: rustdesk
     # - role: cloud_sync_cron
@@ -45,7 +43,9 @@
     # - role: install_n8n
     #   vars:
     #     host_type: "local"  # options: local, vps
-    - role: install_nextcloud
+    # - role: install_nextcloud
+    # - role: install_portainer
+    - role: install_rclone
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
