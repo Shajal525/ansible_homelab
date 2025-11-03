@@ -12,7 +12,7 @@ base_local_ssd_storage_path: "/home/shajal/Apps/Docker"
 base_db_path: "/mnt/cache/Apps/DatabaseFiles"
 my_cloud_nas_storage_path: "/mnt/storage/DataStorage"
 my_non_cloud_nas_storage_path: "/mnt/storage/NonCloudDataStorage"
-my_app_storage_path: "/mnt/cache/Apps"
+my_cloud_nas_app_storage_path: "/mnt/storage/Apps/CloudData"
 
 matrix_url: "https://matrix.shajalslab.top"
 matrix_user_id: "@homelab:matrix.shajalslab.top"

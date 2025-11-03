@@ -1,8 +1,9 @@
+rclone_nas_storage_path: "{{ my_cloud_nas_storage_path }}"
+rclone_nas_app_storage_path: "{{ my_cloud_nas_app_storage_path }}"
+
 rclone_base_path: "{{ base_storage_path }}/rclone"
 rclone_config_path: "{{ rclone_base_path }}/config"
 rclone_data_path: "{{ rclone_base_path }}/data"
-my_nas_storage_path: "{{ my_cloud_nas_storage_path }}"
-my_cloud_app_storage_path: "{{ my_app_storage_path }}/CloudData"
 
 rclone_google_drive_mount_path: "{{ rclone_data_path }}/GoogleDrive"
 rclone_pcloud_mount_path: "{{ rclone_data_path }}/pCloud"
