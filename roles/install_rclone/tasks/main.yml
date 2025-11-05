@@ -1,5 +1,6 @@
 ---
 - include_tasks: install_rclone.yml
-# - include_tasks: deploy_google_drive.yml
+# These are containers that will mount clould storage in local linux machine. Don't need it
+# - include_tasks: deploy_google_drive.yml 
 # - include_tasks: deploy_rclone_pcloud.yml
 
