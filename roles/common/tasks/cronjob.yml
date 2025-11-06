@@ -51,7 +51,7 @@
     image: ubuntu:25.10
     hostname: cron_runner
     volumes:
-      - "{{ cron_nas_all_apps_path }}:/apps:rw"
+      - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones
       - "{{ cron_nase_base_crontab_file }}:/etc/cron.d/custom_cronfile:rw"
       - "{{ cron_local_scripts_path }}:/scripts:ro"
     command: bash -c "apt-get update && apt-get install -y cron && cron -f"
@@ -65,7 +65,7 @@
     state: started
   tags: cronjob
 
-- name: Run script inside Docker container
+- name: Run crontab inside docker container
   community.docker.docker_container_exec:
     container: cron_runner
     command: crontab /etc/cron.d/custom_cronfile

@@ -1,4 +1,15 @@
 ---
+- name: Create directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ cron_nas_all_apps_path + '/' + db_backup_app_name + '/db_backups' }}"
+  tags: db_backup
+
 - name: Create Cron job for DB backup
   include_role:
     name: common
@@ -24,7 +35,7 @@
     mode: '0755'
   tags: db_backup
 
-- name: Run script inside Docker container
+- name: Run DB backup script inside docker container
   community.docker.docker_container_exec:
     container: cron_runner
     command: /bin/bash /scripts/db_backup_entrypoint.sh
