@@ -9,8 +9,10 @@ apt-get update && apt-get install -y --no-install-recommends \
 touch /var/log/cron.log
 mkdir -p /etc/cron.d
 
+script_name="/scripts/{{ app_name }}.sh"
+
 # Write the backup script
-cat >/backup.sh <<'EOF'
+cat >$script_name<<'EOF'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
@@ -34,11 +36,4 @@ trap - EXIT
 find "$backup_path" -type f -name "{{ app_name }}-*.sql.gz" -mtime +{{ db_backup_retain }} -delete
 EOF
 
-chmod +x /backup.sh
-
-# Configure cron job
-# 
-# crontab /etc/cron.d/db_backup
-
-# Start cron in foreground
-# cron -f -L 8
+chmod +x $script_name

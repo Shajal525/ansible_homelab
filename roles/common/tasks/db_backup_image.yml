@@ -17,7 +17,7 @@
   vars:
     app_name: "{{ db_backup_app_name }}"
     cron_schedule: "{{ backup_schedule_cron }}"
-    cron_script_to_run: "/bin/bash /backup.sh"
+    cron_script_to_run: "/bin/bash /scripts/{{ db_backup_app_name }}.sh"
     notification_message: "{{ notification_message_subject }}"
   tags: db_backup
 

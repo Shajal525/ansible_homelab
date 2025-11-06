@@ -53,7 +53,7 @@
     volumes:
       - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones
       - "{{ cron_nase_base_crontab_file }}:/etc/cron.d/custom_cronfile:rw"
-      - "{{ cron_local_scripts_path }}:/scripts:ro"
+      - "{{ cron_local_scripts_path }}:/scripts:rw"
     command: bash -c "apt-get update && apt-get install -y cron && cron -f"
     labels:
       com.docker.compose.project: "cron_stack"
