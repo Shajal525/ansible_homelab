@@ -13,7 +13,7 @@
   loop: 
     - traefik_proxy
 
-- name: Create Matrix directory
+- name: Create directory
   file:
     path: "{{ item }}"
     state: directory
@@ -34,10 +34,10 @@
 
 - name: Upsert job block (creates file if missing)
   blockinfile:
-    path: "{{ corn_nase_base_crontab_file }}"
-    marker: "# {mark} NAME: {{ cron_name }}"
+    path: "{{ cron_nase_base_crontab_file }}"
+    marker: "# {mark} NAME: {{ app_name }}"
     block: |
-      {{ cron_schedule }} ( {{ cron_script_to_run }} 2>&1 ; echo EXIT:\$? ) | python3 /scripts/matrix_notify.py \"{{ notification_message }}\"
+      {{ cron_schedule }} ( {{ cron_script_to_run }} 2>&1 ; echo EXIT:$? ) | python3 /scripts/matrix_notify.py "{{ notification_message }}"
     create: true
     insertafter: EOF
     mode: '0644'
@@ -51,44 +51,24 @@
     image: ubuntu:25.10
     hostname: cron_runner
     volumes:
-      - "{{ corn_nase_base_crontab_file }}:/cronfiles/cronfile:rw"
+      - "{{ cron_nas_all_apps_path }}:/apps:rw"
+      - "{{ cron_nase_base_crontab_file }}:/etc/cron.d/custom_cronfile:rw"
       - "{{ cron_local_scripts_path }}:/scripts:ro"
-      # - "{{ cron_local_scripts_path }}/matrix_notify.py:/notifier/matrix_notify.py:ro"
+    command: bash -c "apt-get update && apt-get install -y cron && cron -f"
     labels:
       com.docker.compose.project: "cron_stack"
       com.docker.compose.service: "cron_runner"
     networks:
       - name: traefik_proxy
     restart_policy: unless-stopped
+    restart: true
     state: started
   tags: cronjob
 
 - name: Run script inside Docker container
-  docker_container_exec:
+  community.docker.docker_container_exec:
     container: cron_runner
-    command: /bin/bash -c "{{ lookup('file', script_path) }}"
-  register: result
-  when: script_path is defined
-  tags: cronjob
-
-- name: Display success message
-  ansible.builtin.debug:
-    msg: "Script {{ script_path }} executed successfully."
-  when: 
-    - script_path is defined
-    - result.rc == 0
-
-- name: Display failure message
-  ansible.builtin.debug:
-    msg: "Script {{ script_path }} execution failed. Return code: {{ result.rc }}"
-  when: 
-    - script_path is defined
-    - result.rc != 0
-
-- name: Run script inside Docker container
-  docker_container_exec:
-    container: cron_runner
-    command: crontab /cronfiles/cronfile"
+    command: crontab /etc/cron.d/custom_cronfile
   tags: cronjob
 
 - name: Success message for cronjob setup

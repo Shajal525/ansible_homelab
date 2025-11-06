@@ -1,7 +1,8 @@
-cron_nas_base_path: "{{ base_app_storage_path }}/corn"
-corn_nase_base_crontab_file: "{{ cron_nas_base_path }}/cronfile"
+cron_nas_all_apps_path: "{{ base_app_storage_path }}"
+cron_nas_base_path: "{{ cron_nas_all_apps_path }}/cron"
+cron_nase_base_crontab_file: "{{ cron_nas_base_path }}/cronfile"
 
-cron_local_base_path: "{{ cron_local_apps_path }}/cron"
+cron_local_base_path: "{{ base_local_ssd_storage_path }}/cron"
 cron_local_scripts_path: "{{ cron_local_base_path }}/scripts"
 
 

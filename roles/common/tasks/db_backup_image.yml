@@ -1,67 +1,49 @@
 ---
-# - name: Copy notification script
-#   template:
-#     src: templates/matrix_notify.py.j2
-#     dest: "{{ db_backups_sripts_folder }}/matrix_notify.py"
-#     mode: '0755'
-#   tags: db_backup
+- name: Create Cron job for DB backup
+  include_role:
+    name: common
+    tasks_from: cronjob
+  vars:
+    app_name: "{{ db_backup_app_name }}"
+    cron_schedule: "{{ backup_schedule_cron }}"
+    cron_script_to_run: "/bin/bash /backup.sh"
+    notification_message: "{{ notification_message_subject }}"
+  tags: db_backup
 
 - name: Template the DB backup initialization script
   vars:
+    app_name: "{{ db_backup_app_name }}"
     container_name: "{{ container_name_running_postgresdb }}"
     db_backup_retain: "{{ db_backup_retain_for_days}}"
     db_name: "{{ db_to_backup_name }}"
     db_user: "{{ db_to_backup_user }}"
     db_to_backup_password: "{{ db_to_backup_password }}"
-    backup_schedule: "{{ backup_schedule_cron }}"
-    notification_message: "{{ notification_message_subject }}"
   template:
     src: templates/db_backup_entrypoint.sh.j2
     dest: "{{ cron_local_scripts_path }}/db_backup_entrypoint.sh"
     mode: '0755'
   tags: db_backup
 
-- name: Create Cron job for DB backup
-  include_role:
-    name: common
-    tasks_from: cronjob
-  vars:
-    cron_schedule: ""
-    cron_script_to_run: "/bin/bash /backup.sh"
-    notification_message: "{{ notification_message_subject }}"
-    script_path: "{{ cron_local_scripts_path }}/db_backup_cronjob.sh"
-
-    # postgres_restore_base_path: "{{ matrix_backup_scripts }}"
-    # pg_backup_directory: "{{ matrix_db_backups }}/"
-    # pg_database: "{{ matrix_db_name }}"
-    # pg_host: "postgres_matrix"
-    # pg_port: 5432
-    # pg_user: "{{ matrix_db_user }}"
-    # pg_password: "{{ matrix_db_password }}"
-    # pg_drop_before_restore: true
+- name: Run script inside Docker container
+  community.docker.docker_container_exec:
+    container: cron_runner
+    command: /bin/bash /scripts/db_backup_entrypoint.sh
+  register: result
   tags: db_backup
 
+- name: Display success message
+  ansible.builtin.debug:
+    msg: "Script executed successfully."
+  when: 
+    - result.rc == 0
+  tags: db_backup
 
-
-
-# - name: Deploy database backup container
-#   docker_container:
-#     name: "{{ backup_container_name}}"
-#     image: "{{ backup_image }}"
-#     hostname: "{{ backup_container_name }}"
-#     volumes:
-#       - "{{ backup_folder_path }}:/backups:rw"
-#       - "{{ db_backups_sripts_folder }}/db_backup_entrypoint.sh:/docker-entrypoint-initdb.d/init.sh:ro"
-#       - "{{ db_backups_sripts_folder }}/matrix_notify.py:/notifier/matrix_notify.py:ro"
-#     command: ["/docker-entrypoint-initdb.d/init.sh"]
-#     labels:
-#       com.docker.compose.project: "{{ backup_container_stack_name }}"
-#       com.docker.compose.service: "{{ backup_container_name }}"
-#     networks:
-#       - name: traefik_proxy
-#     restart_policy: unless-stopped
-#     state: started
-#   tags: db_backup
+- name: Display failure message
+  ansible.builtin.debug:
+    msg: "Script execution failed. Return code: {{ result.rc }}"
+  when: 
+    - result.rc != 0
+  tags: db_backup
 
 - name: Cron job initiated for backup
   debug:
