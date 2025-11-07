@@ -30,8 +30,7 @@
   loop:
     - "{{ base_storage_path }}"
     - "{{ linkwarden_data_dir }}"
-    - "{{ postgres_data_dir }}"
-    - "{{ linkwarden_db_backups }}"
+    - "{{ linkwarden_postgres_data_dir }}"
     - "{{ linkwarden_db_backups_sripts }}"
 
 - name: Deploy LinkWarden Postgres DB container
@@ -43,7 +42,7 @@
       POSTGRES_USER: "{{ linkwarden_db_user }}"
       POSTGRES_PASSWORD: "{{ linkwarden_db_password }}"
     volumes:
-      - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
+      - "{{ linkwarden_postgres_data_dir }}:/var/lib/postgresql/data"
     labels:
       com.docker.compose.project: "linkwarden_stack"
       com.docker.compose.service: "postgres_linkwarden"
@@ -90,7 +89,7 @@
     name: common
     tasks_from: db_backup_image
   vars:
-    db_backups_sripts_folder: "{{ linkwarden_db_backups_sripts }}"
+    db_backup_app_name: "linkwarden"
     container_name_running_postgresdb: "postgres_linkwarden"
     db_backup_retain_for_days: "7"
     db_to_backup_name: "{{ linkwarden_db_name }}"
@@ -98,10 +97,6 @@
     db_to_backup_password: "{{ linkwarden_db_password }}"
     backup_schedule_cron: "15 2 * * *"
     notification_message_subject: "LinkWarden DB backup"
-    backup_container_name: "linkwarden_pgbackups"
-    backup_container_stack_name: "linkwarden_stack"
-    backup_folder_path: "{{ linkwarden_db_backups }}"
-    backup_image: "ubuntu:24.04"
   when: linkwarden_backup_db | default(false)
   tags: linkwarden
 
@@ -117,7 +112,7 @@
     tasks_from: postgresdb_restore
   vars:
     postgres_restore_base_path: "{{ linkwarden_db_backups_sripts }}"
-    pg_backup_directory: "{{ linkwarden_db_backups }}/"
+    pg_backup_directory: "{{ linkwarden_base_path }}/db_backups/"
     pg_database: "{{ linkwarden_db_name }}"
     pg_host: "postgres_linkwarden"
     pg_port: 5432
