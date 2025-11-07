@@ -37,8 +37,8 @@
     # - role: install_docmost
     # - role: install_immich
     # - role: install_homarr
-    - role: install_linkwarden
-    # - role: install_matrix_synapse
+    # - role: install_linkwarden
+    - role: install_matrix_synapse
     # - role: install_media_packages
     # - role: install_n8n
     #   vars:

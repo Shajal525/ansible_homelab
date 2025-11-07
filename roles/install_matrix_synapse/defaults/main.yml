@@ -1,7 +1,5 @@
 matrix_base_path: "{{ base_app_storage_path }}/matrix"
 matrix_data_dir: "{{ matrix_base_path }}/data"
-matrix_db_backups: "{{ matrix_base_path }}/backups"
-
 
 matrix_local_dir: "{{ base_local_ssd_storage_path }}/matrix"
 postgres_data_dir: "{{ matrix_local_dir }}/matrixdb"

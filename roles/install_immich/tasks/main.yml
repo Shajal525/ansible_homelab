@@ -26,7 +26,6 @@
     - "{{ db_data_location }}"
     - "{{ immich_compose_dir }}"
     - "{{ immich_cloud_base_path }}"
-    - "{{ immich_my_backup_location }}"
     - "{{ immich_tmp_dir }}"
 
 - name: Delete compose file if it exists
@@ -142,7 +141,7 @@
     name: common
     tasks_from: db_backup_image
   vars:
-    db_backups_sripts_folder: "{{ immich_tmp_dir }}"
+    db_backup_app_name: "immich"
     container_name_running_postgresdb: "immich_postgres"
     db_backup_retain_for_days: "10"
     db_to_backup_name: "{{ immich_db_name }}"
@@ -150,10 +149,6 @@
     db_to_backup_password: "{{ immich_db_password }}"
     backup_schedule_cron: "0 1 * * *"
     notification_message_subject: "Immich DB backup"
-    backup_container_name: "immich_pgbackups"
-    backup_container_stack_name: "immich"
-    backup_folder_path: "{{ immich_my_backup_location }}"
-    backup_image: "ubuntu:24.04"
   when: immich_backup_db | default(false)
   tags: immich
 
@@ -163,8 +158,8 @@
     tasks_from: postgresdb_restore
   vars:
     postgres_restore_base_path: "{{ immich_tmp_dir }}"
-    pg_backup_directory: "{{ immich_my_backup_location }}/"
-    # pg_backup_directory: "{{ immich_backup_directory }}/"
+    pg_backup_directory: "{{ immich_cloud_base_path }}/db_backups/"
+    # pg_backup_directory: "{{ immich_auto_backup_directory }}/"
     pg_database: "{{ immich_db_name }}"
     pg_host: "immich_postgres"
     pg_port: 5432

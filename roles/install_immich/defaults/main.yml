@@ -4,7 +4,7 @@ ip_address: "{{ vm_ip_address }}"
 immich_version: "release"
 immich_external_library_path: "{{ my_cloud_nas_storage_path }}"
 upload_location: "{{ immich_external_library_path }}/Immich"
-# immich_backup_directory: "{{ upload_location }}/backups"
+# immich_auto_backup_directory: "{{ upload_location }}/backups"
 
 immich_base_path: "{{ base_local_ssd_storage_path }}/immich"
 db_data_location: "{{ immich_base_path }}/dbdata"
@@ -12,7 +12,6 @@ immich_compose_dir: "{{ immich_base_path }}/compose"
 immich_tmp_dir: "{{ immich_base_path }}/tmp"
 
 immich_cloud_base_path: "{{ base_app_storage_path }}/immich"
-immich_my_backup_location: "{{ immich_cloud_base_path }}/dbbackups"
 
 immich_db_username: "{{ vm_username }}"
 immich_db_password: "{{ db_password }}"
