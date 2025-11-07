@@ -22,19 +22,19 @@
     mode: "0755"
   loop:
     - "{{ cron_nas_base_path }}"
-    - "{{ cron_local_scripts_path }}"
+    - "{{ cron_nas_scripts_path }}"
   tags: cronjob
 
 - name: Copy notification script
   template:
     src: templates/matrix_notify.py.j2
-    dest: "{{ cron_local_scripts_path }}/matrix_notify.py"
+    dest: "{{ cron_nas_scripts_path }}/matrix_notify.py"
     mode: '0755'
   tags: cronjob
 
 - name: Upsert job block (creates file if missing)
   blockinfile:
-    path: "{{ cron_nase_base_crontab_file }}"
+    path: "{{ cron_nas_base_path }}/custom_cronfile"
     marker: "# {mark} NAME: {{ app_name }}"
     block: |
       {{ cron_schedule }} ( {{ cron_script_to_run }} 2>&1 ; echo EXIT:$? ) | python3 /scripts/matrix_notify.py "{{ notification_message }}"
@@ -52,17 +52,25 @@
     hostname: cron_runner
     volumes:
       - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones
-      - "{{ cron_nase_base_crontab_file }}:/etc/cron.d/custom_cronfile:rw"
-      - "{{ cron_local_scripts_path }}:/scripts:rw"
-    command: bash -c "apt-get update && apt-get install -y cron && cron -f"
+      - "{{ cron_nas_base_path }}:/etc/cron.d:rw"
+      - "{{ cron_nas_scripts_path }}:/scripts:rw"
+    command: bash -c "apt-get update && apt-get install -y --no-install-recommends postgresql-client python3 python3-matrix-nio coreutils tzdata ca-certificates cron && rm -rf /var/lib/apt/lists/* && cron -f"
     labels:
       com.docker.compose.project: "cron_stack"
       com.docker.compose.service: "cron_runner"
     networks:
       - name: traefik_proxy
     restart_policy: unless-stopped
-    restart: true
     state: started
+  tags: cronjob
+
+- name: Wait until cron is available inside container
+  ansible.builtin.shell: |
+    docker exec cron_runner pgrep cron
+  register: result
+  until: result.rc == 0
+  retries: 50
+  delay: 5
   tags: cronjob
 
 - name: Run crontab inside docker container

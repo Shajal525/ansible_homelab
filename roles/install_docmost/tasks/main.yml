@@ -114,7 +114,7 @@
     db_to_backup_name: "{{ docmost_db_name }}"
     db_to_backup_user: "{{ docmost_db_user }}"
     db_to_backup_password: "{{ docmost_db_password }}"
-    backup_schedule_cron: "0 2 * * *"
+    backup_schedule_cron: "0 1 * * *"
     notification_message_subject: "Docmost DB backup"
   when: docmost_backup_db | default(false)
   tags: docmost

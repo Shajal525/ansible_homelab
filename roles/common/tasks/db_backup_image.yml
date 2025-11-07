@@ -30,30 +30,9 @@
     db_user: "{{ db_to_backup_user }}"
     db_to_backup_password: "{{ db_to_backup_password }}"
   template:
-    src: templates/db_backup_entrypoint.sh.j2
-    dest: "{{ cron_local_scripts_path }}/db_backup_entrypoint.sh"
+    src: templates/script_used_in_cronjob.sh.j2
+    dest: "{{ cron_nas_scripts_path }}/{{ db_backup_app_name }}.sh"
     mode: '0755'
-  tags: db_backup
-
-- name: Run DB backup script inside docker container
-  community.docker.docker_container_exec:
-    container: cron_runner
-    command: /bin/bash /scripts/db_backup_entrypoint.sh
-  register: result
-  tags: db_backup
-
-- name: Display success message
-  ansible.builtin.debug:
-    msg: "Script executed successfully."
-  when: 
-    - result.rc == 0
-  tags: db_backup
-
-- name: Display failure message
-  ansible.builtin.debug:
-    msg: "Script execution failed. Return code: {{ result.rc }}"
-  when: 
-    - result.rc != 0
   tags: db_backup
 
 - name: Cron job initiated for backup
