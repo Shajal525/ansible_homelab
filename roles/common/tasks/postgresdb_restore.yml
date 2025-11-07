@@ -82,17 +82,19 @@
       - name: traefik_proxy
     restart_policy: "no"
     recreate: true
-    # auto_remove: true
     state: started
-  register: restore_result
   tags: postgres_restore
 
-- name: Show restore logs
-  debug:
-    var: restore_result.container.State
+- name: Wait until container finishes
+  ansible.builtin.shell: |
+    docker inspect -f '{{'{{.State.Status}}'}}' postgres_restore 2>/dev/null
+  register: result
+  until: result.stdout == "exited"
+  retries: 60
+  delay: 5
 
 - name: Check container exit code
-  command: docker inspect postgres_restore --format='{{'{{.State.ExitCode}}'}}'
+  command: docker inspect --format='{{'{{.State.ExitCode}}'}}' postgres_restore
   register: exit_code
 
 - name: Fail if restore was not successful
