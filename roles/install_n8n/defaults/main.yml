@@ -1,6 +1,5 @@
 n8n_base_path: "{{ base_app_storage_path }}/n8n"
 n8n_files_dir: "{{ n8n_base_path }}/files"
-n8n_db_backups: "{{ n8n_base_path }}/db_backups"
 
 n8n_local_ssd_path: "{{ base_local_ssd_storage_path }}/n8n"
 n8n_config_dir: "{{ n8n_local_ssd_path }}/config"

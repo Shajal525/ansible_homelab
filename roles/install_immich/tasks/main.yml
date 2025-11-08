@@ -170,6 +170,19 @@
   when: immich_restore_db | default(false)
   tags: immich
 
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - immich_postgres
+    - immich_redis
+    - immich_machine_learning
+    - immich_server
+  when: immich_restore_db | default(false)
+  tags: immich
+
 - name: Display Immich status
   debug:
     msg: "Immich is running successfully"

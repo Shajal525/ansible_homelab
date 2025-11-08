@@ -122,6 +122,17 @@
   when: linkwarden_db_restore | default(false)
   tags: linkwarden
 
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - postgres_linkwarden
+    - linkwarden
+  when: linkwarden_db_restore | default(false)
+  tags: linkwarden
+
 - name: LinkWarden deployed
   debug:
     msg: "LinkWarden is running successfully"

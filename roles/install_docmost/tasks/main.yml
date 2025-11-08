@@ -141,6 +141,18 @@
   when: docmost_restore_db | default(false)
   tags: docmost
 
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - docmost_db
+    - docmost_redis
+    - docmost
+  when: docmost_restore_db | default(false)
+  tags: docmost
+
 - name: Docmost deployed
   debug:
     msg: "Docmost is running successfully"

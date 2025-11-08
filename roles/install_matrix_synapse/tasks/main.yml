@@ -162,6 +162,17 @@
   when: matrix_restore_db | default(false)
   tags: matrix
 
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - postgres_matrix
+    - synapse
+  when: matrix_restore_db | default(false)
+  tags: matrix
+
 - name: Matrix deployed
   debug:
     msg: "Matrix is running successfully"
