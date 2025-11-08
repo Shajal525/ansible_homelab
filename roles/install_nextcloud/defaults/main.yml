@@ -3,7 +3,6 @@ nextcloud_data_directory: "{{ my_cloud_nas_storage_path }}/Nextcloud"
 
 nextcloud_base_directory: "{{ base_app_storage_path }}/nextcloud"
 nextcloud_config_directory: "{{ nextcloud_base_directory }}/config"
-nextcloud_db_backup_directory: "{{ nextcloud_base_directory }}/db_backups"
 
 nextcloud_local_ssd_path: "{{ base_local_ssd_storage_path }}/nextcloud"
 nextcloud_local_configs_directory: "{{ nextcloud_local_ssd_path }}/configs"

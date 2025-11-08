@@ -23,7 +23,6 @@
     group: "nogroup"
     mode: "0755"
   loop:
-    - "{{ nextcloud_db_backup_directory }}"
     - "{{ nextcloud_db_data_directory }}"
     - "{{ nextcloud_backup_scripts }}"
   tags: nextcloud
@@ -134,7 +133,7 @@
     name: common
     tasks_from: db_backup_image
   vars:
-    db_backups_sripts_folder: "{{ nextcloud_backup_scripts }}"
+    db_backup_app_name: "nextcloud"
     container_name_running_postgresdb: "nextcloud_db_postgres"
     db_backup_retain_for_days: "7"
     db_to_backup_name: "{{ nextcloud_db_name }}"
@@ -142,10 +141,6 @@
     db_to_backup_password: "{{ nextcloud_db_password }}"
     backup_schedule_cron: "0 3 * * *"
     notification_message_subject: "nextcloud DB backup"
-    backup_container_name: "nextcloud_pgbackups"
-    backup_container_stack_name: "nextcloud_stack"
-    backup_folder_path: "{{ nextcloud_db_backup_directory }}"
-    backup_image: "ubuntu:25.10"
   when: nextcloud_backup_db | default(false)
   tags: nextcloud
 
@@ -161,13 +156,25 @@
     tasks_from: postgresdb_restore
   vars:
     postgres_restore_base_path: "{{ nextcloud_backup_scripts }}"
-    pg_backup_directory: "{{ nextcloud_db_backup_directory }}/"
+    pg_backup_directory: "{{ nextcloud_base_directory }}/db_backups/"
     pg_database: "{{ nextcloud_db_name }}"
     pg_host: "nextcloud_db_postgres"
     pg_port: 5432
     pg_user: "{{ nextcloud_db_user }}"
     pg_password: "{{ nextcloud_db_password }}"
     pg_drop_before_restore: true
+  when: nextcloud_restore_db | default(false)
+  tags: nextcloud
+
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - nextcloud_db_postgres
+    - nextcloud_redis
+    - nextcloud
   when: nextcloud_restore_db | default(false)
   tags: nextcloud
 
