@@ -95,7 +95,7 @@
       docker exec rclone rclone copy -P /datastorage PCloud:/DataStorage/ 
       --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list 
       --multi-thread-streams 1 --ignore-errors --size-only --checksum 
-      --exclude "Immich/thumbs/**" --exclude "Immich/encoded-video/**" --exclude "Immich/backups/**"
+      --exclude "Immich/backups/**"
     notification_message: "Sync Storage to PCloud"
   tags: rclone
 
