@@ -1,10 +1,11 @@
-ssl_cert_dir: "/etc/ssl/openssl/certs"
-ip_address: "{{ vm_ip_address }}"
-
+---
 immich_version: "release"
 immich_external_library_path: "{{ my_cloud_nas_storage_path }}"
 upload_location: "{{ immich_external_library_path }}/Immich"
-# immich_auto_backup_directory: "{{ upload_location }}/backups"
+
+immich_external_non_cloud_path: "{{ my_non_cloud_nas_storage_path }}/immich_thumbs"
+immich_thumbs_dir: "{{ immich_external_non_cloud_path }}/thumbs"
+immich_encoded_video_dir: "{{ immich_external_non_cloud_path }}/encoded_videos"
 
 immich_base_path: "{{ base_local_ssd_storage_path }}/immich"
 db_data_location: "{{ immich_base_path }}/dbdata"
@@ -19,5 +20,5 @@ immich_db_name: "{{ vm_username }}"
 
 immich_domain: "immich.{{ subdomain }}"
 
-immich_backup_db: true
+immich_backup_db: false
 immich_restore_db: false

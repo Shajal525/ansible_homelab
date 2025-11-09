@@ -1,5 +1,0 @@
-# Ansible: Sync storage data to PCloud
-0 3 * * * ( rclone copy -P /datastorage PCloud:/DataStorage/ --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list --multi-thread-streams 1 --ignore-errors --size-only --checksum --exclude "Immich/thumbs/**" --exclude "Immich/encoded-video/**" --exclude "Immich/backups/**" 2>&1 ; echo EXIT:$? ) | python3 /config/rclone/matrix_notify.py "Sync Storage to PCloud"
-
-# Ansible: Sync App data to PCloud 
-0 2 * * * ( rclone copy -P /appstorage PCloud:/Apps/ --copy-links --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list --multi-thread-streams 1 --ignore-errors --size-only --checksum 2>&1 ; echo EXIT:$? ) | python3 /config/rclone/matrix_notify.py "Sync App data to PCloud"

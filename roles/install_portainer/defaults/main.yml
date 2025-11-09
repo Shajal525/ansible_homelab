@@ -1,5 +1,3 @@
-ssl_cert_dir: "/etc/ssl/openssl/certs/"
-ip_address: "{{ vm_ip_address }}"
 
 portainer_base_path: "{{ base_app_storage_path }}/portainer"
 portainer_data: "{{ portainer_base_path }}/data"
