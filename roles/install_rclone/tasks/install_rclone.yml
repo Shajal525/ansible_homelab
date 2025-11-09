@@ -7,7 +7,7 @@
   tags: rclone
 
 - name: Ensure external networks exist
-  docker_network:
+  community.docker.docker_network:
     name: "{{ item }}"
     state: present
     internal: false
@@ -41,7 +41,7 @@
   tags: rclone
 
 - name: Deploy RClone container
-  docker_container:
+  community.docker.docker_container:
     name: rclone
     image: rclone/rclone:latest
     env:
@@ -92,9 +92,9 @@
     app_name: "rclone_storage"
     cron_schedule: "45 1 * * *"
     cron_script_to_run: >-
-      docker exec rclone rclone copy -P /datastorage PCloud:/DataStorage/ 
-      --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list 
-      --multi-thread-streams 1 --ignore-errors --size-only --checksum 
+      docker exec rclone rclone copy -P /datastorage PCloud:/DataStorage/
+      --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list
+      --multi-thread-streams 1 --ignore-errors --size-only --checksum
       --exclude "Immich/backups/**"
     notification_message: "Sync Storage to PCloud"
   tags: rclone

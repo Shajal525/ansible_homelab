@@ -44,7 +44,7 @@
     #     host_type: "local"  # options: local, vps
     # - role: install_nextcloud
     # - role: install_portainer
-    - role: install_rclone
+    # - role: install_rclone
     # - role: install_syncthing
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
