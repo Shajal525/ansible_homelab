@@ -51,10 +51,11 @@
     image: ubuntu:25.10
     hostname: cron_runner
     volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
       - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones
       - "{{ cron_nas_base_path }}:/etc/cron.d:rw"
       - "{{ cron_nas_scripts_path }}:/scripts:rw"
-    command: bash -c "apt-get update && apt-get install -y --no-install-recommends postgresql-client python3 python3-matrix-nio coreutils tzdata ca-certificates cron && rm -rf /var/lib/apt/lists/* && cron -f"
+    command: bash -c "apt-get update && apt-get install -y --no-install-recommends postgresql-client python3 python3-matrix-nio coreutils tzdata ca-certificates docker.io cron && rm -rf /var/lib/apt/lists/* && cron -f"
     labels:
       com.docker.compose.project: "cron_stack"
       com.docker.compose.service: "cron_runner"

@@ -11,7 +11,7 @@
     state: present
     internal: false
     driver: bridge
-  loop: 
+  loop:
     - traefik_proxy
     - pangolin_network
 
@@ -66,6 +66,7 @@
   command: >
     docker exec nextcloud_db_postgres pg_isready -U {{ nextcloud_db_user }} -d {{ nextcloud_db_name }}
   register: pg_ready
+  changed_when: false
   until: pg_ready.rc == 0
   retries: 30
   delay: 10

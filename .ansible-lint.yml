@@ -1,0 +1,6 @@
+---
+skip_list:
+  - var-naming[no-role-prefix]
+  - name[missing]
+  - fqcn[action-core]
+  - risky-file-permissions

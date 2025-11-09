@@ -3,15 +3,17 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
   tags: rclone
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
-  register: network_check
-  changed_when: false
-  failed_when: network_check.rc != 0
-  tags: rclone
+- name: Ensure external networks exist
+  docker_network:
+    name: "{{ item }}"
+    state: present
+    internal: false
+    driver: bridge
+  loop:
+    - traefik_proxy
 
 - name: Ensure FUSE is installed
   apt:
@@ -27,9 +29,7 @@
     group: "www-data"
     mode: "0755"
   loop:
-    - "{{ rclone_base_path }}"
     - "{{ rclone_config_path }}"
-    - "{{ rclone_sync_script_path }}"
     - "{{ rclone_nas_storage_path }}"
     - "{{ rclone_nas_app_storage_path }}"
   tags: rclone
@@ -38,20 +38,6 @@
   template:
     src: templates/rclone.conf.j2
     dest: "{{ rclone_config_path }}/rclone.conf"
-  tags: rclone
-
-- name: Copy notification script
-  template:
-    src: templates/matrix_notify.py.j2
-    dest: "{{ rclone_config_path }}/matrix_notify.py"
-    mode: '0755'
-  tags: rclone
-
-- name: Copy cron job script
-  template:
-    src: templates/cronjobs.j2
-    dest: "{{ rclone_sync_script_path }}/cronjobs"
-    mode: '0755'
   tags: rclone
 
 - name: Deploy RClone container
@@ -64,7 +50,6 @@
       - "no-new-privileges:true"
     volumes:
       - "{{ rclone_config_path }}:/config/rclone"
-      - "{{ rclone_sync_script_path }}:/sync_script"
       - "{{ rclone_nas_storage_path }}:/datastorage"
       - "{{ rclone_nas_app_storage_path }}:/appstorage"
     devices:
@@ -72,9 +57,9 @@
     command: |
       rcd --rc-web-gui --rc-addr 0.0.0.0:5572
       --rc-web-fetch-url=https://api.github.com/repos/rclone/rclone-webui-react/releases/latest
-      --rc-web-gui-update 
+      --rc-web-gui-update
       --rc-user {{ rclone_username }}
-      --rc-pass {{ rclone_password }} 
+      --rc-pass {{ rclone_password }}
       -vv --checksum
       --transfers=4 --checkers=4 --contimeout=60s --timeout=300s --retries=3
       --low-level-retries=10 --stats=1s --stats-file-name-length=0
@@ -99,28 +84,36 @@
     state: started
   tags: rclone
 
-- name: Wait for container to be ready
-  pause:
-    seconds: 10
+- name: Include common backup task run cron job to sync data in PCloud
+  include_role:
+    name: common
+    tasks_from: cronjob
+  vars:
+    app_name: "rclone_storage"
+    cron_schedule: "45 1 * * *"
+    cron_script_to_run: >-
+      docker exec rclone rclone copy -P /datastorage PCloud:/DataStorage/ 
+      --min-age 5m --ignore-errors --retries 1 --ignore-existing --fast-list 
+      --multi-thread-streams 1 --ignore-errors --size-only --checksum 
+      --exclude "Immich/thumbs/**" --exclude "Immich/encoded-video/**" --exclude "Immich/backups/**"
+    notification_message: "Sync Storage to PCloud"
   tags: rclone
 
-- name: Install crontab from file
-  docker_container_exec:
-    container: rclone
-    command: crontab /sync_script/cronjobs
-
-- name: Verify installation
-  docker_container_exec:
-    container: rclone
-    command: crontab -l
-  register: cron_verification
-
-- name: Show installed cron jobs
-  debug:
-    msg: "{{ cron_verification.stdout }}"
+- name: Include common backup task run cron job to sync APP data in PCloud
+  include_role:
+    name: common
+    tasks_from: cronjob
+  vars:
+    app_name: "rclone_apps"
+    cron_schedule: "0 2 * * *"
+    cron_script_to_run: >-
+      docker exec rclone rclone copy -P /appstorage PCloud:/Apps/
+      --copy-links --min-age 5m --ignore-errors --retries 1 --ignore-existing
+      --fast-list --multi-thread-streams 1 --ignore-errors --size-only --checksum
+    notification_message: "Sync Storage to PCloud"
+  tags: rclone
 
 - name: RClone deployed
   debug:
     msg: "RClone is running successfully"
   tags: rclone
-
