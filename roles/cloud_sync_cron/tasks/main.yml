@@ -1,9 +1,0 @@
----
-- name: Create cron job to run rclone to sync storage to PCloud.
-  cron:
-    name: "{{ item.name }}"
-    minute: "{{ item.minute }}"
-    hour: "{{ item.hour }}"
-    job: "docker exec -it rclone rclone copy -P {{ item.local_storage_mapped_to_docker }} {{ item.remote_location }}"
-    state: present
-  loop: "{{ cron_list }}"

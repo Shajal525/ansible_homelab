@@ -3,7 +3,7 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Create Tailscale directories
   file:
@@ -17,7 +17,7 @@
     - "{{ tailscale_config_path }}"
 
 - name: Start tailscale-nginx container
-  docker_container:
+  community.docker.docker_container:
     name: tailscale
     image: tailscale/tailscale:latest
     hostname: tailscale
