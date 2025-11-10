@@ -1,5 +1,5 @@
 ---
-syncthing_base_path: "{{ base_storage_path }}/syncthing"
+syncthing_base_path: "{{ base_app_storage_path }}/syncthing"
 syncthing_data1: "{{ syncthing_base_path }}/data1"
 syncthing_data2: "{{ syncthing_base_path }}/data2"
 syncthing_config: "{{ syncthing_base_path }}/config"
