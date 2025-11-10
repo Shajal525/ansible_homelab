@@ -45,7 +45,7 @@
     # - role: install_nextcloud
     # - role: install_portainer
     # - role: install_rclone
-    # - role: install_syncthing
+    - role: install_syncthing
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

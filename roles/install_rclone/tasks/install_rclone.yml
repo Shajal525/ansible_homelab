@@ -110,7 +110,7 @@
       docker exec rclone rclone copy -P /appstorage PCloud:/Apps/
       --copy-links --min-age 5m --ignore-errors --retries 1 --ignore-existing
       --fast-list --multi-thread-streams 1 --ignore-errors --size-only --checksum
-    notification_message: "Sync Storage to PCloud"
+    notification_message: "Sync App Storage to PCloud"
   tags: rclone
 
 - name: RClone deployed
