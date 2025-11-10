@@ -3,7 +3,7 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Create TSDproxy directories
   file:
@@ -18,7 +18,7 @@
     - "{{ tsdproxy_data_path }}"
 
 - name: Start TSDproxy container
-  docker_container:
+  community.docker.docker_container:
     name: tsdproxy
     image: almeidapaulopt/tsdproxy:latest
     hostname: tsdproxy

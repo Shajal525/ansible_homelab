@@ -3,15 +3,15 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure external networks exist
-  docker_network:
+  community.docker.docker_network:
     name: "{{ item }}"
     state: present
-    internal: no
+    internal: false
     driver: bridge
-  loop: 
+  loop:
     - traefik_proxy
     - pangolin_network
 
@@ -23,11 +23,10 @@
     group: "www-data"
     mode: "0755"
   loop:
-    - "{{ uptimekuma_base_path }}"
     - "{{ uptimekuma_data_path }}"
 
 - name: Deploy UptimeKuma container
-  docker_container:
+  community.docker.docker_container:
     name: uptimekuma
     image: louislam/uptime-kuma:latest
     security_opts:

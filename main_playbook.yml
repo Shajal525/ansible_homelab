@@ -27,7 +27,6 @@
     # - role: rustdesk
     # - role: cloud_sync_cron
     # - role: samba_share
-    # - role: install_uptimeKuma
     # - role: notification_script
     # - role: system_monitoring
     # - role: pangolin_newt
@@ -45,7 +44,8 @@
     # - role: install_portainer
     # - role: install_rclone
     # - role: install_syncthing
-    - role: install_traefik
+    # - role: install_traefik
+    - role: install_uptimeKuma
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
