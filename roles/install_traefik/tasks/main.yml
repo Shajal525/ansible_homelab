@@ -1,6 +1,6 @@
 ---
 - name: Create proxy network if it does not exist
-  docker_network:
+  community.docker.docker_network:
     name: traefik_proxy
     state: present
 
@@ -37,7 +37,7 @@
     msg: "Generated hash: {{ htpasswd_hash.stdout }}"
 
 - name: Deploy Traefik container
-  docker_container:
+  community.docker.docker_container:
     name: traefik
     image: traefik:latest
     ports:
@@ -45,8 +45,8 @@
       - "443:443"
     env:
       TRAEFIK_DASHBOARD_CREDENTIALS: "{{ htpasswd_hash.stdout }}"
-      CF_API_EMAIL: "{{ cloudflare_email }}" # Cloudflare email
-      CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}" # Cloudflare API Token
+      CF_API_EMAIL: "{{ traefik_cloudflare_email }}" # Cloudflare email
+      CF_DNS_API_TOKEN: "{{ traefik_cf_dns_api_token }}" # Cloudflare API Token
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -79,8 +79,6 @@
 - name: Traefik deployed
   debug:
     msg: "Traefik is running successfully"
-
-
 
 # required
 # traefik.http.routers.syncthing-secure.entrypoints: "https"

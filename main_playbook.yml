@@ -23,7 +23,6 @@
     # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver.
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
-    # - role: install_traefik
     # - role: postgresql
     # - role: rustdesk
     # - role: cloud_sync_cron
@@ -46,6 +45,7 @@
     # - role: install_portainer
     # - role: install_rclone
     # - role: install_syncthing
+    - role: install_traefik
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

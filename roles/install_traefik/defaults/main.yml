@@ -1,8 +1,9 @@
-traefik_base_path: "{{ base_storage_path }}/traefik"
+traefik_base_path: "{{ base_app_storage_path }}/traefik"
 traefik_config: "{{ traefik_base_path }}/config"
 traefik_certs: "{{ traefik_base_path }}/certs"
-CF_DNS_API_TOKEN: "{{ CF_DNS_API_TOKEN }}"
-cloudflare_email: "{{ cloudflare_email }}"
+
+traefik_cf_dns_api_token: "{{ pvehomelab_cf_dns_api_token }}"
+traefik_cloudflare_email: "{{ pvehomelab_cloudflare_email }}"
 traefik_dashboard_password: "{{ vm_password }}"
 
 traefik_domain: "traefik.{{ subdomain }}"

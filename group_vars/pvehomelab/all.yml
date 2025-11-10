@@ -21,3 +21,6 @@ matrix_access_token: "{{ matrix_access_token }}"
 
 subdomain: "shajalslab.top"
 cloudflare_tunnel_name: "homelab_cloud_tunnel"
+pvehomelab_cf_dns_api_token: "{{ CF_DNS_API_TOKEN }}"
+pvehomelab_cloudflare_email: "{{ cloudflare_email }}"
+
