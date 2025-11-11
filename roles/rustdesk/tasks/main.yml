@@ -3,15 +3,15 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure external networks exist
-  docker_network:
+  community.docker.docker_network:
     name: "{{ item }}"
     state: present
-    internal: no
+    internal: false
     driver: bridge
-  loop: 
+  loop:
     - traefik_proxy
     - pangolin_network
 
@@ -27,7 +27,7 @@
     - "{{ rustdesk_data }}"
 
 - name: Deploy Rustdesk container
-  docker_container:
+  community.docker.docker_container:
     name: rustdesk-server
     image: rustdesk/rustdesk-server-s6:latest
     hostname: rustdesk-server
@@ -42,9 +42,8 @@
     volumes:
       - "{{ rustdesk_data }}:/data"
     labels:
-      com.docker.compose.project: "rustdesk"
+      com.docker.compose.project: "rustdesk_stack"
       com.docker.compose.service: "rustdesk-server"
-      
       # traefik.enable: "true"
       # traefik.http.routers.rustdesk-secure.entrypoints: "https"
       # traefik.http.routers.rustdesk-secure.rule: "Host(`{{ rustdesk_domain }}`)"
@@ -65,4 +64,3 @@
 - name: Rustdesk deployed
   debug:
     msg: "Rustdesk is running successfully"
-

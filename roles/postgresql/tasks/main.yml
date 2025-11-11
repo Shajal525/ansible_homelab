@@ -112,6 +112,17 @@
   when: postgres_restore_db | default(false)
   tags: postgresql
 
+- name: Restart containers
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - postgresql
+    - adminer
+  when: postgres_restore_db | default(false)
+  tags: postgresql
+
 - name: PostgreSql deployed
   debug:
     msg: "PostgreSql is running successfully"

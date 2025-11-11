@@ -4,9 +4,10 @@
     name: docker
     state: started
     enabled: true
+  tags: nextcloud
 
 - name: Ensure external networks exist
-  docker_network:
+  community.docker.docker_network:
     name: "{{ item }}"
     state: present
     internal: false
@@ -14,6 +15,7 @@
   loop:
     - traefik_proxy
     - pangolin_network
+  tags: nextcloud
 
 - name: Create Nextcloud directory
   file:
@@ -41,7 +43,7 @@
   tags: nextcloud
 
 - name: Deploy Postgres DB container
-  docker_container:
+  community.docker.docker_container:
     name: nextcloud_db_postgres
     image: postgres:latest
     hostname: nextcloud_db_postgres
@@ -73,7 +75,7 @@
   tags: nextcloud
 
 - name: Deploy Redis container
-  docker_container:
+  community.docker.docker_container:
     name: nextcloud_redis
     image: redis:latest
     hostname: nextcloud_redis
@@ -88,7 +90,7 @@
   tags: nextcloud
 
 - name: Deploy Nextcloud container
-  docker_container:
+  community.docker.docker_container:
     name: nextcloud
     image: nextcloud:latest
     hostname: nextcloud
@@ -168,7 +170,7 @@
   tags: nextcloud
 
 - name: Restart containers
-  docker_container:
+  community.docker.docker_container:
     name: "{{ item }}"
     state: started
     restart: true

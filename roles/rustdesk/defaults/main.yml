@@ -1,6 +1,6 @@
-rustdesk_base_path: "{{ base_storage_path }}/rustdesk"
+rustdesk_base_path: "{{ base_app_storage_path }}/rustdesk"
 rustdesk_data: "{{ rustdesk_base_path }}/data"
+
 rustdesk_domain_or_ip: "{{ subdomain }}"
 
 rustdesk_domain: "rustdesk.{{ subdomain }}"
-

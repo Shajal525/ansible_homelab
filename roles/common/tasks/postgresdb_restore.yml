@@ -109,4 +109,3 @@
     msg: "Database restored successfully"
   when: exit_code.stdout == '0'
   tags: postgres_restore
-
