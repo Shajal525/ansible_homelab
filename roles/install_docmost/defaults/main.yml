@@ -17,5 +17,3 @@ docmost_app_secret: "{{ complex_db_secret }}"
 
 docmost_backup_db: true
 docmost_restore_db: false
-
-

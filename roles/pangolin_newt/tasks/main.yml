@@ -6,18 +6,18 @@
     enabled: true
 
 - name: Create Pangolin network if it does not exist
-  docker_network:
+  community.docker.docker_network:
     name: pangolin_network
     state: present
 
 - name: Deploy Pangolin_Newt container
-  docker_container:
+  community.docker.docker_container:
     name: newt
     image: fosrl/newt
     env:
       PANGOLIN_ENDPOINT: "{{ pangolin_endpoint }}"
-      NEWT_ID: "{{ newt_id }}"
-      NEWT_SECRET: "{{ newt_secret }}"
+      NEWT_ID: "{{ pangolin_newt_id }}"
+      NEWT_SECRET: "{{ pangolin_newt_secret }}"
     labels:
       com.docker.compose.project: "pangolin_stack"
       com.docker.compose.service: "newt"
@@ -29,4 +29,3 @@
 - name: Pangolin_Newt deployed
   debug:
     msg: "Pangolin_Newt is running successfully"
-

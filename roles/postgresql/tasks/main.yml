@@ -3,15 +3,34 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
+  tags: postgresql
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
+- name: Check if networks exist
+  command: docker network inspect {{ item }}
   register: network_check
   failed_when: network_check.rc != 0
+  changed_when: false
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  tags: postgresql
+
+- name: Create Matrix directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: "0755"
+  loop:
+    - "{{ postgres_base_path }}"
+    - "{{ postgres_data_path }}"
+    - "{{ postgres_backup_scripts }}"
+  tags: postgresql
 
 - name: Deploy PostgreSql using Docker Compose
-  docker_container:
+  community.docker.docker_container:
     name: postgresql
     image: postgres:latest
     hostname: postgresql
@@ -23,34 +42,77 @@
     env:
       POSTGRES_PASSWORD: "{{ postgres_password }}"
       POSTGRES_USER: "{{ postgres_username }}"
-      POSTGRES_DB: "{{ postgres_username }}"
+      POSTGRES_DB: "{{ postgres_db_name }}"
     labels:
-      com.docker.compose.project: "postgresql"
+      com.docker.compose.project: "postgresql_stack"
       com.docker.compose.service: "postgresql"
     networks:
       - name: traefik_proxy
     restart_policy: unless-stopped
     state: started
+  tags: postgresql
 
 - name: Deploy Adminer using Docker Compose
-  docker_container:
+  community.docker.docker_container:
     name: adminer
     image: adminer:latest
     hostname: adminer
     labels:
-      com.docker.compose.project: "postgresql"
+      com.docker.compose.project: "postgresql_stack"
       com.docker.compose.service: "adminer"
+      traefik.docker.network: "traefik_proxy"
       traefik.enable: "true"
       traefik.http.routers.adminer-secure.entrypoints: "https"
       traefik.http.routers.adminer-secure.rule: "Host(`{{ adminer_domain }}`)"
       traefik.http.routers.adminer-secure.tls: "true"
-      traefik.http.routers.adminer.service: "adminer"
+      traefik.http.routers.adminer-secure.service: "adminer"
       traefik.http.services.adminer.loadbalancer.server.port: "8080"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: unless-stopped
     state: started
+  tags: postgresql
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backup_app_name: "postgres"
+    container_name_running_postgresdb: "postgresql"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ postgres_db_name }}"
+    db_to_backup_user: "{{ postgres_username }}"
+    db_to_backup_password: "{{ postgres_password }}"
+    backup_schedule_cron: "0 2 * * *"
+    notification_message_subject: "Standalone Postges DB backup"
+  when: postgres_backup_db | default(false)
+  tags: postgresql
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: postgres_backup_db | default(false) and postgres_restore_db | default(false)
+  tags: postgresql
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ postgres_backup_scripts }}"
+    pg_backup_directory: "{{ postgres_base_path }}/db_backups/"
+    pg_database: "{{ postgres_db_name }}"
+    pg_host: "postgresql"
+    pg_port: "{{ postgres_port }}"
+    pg_user: "{{ postgres_username }}"
+    pg_password: "{{ postgres_password }}"
+    pg_drop_before_restore: true
+  when: postgres_restore_db | default(false)
+  tags: postgresql
 
 - name: PostgreSql deployed
   debug:
     msg: "PostgreSql is running successfully"
+  tags: postgresql

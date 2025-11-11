@@ -23,7 +23,7 @@
     dest: "{{ server_openssl_config }}"
     mode: "0644"
   args:
-    force: no 
+    force: false
 
 - name: Sign Server Certificate with CA
   shell: |
@@ -58,4 +58,3 @@
     msg:
       - "Server Certificate (valid for {{ server_validity_days }} days): {{ server_crt }}"
       - "Server Private Key: {{ server_key }}"
-

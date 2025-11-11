@@ -28,3 +28,6 @@ pvehomelab_gmail_smtp_password: "{{ gmail_smtp_password }}"
 
 pvehomelab_server_dns_names: "{{ server_dns_names }}"
 pvehomelab_server_ip_addresses: "{{ server_ip_addresses }}"
+
+pvehomelab_newt_id: "{{ newt_id }}"
+pvehomelab_newt_secret: "{{ newt_secret }}"

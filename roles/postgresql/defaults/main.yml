@@ -1,7 +1,15 @@
-postgres_base_path: "{{ base_storage_path }}/postgres"
-postgres_data_path: "{{ postgres_base_path }}/data"
+postgres_base_path: "{{ base_app_storage_path }}/postgres"
+
+postgres_local_path: "{{ base_local_ssd_storage_path }}/postgres"
+postgres_data_path: "{{ postgres_local_path }}/data"
+postgres_backup_scripts: "{{ postgres_local_path }}/backup_scripts"
+
+postgres_db_name: "{{ vm_username }}"
 postgres_username: "{{ vm_username }}"
-postgres_password: "{{ vm_password }}"
+postgres_password: "{{ db_password }}"
 postgres_port: "5432"
 
 adminer_domain: "adminer.{{ subdomain }}"
+
+postgres_backup_db: true
+postgres_restore_db: false

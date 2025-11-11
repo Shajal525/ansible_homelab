@@ -2,7 +2,7 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
   tags: docmost
 
 - name: Check if networks exist
@@ -10,7 +10,7 @@
   register: network_check
   failed_when: network_check.rc != 0
   changed_when: false
-  loop: 
+  loop:
     - traefik_proxy
     - pangolin_network
 
@@ -28,9 +28,8 @@
     - "{{ docmost_redis }}"
   tags: docmost
 
-
 - name: Deploy PostgreSQL (db)
-  docker_container: 
+  community.docker.docker_container:
     name: docmost_db
     image: postgres:16-alpine
     hostname: docmost_db
@@ -51,7 +50,7 @@
   tags: docmost
 
 - name: Deploy Redis
-  docker_container:
+  community.docker.docker_container:
     name: docmost_redis
     image: "redis:7.2-alpine"
     hostname: docmost_redis
@@ -68,7 +67,7 @@
   tags: docmost
 
 - name: Deploy Docmost app
-  docker_container:
+  community.docker.docker_container:
     name: docmost
     image: "docmost/docmost:latest"
     hostname: docmost
@@ -118,7 +117,7 @@
     notification_message_subject: "Docmost DB backup"
   when: docmost_backup_db | default(false)
   tags: docmost
-  
+
 - name: Wait for 10 seconds for DB backup to finish
   pause:
     seconds: 10
@@ -142,7 +141,7 @@
   tags: docmost
 
 - name: Restart containers
-  docker_container:
+  community.docker.docker_container:
     name: "{{ item }}"
     state: started
     restart: true
