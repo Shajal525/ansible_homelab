@@ -1,3 +1,6 @@
 {
-    "ansible.python.interpreterPath": "/bin/python3"
+    "ansible.python.interpreterPath": "/bin/python3",
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/tasks": "file:///home/shajal/Ansible/ansible_homelab/roles/openssl_generate_certificate/tasks/generate_ssl.yml"
+    }
 }

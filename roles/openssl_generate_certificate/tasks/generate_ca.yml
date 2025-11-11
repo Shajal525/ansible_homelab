@@ -16,7 +16,6 @@
   args:
     creates: "{{ ca_key }}"
 
-
 - name: Generate CA Certificate
   shell: |
     openssl req -x509 -new -nodes -key {{ ca_key }} -passin file:{{ password_file }} \
@@ -28,4 +27,3 @@
   debug:
     msg:
       - "CA Certificate (valid for {{ ca_validity_days }} days): {{ ca_crt }}"
-

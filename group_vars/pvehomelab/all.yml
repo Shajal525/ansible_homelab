@@ -25,3 +25,6 @@ pvehomelab_cf_dns_api_token: "{{ CF_DNS_API_TOKEN }}"
 pvehomelab_cloudflare_email: "{{ cloudflare_email }}"
 
 pvehomelab_gmail_smtp_password: "{{ gmail_smtp_password }}"
+
+pvehomelab_server_dns_names: "{{ server_dns_names }}"
+pvehomelab_server_ip_addresses: "{{ server_ip_addresses }}"

@@ -2,9 +2,9 @@
 subjectAltName = @alt_names
 
 [ alt_names ]
-{% for dns in server_dns_names %}
+{% for dns in openssl_server_dns_names %}
 DNS.{{ loop.index }} = {{ dns }}
 {% endfor %}
-{% for ip in server_ip_addresses %}
+{% for ip in openssl_server_ip_addresses %}
 IP.{{ loop.index }} = {{ ip }}
 {% endfor %}
