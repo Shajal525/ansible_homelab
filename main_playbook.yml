@@ -46,8 +46,8 @@
     # - role: install_syncthing
     # - role: install_traefik
     # - role: install_uptimeKuma
-    - role: snapraid # Carefull! this creates subvolumes and does initial sync.
-    ### # - role: mergerfs # Carefull! this will unmount and remount storage drives.
+    # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
+    # - role: mergerfs # Carefull! this will unmount and remount storage drives.
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
