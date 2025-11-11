@@ -1,8 +1,14 @@
-monitoring_base_path: "{{ base_storage_path }}/system_monitoring"
-prometheus_base: "{{ monitoring_base_path }}/prometheus"
-prometheus_data: "{{ prometheus_base }}/data"
-prometheus_config: "{{ prometheus_base }}/config"
-grafana_data: "{{ monitoring_base_path }}/grafana"
+monitoring_base_path: "{{ base_app_storage_path }}/system_monitoring"
+prometheus_cloud_base: "{{ monitoring_base_path }}/prometheus"
+prometheus_cloud_config: "{{ prometheus_cloud_base }}/config"
+
+grafana_cloud_base: "{{ monitoring_base_path }}/grafana"
+grafana_cloud_config: "{{ grafana_cloud_base }}/config"
+
+monitoring_local_path: "{{ base_local_ssd_storage_path }}/system_monitoring"
+prometheus_local_base: "{{ monitoring_local_path }}/prometheus"
+prometheus_local_data: "{{ prometheus_local_base }}/data"
+prometheus_local_scripts: "{{ prometheus_local_base }}/scripts"
 
 prometheus_domain: "prometheus.{{ subdomain }}"
 grafana_domain: "grafana.{{ subdomain }}"

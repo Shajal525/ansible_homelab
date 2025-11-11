@@ -47,4 +47,3 @@
       {% endif %}
   loop: "{{ shares }}"
   notify: Restart Samba
-

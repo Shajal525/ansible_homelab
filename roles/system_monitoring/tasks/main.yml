@@ -10,12 +10,12 @@
   register: network_check
   failed_when: network_check.rc != 0
   changed_when: false
-  loop: 
+  loop:
     - traefik_proxy
     - pangolin_network
 
 - name: Create external network
-  docker_network:
+  community.docker.docker_network:
     name: monitoring_network
     driver: bridge
     state: present
@@ -29,26 +29,29 @@
     mode: "0755"
   loop:
     - "{{ monitoring_base_path }}"
-    - "{{ prometheus_base }}"
-    - "{{ prometheus_data }}"
-    - "{{ prometheus_config }}"
-    - "{{ grafana_data }}"
+    - "{{ prometheus_cloud_base }}"
+    - "{{ prometheus_cloud_config }}"
+    - "{{ grafana_cloud_base }}"
+    - "{{ grafana_cloud_config }}"
+    - "{{ prometheus_local_base }}"
+    - "{{ prometheus_local_data }}"
+    - "{{ prometheus_local_scripts }}"
 
 - name: Copy Prometheus config yaml file
   template:
     src: prometheus.yml.j2
-    dest: "{{ prometheus_config }}/prometheus.yml"
+    dest: "{{ prometheus_local_scripts }}/prometheus.yml"
     mode: '0644'
 
 - name: Deploy Prometheus
-  docker_container:
+  community.docker.docker_container:
     name: prometheus
     image: docker.io/prom/prometheus:latest
     # ports:
       # - "9090:9090"
     command: "--config.file=/etc/prometheus/prometheus.yml"
     volumes:
-      - "{{ prometheus_config }}:/etc/prometheus"
+      - "{{ prometheus_local_scripts }}:/etc/prometheus"
       - "{{ prometheus_data }}:/prometheus"
     labels:
       com.docker.compose.project: "monitoring_stack"
@@ -73,13 +76,13 @@
     state: started
 
 - name: Deploy Grafana
-  docker_container:
+  community.docker.docker_container:
     name: grafana
     image: docker.io/grafana/grafana-oss:11.6.0
     # ports:
       # - "3000:3000"
     volumes:
-      - "grafana-data:/var/lib/grafana"
+      - "{{ grafana_cloud_config }}:/var/lib/grafana"
     labels:
       com.docker.compose.project: "monitoring_stack"
       com.docker.compose.service: "grafana"
@@ -101,9 +104,8 @@
     restart_policy: unless-stopped
     state: started
 
-
 - name: Deploy cAdvisor
-  docker_container:
+  community.docker.docker_container:
     name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest
     # ports:
@@ -138,7 +140,7 @@
     state: started
 
 - name: Deploy Node Exporter
-  docker_container:
+  community.docker.docker_container:
     name: nodeexporter
     image: quay.io/prometheus/node-exporter:latest
     command: "--path.rootfs=/host"
@@ -167,7 +169,7 @@
     state: started
 
 - name: Deploy grafana-matrix-forwarder container
-  docker_container:
+  community.docker.docker_container:
     name: grafana-matrix-forwarder
     image: registry.gitlab.com/hctrdev/grafana-matrix-forwarder:latest
     env:
@@ -184,7 +186,7 @@
 
 - name: System monitoring packages deployed
   debug:
-    msg: "System monitoring packages are running successfully. Add this url in Grafana alert webhook: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top"
+    msg: "System monitoring packages are running successfully. Add this url in Grafana alert webhook: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top" # noqa: yaml[line-length]
 
 # Grafana alert webhook URL: http://grafana-matrix-forwarder:6000/api/v1/unified?roomId=!SniHUAwvmTRmVRpVTo:matrix.shajalslab.top
 # Copy the code from grafana_alert_rules.yml.j2 to graphana Alert Rules
