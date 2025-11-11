@@ -9,13 +9,15 @@
 
 - name: Create directory
   file:
-    path: "{{ item }}"
+    path: "{{ directory_item }}"
     state: directory
     owner: root
     group: root
     mode: "0755"
   loop:
     - "{{ host_cron_scripts_path }}"
+  loop_control:
+    loop_var: directory_item
   tags: host_cronjob
 
 - name: Upsert job block (creates file if missing)
@@ -23,7 +25,7 @@
     path: "{{ host_cron_scripts_path }}/custom_cronfile"
     marker: "# {mark} NAME: {{ host_cron_app_name }}"
     block: |
-      {{ host_cron_schedule }} ( {{ host_cron_script_to_run }} 2>&1 ; echo EXIT:$? ) | docker exec cron_runner python3 /scripts/matrix_notify.py "{{ host_cron_notification_message }}"
+      {{ host_cron_schedule }} out=$( {{ host_cron_script_to_run }} 2>&1 ); ec=$?; { printf "%s\nEXIT:%s\n" "$out" "$ec"; } | docker exec -i cron_runner python3 /scripts/matrix_notify.py "{{ host_cron_notification_message }}" exit $ec;
     create: true
     insertafter: EOF
     mode: '0644'
@@ -31,6 +33,6 @@
     group: root
   tags: host_cronjob
 
-# - name: Run crontab in host
-#   command: crontab /etc/cron.d/custom_cronfile
-#   tags: host_cronjob
+- name: Run crontab in host
+  command: crontab /etc/cron.d/custom_cronfile
+  tags: host_cronjob

@@ -32,13 +32,15 @@
 
 - name: Create directories
   file:
-    path: "{{ item }}"
+    path: "{{ directory_item }}"
     state: directory
     owner: 1000
     group: 1000
     mode: "0755"
   loop:
     - "{{ postgres_restore_base_path }}"
+  loop_control:
+    loop_var: directory_item
   tags: postgres_restore
 
 - name: Copy gzip file to restore path

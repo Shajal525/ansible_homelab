@@ -11,6 +11,7 @@
     mode: "0755"
     owner: root
     group: root
+  tags: mergerfs
 
 - name: Run host_cronjob common script to move data from Cache to Storage with notification
   include_role:
@@ -21,4 +22,4 @@
     host_cron_schedule: "0 0 * * *"
     host_cron_script_to_run: "/usr/local/bin/move_data_to_hdd.sh"
     host_cron_notification_message: "MergerFS Move Data From Cache To Storage"
-  tags: rclone
+  tags: mergerfs

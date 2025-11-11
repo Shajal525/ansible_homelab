@@ -10,7 +10,7 @@ snapraid_runner_install_path: /opt/snapraid-runner
 snapraid_email_from: "shajal525@gmail.com"
 snapraid_email_to: "shajal525@gmail.com"
 snapraid_email_smtp_user: "shajal525@gmail.com"
-snapraid_email_smtp_password: "{{ gmail_smtp_password }}"
+snapraid_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
 
 parity_disk: /mnt/parity
 data_disks:
@@ -26,4 +26,3 @@ snapper_settings:
   - { key: "NUMBER_MIN_AGE", value: "1800" }
   - { key: "NUMBER_LIMIT", value: "10" }
   - { key: "NUMBER_LIMIT_IMPORTANT", value: "10" }
-

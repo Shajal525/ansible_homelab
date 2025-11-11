@@ -3,6 +3,7 @@
   apt:
     name: mergerfs
     state: present
+  tags: mergerfs
 
 - name: Ensure mount directories exist
   file:
@@ -11,12 +12,14 @@
   loop:
     - "{{ mergerfs_mount_location }}"
     - "{{ mergerfs_mount_location_without_cache }}"
+  tags: mergerfs
 
 - name: Ensure cache disk is mounted
   command: "findmnt {{ cache_storage }}"
   register: cache_mount_check
   changed_when: false
   failed_when: cache_mount_check.rc != 0
+  tags: mergerfs
 
 - name: Ensure disks are mounted
   command: "findmnt {{ item }}"
@@ -24,10 +27,12 @@
   changed_when: false
   failed_when: mount_check.rc != 0
   loop: "{{ data_storage }}"
+  tags: mergerfs
 
 - name: Set combined data storage.
   set_fact:
     combined_data_storage: "{{ data_storage | join(':') }}"
+  tags: mergerfs
 
 - name: Unmount if already mounted
   mount:
@@ -36,6 +41,7 @@
   loop:
     - "{{ mergerfs_mount_location }}"
     - "{{ mergerfs_mount_location_without_cache }}"
+  tags: mergerfs
 
 - name: Configure Cached Pool (ff policy) with SSD
   mount:
@@ -44,6 +50,7 @@
     fstype: fuse.mergerfs
     opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=partial,fsname=mergerfs-cached,category.create=ff"
     state: mounted
+  tags: mergerfs
 
 - name: Configure Static Pool (epmfs policy) without SSD
   mount:
@@ -52,3 +59,4 @@
     fstype: fuse.mergerfs
     opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=partial,fsname=mergerfs-static,category.create=epmfs"
     state: mounted
+  tags: mergerfs

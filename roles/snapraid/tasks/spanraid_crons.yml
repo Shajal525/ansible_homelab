@@ -1,0 +1,59 @@
+---
+- name: Clone snapraid-runner repository
+  git:
+    repo: "{{ snapraid_runner_git_url }}"
+    dest: "{{ snapraid_runner_install_path }}"
+    version: master
+  failed_when: false
+  tags: snapraid
+
+- name: Configure SnapRAID
+  template:
+    src: snapraid.conf.j2
+    dest: "{{ snapraid_config_path }}"
+    mode: '0644'
+  tags: snapraid
+
+- name: Configure snapraid-btrfs
+  template:
+    src: snapraid-btrfs.conf.j2
+    dest: "{{ snapraid_runner_install_path }}/snapraid-runner.conf"
+    mode: '0644'
+  tags: snapraid
+
+- name: Edit snapraid-runner to replace snapraid_command function to use snapraid-btrfs.conf
+  replace:
+    path: "{{ snapraid_runner_install_path }}/snapraid-runner.py"
+    regexp: |
+      def snapraid_command\(command, args=\{\}, \*, allow_statuscodes=\[\]\):[\s\S]*?raise subprocess.CalledProcessError\(ret, "snapraid " \+ command\)
+    replace: "{{ lookup('file', 'templates/snapraid-runner-command-function.j2') }}"
+  tags: snapraid
+
+- name: Run host_cronjob common script for SnapRAID BTRFS sync
+  include_role:
+    name: common
+    tasks_from: host_cronjob
+  vars:
+    host_cron_app_name: "snapraid_btrfs_sync"
+    host_cron_schedule: "30 0 * * *"
+    host_cron_script_to_run: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf"
+    host_cron_notification_message: "SnapRAID Sync"
+  tags: snapraid
+
+- name: Run host_cronjob common script to cleanup snapshots after SnapRAID BTRFS sync
+  include_role:
+    name: common
+    tasks_from: host_cronjob
+  vars:
+    host_cron_app_name: "snapraid_btrfs_sync_cleanup {{ item.name }}"
+    host_cron_schedule: "0 4 * * *"
+    host_cron_script_to_run: >-
+      /usr/bin/find "{{ item.path }}/.snapshots" -mindepth 2 -maxdepth 2 -type d -name snapshot -printf '%T@ %p\0' | /usr/bin/sort -z -r -n | /usr/bin/tail -z -n +2 | /usr/bin/cut -z -d' ' -f2- | /usr/bin/xargs -0 -r -I {} /bin/sh -c '/usr/bin/btrfs subvolume delete "$1" && rmdir "$(dirname "$1")" 2>/dev/null || true' sh {}
+    # host_cron_script_to_run: >-
+    #   /usr/bin/find {{ item.path }}/.snapshots/ -mindepth 2 -maxdepth 2 -type d -name snapshot -print0 | /usr/bin/xargs -0 stat --format '%Y %n' | sort -n | cut -d' ' -f2 | /usr/bin/head -n -1 | while IFS= read -r snapshot; do /usr/bin/btrfs subvolume delete "$snapshot"; /usr/bin/rm -drf "$(dirname "$snapshot")"; done
+    # host_cron_script_to_run: >-
+    #   "/usr/bin/find {{ item.path }}/.snapshots/ -mindepth 2 -maxdepth 2 -type d -name snapshot -print0
+    #   | /usr/bin/xargs -0 -I {} /usr/bin/btrfs subvolume delete "{}"; /bin/rm -drf {{ item.path }}/.snapshots/*"
+    host_cron_notification_message: "Snapshots deleted after SnapRAID sync from {{ item.name }}"
+  loop: "{{ data_disks }}"
+  tags: snapraid

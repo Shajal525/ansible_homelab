@@ -1,7 +1,7 @@
 ---
 - name: Install required packages
   package:
-    name: 
+    name:
       - snapraid
       - btrfs-progs
       - git
@@ -9,12 +9,14 @@
       - python3
       - python3-pip
     state: present
+  tags: snapraid
 
 - name: Create SnapRAID content directory
   file:
     path: "{{ snapraid_content_path }}"
     state: directory
     mode: '0755'
+  tags: snapraid
 
 - name: Check if data disks are using BTRFS
   command: "findmnt -n -o FSTYPE {{ item.path }}"
@@ -22,12 +24,14 @@
   changed_when: false
   failed_when: false
   loop: "{{ data_disks }}"
+  tags: snapraid
 
 - name: Verify BTRFS for data disks
   fail:
     msg: "Data disk {{ item.item.path }} is not formatted as BTRFS. Please format it as BTRFS first."
   when: item.stdout != "btrfs"
   loop: "{{ fstype_results.results }}"
+  tags: snapraid
 
 - name: Create Snapper configurations for data disks
   command: "snapper -c {{ item.name }} create-config {{ item.path }}"
@@ -35,6 +39,7 @@
   failed_when: snapper_result.rc != 0 and "subvolume already covered" not in snapper_result.stderr
   changed_when: snapper_result.rc == 0
   loop: "{{ data_disks }}"
+  tags: snapraid
 
 - name: Configure Snapper settings for each data disk
   lineinfile:
@@ -45,18 +50,21 @@
   with_nested:
     - "{{ data_disks }}"
     - "{{ snapper_settings }}"
+  tags: snapraid
 
 - name: Create subvolumes to store snapraid.content file
   command: "btrfs subvolume create {{ item.path }}/content_subvolume"
   loop: "{{ data_disks }}"
   changed_when: false
   failed_when: false
+  tags: snapraid
 
 - name: Clone snapraid-btrfs repository
   git:
     repo: "{{ snapraid_btrfs_git_url }}"
     dest: "{{ snapraid_btrfs_install_path }}"
     version: master
+  tags: snapraid
 
 - name: Install snapraid-btrfs script
   file:
@@ -64,36 +72,4 @@
     dest: /usr/local/bin/snapraid-btrfs
     state: link
     mode: '0755'
-
-- name: Clone snapraid-runner repository
-  git:
-    repo: "{{ snapraid_runner_git_url }}"
-    dest: "{{ snapraid_runner_install_path }}"
-    version: master
-  failed_when: false
-
-- name: Configure SnapRAID
-  template:
-    src: snapraid.conf.j2
-    dest: "{{ snapraid_config_path }}"
-    mode: '0644'
-
-- name: Configure snapraid-btrfs
-  template:
-    src: snapraid-btrfs.conf.j2
-    dest: "{{ snapraid_runner_install_path }}/snapraid-runner.conf"
-    mode: '0644'
-
-- name: Edit snapraid-runner to replace snapraid_command function to use snapraid-btrfs.conf 
-  replace:
-    path: "{{ snapraid_runner_install_path }}/snapraid-runner.py"
-    regexp: |
-      def snapraid_command\(command, args=\{\}, \*, allow_statuscodes=\[\]\):[\s\S]*?raise subprocess.CalledProcessError\(ret, "snapraid " \+ command\)
-    replace: "{{ lookup('file', 'templates/snapraid-runner-command-function.j2') }}"
-
-- name: Setup SnapRAID-BTRFS cron job
-  cron:
-    name: "SnapRAID-BTRFS sync"
-    hour: "1"
-    minute: "0"
-    job: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf"
+  tags: snapraid
