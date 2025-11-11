@@ -1,2 +1,3 @@
 ---
-- include_tasks: install_mergerfs.yml
+# - include_tasks: install_mergerfs_mount_drives.yml
+- include_tasks: cache_to_storage_cron.yml

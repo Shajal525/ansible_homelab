@@ -52,31 +52,3 @@
     fstype: fuse.mergerfs
     opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=partial,fsname=mergerfs-static,category.create=epmfs"
     state: mounted
-
-- name: Create rsync move script to move data from SSD to HDD
-  copy:
-    dest: /usr/local/bin/move_data_to_hdd.sh
-    content: |
-      #!/bin/bash
-      # Move files older than 1 day from SSD to HDD
-      sudo find {{ cache_storage }} -type f -mtime +1 -print0 | sudo sed 's|/mnt/cache/||g' \
-        | sudo rsync -a --remove-source-files --files-from=- --from0 --info=progress2 --relative {{ cache_storage }} {{ mergerfs_mount_location_without_cache }}
-      sudo find {{ cache_storage }} -mindepth 1 -type d -empty ! -path "/mnt/cache/Apps*" -delete
-    mode: "0755"
-    owner: root
-    group: root
-
-- name: Create cron job to run rsync daily
-  cron:
-    name: "Move old data from SSD to HDD"
-    minute: "0"
-    hour: "0"
-    job: "/usr/local/bin/move_data_to_hdd.sh"
-    state: present
-    user: root
-
-- name: Ensure cron service is running
-  service:
-    name: cron
-    state: started
-    enabled: true

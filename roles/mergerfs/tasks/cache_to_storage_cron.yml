@@ -1,0 +1,24 @@
+---
+- name: Create rsync move script to move data from SSD to HDD
+  copy:
+    dest: /usr/local/bin/move_data_to_hdd.sh
+    content: |
+      #!/bin/bash
+      # Move files older than 1 day from SSD to HDD
+      sudo find {{ cache_storage }} -type f -mtime +1 -print0 | sudo sed 's|/mnt/cache/||g' \
+        | sudo rsync -a --remove-source-files --files-from=- --from0 --info=progress2 --relative {{ cache_storage }} {{ mergerfs_mount_location_without_cache }}
+      sudo find {{ cache_storage }} -mindepth 1 -type d -empty ! -path "/mnt/cache/Apps*" -delete
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Run host_cronjob common script to move data from Cache to Storage with notification
+  include_role:
+    name: common
+    tasks_from: host_cronjob
+  vars:
+    host_cron_app_name: "mergerfs_cache_to_storage_move"
+    host_cron_schedule: "0 0 * * *"
+    host_cron_script_to_run: "/usr/local/bin/move_data_to_hdd.sh"
+    host_cron_notification_message: "MergerFS Move Data From Cache To Storage"
+  tags: rclone

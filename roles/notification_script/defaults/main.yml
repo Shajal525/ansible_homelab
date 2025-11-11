@@ -1,7 +1,0 @@
-notify_script_path: "/usr/local/bin/matrix_notify.py"
-matrix_homeserver_url: "https://matrix.{{ subdomain }}"
-matrix_bot_username: "@homelab:matrix.{{ subdomain }}"
-matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.{{ subdomain }}"
-matrix_access_token: "{{ matrix_access_token }}"
-last_number_of_line_to_send: 10
-

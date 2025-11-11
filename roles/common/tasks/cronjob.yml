@@ -43,6 +43,7 @@
     mode: '0644'
     owner: root
     group: root
+  when: no_cron_change is not defined or no_cron_change == false
   tags: cronjob
 
 - name: Deploy Cron Docker Container
@@ -78,9 +79,10 @@
   community.docker.docker_container_exec:
     container: cron_runner
     command: crontab /etc/cron.d/custom_cronfile
+  when: no_cron_change is not defined or no_cron_change == false
   tags: cronjob
 
 - name: Success message for cronjob setup
   debug:
-    msg: "Cronjob initiated successfully"
+    msg: "Cronjob container initiated successfully"
   tags: cronjob
