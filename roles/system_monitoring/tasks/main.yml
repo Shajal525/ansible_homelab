@@ -24,8 +24,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: 65534
-    group: 65534
+    owner: root
+    group: root
     mode: "0755"
   loop:
     - "{{ monitoring_base_path }}"
@@ -52,7 +52,7 @@
     command: "--config.file=/etc/prometheus/prometheus.yml"
     volumes:
       - "{{ prometheus_local_scripts }}:/etc/prometheus"
-      - "{{ prometheus_data }}:/prometheus"
+      - "{{ prometheus_local_data }}:/prometheus"
     labels:
       com.docker.compose.project: "monitoring_stack"
       com.docker.compose.service: "prometheus"
@@ -79,6 +79,7 @@
   community.docker.docker_container:
     name: grafana
     image: docker.io/grafana/grafana-oss:11.6.0
+    user: "root:root"
     # ports:
       # - "3000:3000"
     volumes:

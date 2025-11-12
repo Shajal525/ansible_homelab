@@ -25,8 +25,6 @@
     # Wait until certificates are generated. command: "docker logs traefik"
     # - role: cloud_sync_cron
     # - role: samba_share
-    # - role: notification_script
-    # - role: system_monitoring
     # - role: pangolin_newt
     # New backup and restore roles included
     # - role: install_docmost
@@ -48,6 +46,7 @@
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: postgresql
     # - role: rustdesk # installed in VPS
+    # - role: system_monitoring
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
