@@ -28,7 +28,6 @@
     group: 1000
     mode: "0755"
   loop:
-    - "{{ base_storage_path }}"
     - "{{ linkwarden_data_dir }}"
     - "{{ linkwarden_postgres_data_dir }}"
     - "{{ linkwarden_db_backups_sripts }}"
