@@ -36,7 +36,7 @@
   vars:
     host_cron_app_name: "snapraid_btrfs_sync"
     host_cron_schedule: "30 0 * * *"
-    host_cron_script_to_run: "python3 {{ snapraid_runner_install_path }}/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf"
+    host_cron_script_to_run: "/usr/bin/python3 {{ snapraid_runner_install_path }}/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf"
     host_cron_notification_message: "SnapRAID Sync"
   tags: snapraid
 
