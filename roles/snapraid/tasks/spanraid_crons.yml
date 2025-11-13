@@ -48,7 +48,7 @@
     host_cron_app_name: "snapraid_btrfs_sync_cleanup {{ item.name }}"
     host_cron_schedule: "0 5 * * *"
     host_cron_script_to_run: >-
-      /usr/bin/find "{{ item.path }}/.snapshots" -mindepth 2 -maxdepth 2 -type d -name snapshot -printf '%T@ %p\0' | /usr/bin/sort -z -r -n | /usr/bin/tail -z -n +2 | /usr/bin/cut -z -d' ' -f2- | /usr/bin/xargs -0 -r -I {} /bin/sh -c '/usr/bin/btrfs subvolume delete "$1" && rm -frd "$(dirname "$1")" 2>/dev/null || true' sh {}
+      /usr/bin/find "{{ item.path }}/.snapshots" -mindepth 2 -maxdepth 2 -type d -name snapshot -printf "\%T@ \%p\0" | /usr/bin/sort -z -r -n | /usr/bin/tail -z -n +2 | /usr/bin/cut -z -d" " -f2- | /usr/bin/xargs -0 -r -I {} /bin/sh -c "/usr/bin/btrfs subvolume delete \"$1\" && rm -frd \"$(dirname \"$1\")\" 2>/dev/null || true" sh {}
     # host_cron_script_to_run: >-
     #   "/usr/bin/find {{ item.path }}/.snapshots/ -mindepth 2 -maxdepth 2 -type d -name snapshot -print0
     #   | /usr/bin/xargs -0 -I {} /usr/bin/btrfs subvolume delete "{}"; /bin/rm -drf {{ item.path }}/.snapshots/*"
