@@ -25,7 +25,7 @@
     path: "{{ host_cron_scripts_path }}/custom_cronfile"
     marker: "# {mark} NAME: {{ host_cron_app_name }}"
     block: |
-      {{ host_cron_schedule }} bash -c 'out=$( {{ host_cron_script_to_run }} 2>&1 ); ec=$?; printf "%s\nEXIT:%s\n" "$out" "$ec" | /usr/bin/docker exec -i cron_runner python3 /scripts/matrix_notify.py "{{ host_cron_notification_message }}" exit "$ec";'
+      {{ host_cron_schedule }} bash -c 'out=$( {{ host_cron_script_to_run }} 2>&1 ); ec=$?; printf "\%s\nEXIT:\%s\n" "$out" "$ec" | /usr/bin/docker exec -i cron_runner python3 /scripts/matrix_notify.py "{{ host_cron_notification_message }}" exit "$ec";'
     create: true
     insertafter: EOF
     mode: '0644'
