@@ -3,10 +3,10 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Deploy Watchtower
-  docker_container:
+  community.docker.docker_container:
     name: watchtower
     image: containrrr/watchtower
     command: "0 0 4 * * *"
@@ -17,4 +17,3 @@
 - name: Watchtower deployed
   debug:
     msg: "Watchtower is running successfully"
-

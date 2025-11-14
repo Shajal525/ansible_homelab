@@ -37,12 +37,12 @@
     #   vars:
     #     host_type: "local"  # options: local, vps
     # - role: install_nextcloud
-    # - role: install_portainer
+    - role: install_portainer
     # - role: install_rclone
     # - role: install_syncthing
     # - role: install_traefik
     # - role: install_uptimeKuma
-    - role: snapraid # Carefull! this creates subvolumes and does initial sync.
+    # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: postgresql
     # - role: rustdesk # installed in VPS

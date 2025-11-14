@@ -4,13 +4,13 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure external networks exist
-  docker_network:
+  community.docker.docker_network:
     name: traefik_proxy
     state: present
-    internal: no
+    internal: false
     driver: bridge
 
 - name: Create Portainer directories
@@ -24,7 +24,7 @@
     - "{{ portainer_data }}"
 
 - name: Deploy Portainer
-  docker_container:
+  community.docker.docker_container:
     name: portainer
     image: portainer/portainer-ce:latest
     ports:
