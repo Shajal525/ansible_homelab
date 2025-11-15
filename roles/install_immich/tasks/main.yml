@@ -22,11 +22,20 @@
     group: "www-data"
     mode: "0755"
   loop:
-    - "{{ upload_location }}"
     - "{{ db_data_location }}"
     - "{{ immich_compose_dir }}"
     - "{{ immich_cloud_base_path }}"
     - "{{ immich_tmp_dir }}"
+
+- name: Create directories for Immich with root ownership
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  loop:
+    - "{{ upload_location }}"
     - "{{ immich_thumbs_dir }}"
     - "{{ immich_encoded_video_dir }}"
 
@@ -107,9 +116,9 @@
     insertafter: '\$\{UPLOAD_LOCATION\}:/data'
     line: "      {{ item }}"
   loop:
-    - "- ${EXTERNAL_STORAGE_PATH}:/datastorage"
     - "- ${ENCODED_VIDEO_LOCATION}:/data/encoded-video"
     - "- ${THUMB_LOCATION}:/data/thumbs"
+    - "- ${EXTERNAL_STORAGE_PATH}:/datastorage"
 
 - name: Insert networks configuration at the end of the file
   lineinfile:

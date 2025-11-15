@@ -28,7 +28,7 @@
     # - role: pangolin_newt
     # New backup and restore roles included
     # - role: install_docmost
-    # - role: install_immich
+    - role: install_immich
     # - role: install_homarr
     # - role: install_linkwarden
     # - role: install_matrix_synapse
@@ -37,7 +37,7 @@
     #   vars:
     #     host_type: "local"  # options: local, vps
     # - role: install_nextcloud
-    - role: install_portainer
+    # - role: install_portainer
     # - role: install_rclone
     # - role: install_syncthing
     # - role: install_traefik
