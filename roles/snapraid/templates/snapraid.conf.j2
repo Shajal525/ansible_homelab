@@ -4,7 +4,7 @@
 parity {{ parity_disk }}/snapraid.parity
 
 # Content file location(s)
-# content {{ snapraid_content_path }}/snapraid.content
+content {{ snapraid_content_path }}/snapraid.content
 {% for disk in data_disks %}
 content {{ disk.path }}/content_subvolume/snapraid.content
 {% endfor %}

@@ -1,7 +1,9 @@
-mergerfs_mount_location: "/mnt/storage"
-mergerfs_mount_location_without_cache: "/mnt/data-static"
+# mergerfs_mount_location_with_cache: "/mnt/mfstorage_cached"
+mergerfs_mount_location_without_cache: "/mnt/mfstorage"
 
 cache_storage: "/mnt/cache"
 data_storage:
-  - "/mnt/data1"
-  - "/mnt/data2"
+  - "/mnt/samsung990pro_ssd1"
+  # - "/mnt/data2"
+
+enable_cache_disk: false

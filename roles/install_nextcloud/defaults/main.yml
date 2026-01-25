@@ -21,4 +21,3 @@ nextcloud_domain2: nextcloud.tail41c751.ts.net
 
 nextcloud_backup_db: true
 nextcloud_restore_db: false
-

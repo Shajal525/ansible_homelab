@@ -5,12 +5,20 @@
     state: present
   tags: mergerfs
 
-- name: Ensure mount directories exist
+- name: Ensure cached mount directory exist
   file:
     path: "{{ item }}"
     state: directory
   loop:
-    - "{{ mergerfs_mount_location }}"
+    - "{{ mergerfs_mount_location_with_cache }}"
+  when: enable_cache_disk
+  tags: mergerfs
+
+- name: Ensure mount non cache directory exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
     - "{{ mergerfs_mount_location_without_cache }}"
   tags: mergerfs
 
@@ -19,6 +27,7 @@
   register: cache_mount_check
   changed_when: false
   failed_when: cache_mount_check.rc != 0
+  when: enable_cache_disk
   tags: mergerfs
 
 - name: Ensure disks are mounted
@@ -34,26 +43,33 @@
     combined_data_storage: "{{ data_storage | join(':') }}"
   tags: mergerfs
 
-- name: Unmount if already mounted
-  mount:
-    path: "{{ item }}"
+- name: Unmount cached drive if already mounted
+  ansible.builtin.mount:
+    path: "{{ mergerfs_mount_location_with_cache }}"
     state: unmounted
   loop:
-    - "{{ mergerfs_mount_location }}"
-    - "{{ mergerfs_mount_location_without_cache }}"
+    - "{{ mergerfs_mount_location_with_cache }}"
+  when: enable_cache_disk
+  tags: mergerfs
+
+- name: Unmount non-cached drives if already mounted
+  ansible.builtin.mount:
+    path: "{{ mergerfs_mount_location_without_cache }}"
+    state: unmounted
   tags: mergerfs
 
 - name: Configure Cached Pool (ff policy) with SSD
-  mount:
-    path: "{{ mergerfs_mount_location }}"
+  ansible.builtin.mount:
+    path: "{{ mergerfs_mount_location_with_cache }}"
     src: "{{ cache_storage }}:{{ combined_data_storage }}"
     fstype: fuse.mergerfs
     opts: "defaults,allow_other,use_ino,dropcacheonclose=true,cache.files=partial,fsname=mergerfs-cached,category.create=ff"
     state: mounted
+  when: enable_cache_disk
   tags: mergerfs
 
 - name: Configure Static Pool (epmfs policy) without SSD
-  mount:
+  ansible.builtin.mount:
     path: "{{ mergerfs_mount_location_without_cache }}"
     src: "{{ combined_data_storage }}"
     fstype: fuse.mergerfs

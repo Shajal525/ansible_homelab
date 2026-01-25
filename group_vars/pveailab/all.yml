@@ -10,5 +10,5 @@ base_storage_path: "/home/apps"
 pveailab_cloudflare_email: "{{ cloudflare_email }}"
 pveailab_cf_dns_api_token: "{{ CF_DNS_API_TOKEN }}"
 
-subdomain: "ai.shajalslab.top"
+subdomain: "ai.kelovate.online"
 cloudflare_tunnel_name: "ailab_cloud_tunnel"

@@ -39,8 +39,9 @@ certificatesResolvers:
       storage: /etc/traefik/certs/acme.json
       dnsChallenge:
         provider: cloudflare
-        disablePropagationCheck: true # Some people using Cloudflare note this can solve DNS propagation issues.
-        delayBeforeCheck: 60
+        propagation:
+          disableChecks: true # Some people using Cloudflare note this can solve DNS propagation issues.
+          delayBeforeChecks: 30 # wait 30 seconds before checking DNS propagation
         resolvers:
           - "1.1.1.1:53"
           - "8.8.8.8:53"

@@ -4,20 +4,24 @@ ssh_public_key: "{{ ssh_directory }}id_rsa.pub"
 ssh_key_path: "{{ ssh_directory }}id_rsa"
 ssh_port: 22
 shell: /bin/bash
-base_app_storage_path: "/mnt/storage/Apps/CloudData/Docker"
 
 base_local_ssd_storage_path: "/home/shajal/Apps/Docker"
 
-my_cloud_nas_storage_path: "/mnt/storage/DataStorage"
-my_non_cloud_nas_storage_path: "/mnt/storage/NonCloudDataStorage"
-my_cloud_nas_app_storage_path: "/mnt/storage/Apps/CloudData"
+base_mergerfs_storage_path: "/mnt/mfstorage"
 
-matrix_url: "https://matrix.shajalslab.top"
-matrix_user_id: "@homelab:matrix.shajalslab.top"
-matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.shajalslab.top"
+base_app_storage_path: "{{ base_mergerfs_storage_path }}/Apps/CloudData/Docker"
+
+my_cloud_nas_storage_path: "{{ base_mergerfs_storage_path }}/DataStorage"
+my_non_cloud_nas_storage_path: "{{ base_mergerfs_storage_path }}/NonCloudDataStorage"
+my_cloud_nas_app_storage_path: "{{ base_mergerfs_storage_path }}/Apps/CloudData"
+
+subdomain: "kleovate.online"
+
+matrix_url: "https://matrix.{{ subdomain}}"
+matrix_user_id: "@homelab:matrix.{{ subdomain }}"
+matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.{{ subdomain }}"
 matrix_access_token: "{{ matrix_access_token }}"
 
-subdomain: "shajalslab.top"
 cloudflare_tunnel_name: "homelab_cloud_tunnel"
 pvehomelab_cf_dns_api_token: "{{ CF_DNS_API_TOKEN }}"
 pvehomelab_cloudflare_email: "{{ cloudflare_email }}"

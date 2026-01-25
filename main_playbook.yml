@@ -20,15 +20,15 @@
   roles:
     # - role: install_tsdproxy_tailscale # don't need now
     # - role: cloudflare_tunnel # don't need now
-    # IMPORTANT: Need to remove *.shajalslab.top and shajalslab.top from local DNS resolver.
+    # IMPORTANT: Need to remove subdomains *.kelovate.online and kelovate.online from local DNS resolver.
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
-    # - role: cloud_sync_cron
+    # - role: cloud_sync_cron # don't need now
     # - role: samba_share
     # - role: pangolin_newt
     # New backup and restore roles included
-    # - role: install_docmost
-    - role: install_immich
+    - role: install_docmost
+    # - role: install_immich
     # - role: install_homarr
     # - role: install_linkwarden
     # - role: install_matrix_synapse

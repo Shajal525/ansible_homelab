@@ -5,12 +5,11 @@
     state: started
     enabled: true
 
-- name: Check if networks exist
-  command: docker network inspect {{ network_item }}
-  register: network_check
-  failed_when: network_check.rc != 0
-  changed_when: false
-  loop: 
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
     - traefik_proxy
   loop_control:
     loop_var: network_item

@@ -13,7 +13,7 @@ server_openssl_config: "{{ ssl_cert_dir }}/server_openssl.cnf"
 ssl_local_machine_save_path: "/mnt/c/Users/Shajal/ssl_cert/"
 ca_validity_days: 3650
 server_validity_days: 3650
-server_cn: "shajalslab"
+server_cn: "kelovate"
 openssl_server_dns_names: "{{ pvehomelab_server_dns_names }}"
 openssl_server_ip_addresses: "{{ pvehomelab_server_ip_addresses }}"
 cert_password: "{{ vm_password }}"

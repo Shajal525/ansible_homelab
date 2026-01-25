@@ -4,7 +4,7 @@ cron_nas_scripts_path: "{{ cron_nas_base_path }}/scripts"
 
 host_cron_scripts_path: "/etc/cron.d/"
 
-cron_local_base_path: "{{ base_local_ssd_storage_path }}/cron"
+# cron_local_base_path: "{{ base_local_ssd_storage_path }}/cron"
 
 matrix_url_l: "{{ matrix_url }}"
 matrix_user_id_l: "{{ matrix_user_id }}"

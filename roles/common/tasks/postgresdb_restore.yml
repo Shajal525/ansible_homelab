@@ -9,7 +9,7 @@
 
 - name: Abort when directory has no files
   fail:
-    msg: "No files found in {{ pg_backup_directory }} to restore."
+    msg: "No files found in {{ pg_backup_directory }} to restore. {{ found }}."
   when: found.matched | int == 0
   tags: postgres_restore
 
