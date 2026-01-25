@@ -28,7 +28,7 @@
 - name: Deploy UptimeKuma container
   community.docker.docker_container:
     name: uptimekuma
-    image: louislam/uptime-kuma:latest
+    image: louislam/uptime-kuma:2.0.2
     security_opts:
       - "no-new-privileges:true"
     volumes:

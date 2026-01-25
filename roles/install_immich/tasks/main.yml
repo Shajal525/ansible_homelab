@@ -80,6 +80,16 @@
     group: root
     mode: '0644'
 
+- name: Download Immich hardware acceleration templates
+  ansible.builtin.get_url:
+    url: "https://github.com/immich-app/immich/releases/latest/download/{{ item }}"
+    dest: "{{ immich_compose_dir }}/{{ item }}"
+    mode: '0644'
+  loop:
+    - hwaccel.transcoding.yml
+    - hwaccel.ml.yml
+  when: immich_enable_gpu | default(false)
+
 - name: Insert labels after '2283:2283' line
   replace:
     path: "{{ immich_compose_dir }}/docker-compose.yml"
@@ -142,6 +152,78 @@
     path: "{{ immich_compose_dir }}/docker-compose.yml"
     regexp: '^\\s*start_interval:.*\\n'
     replace: ''
+
+# GPU Passthrough section start
+# --- 1. CLEAN UP THE SERVER SECTION ---
+- name: SERVER - Uncomment and Indent 'extends'
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\s*#?\s*extends:.*'
+    replace: '    extends:'
+  when: immich_enable_gpu | default(false)
+
+- name: SERVER - Fix transcoding file line
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\s*#?\s*file:\s*hwaccel\.transcoding\.yml.*$'
+    replace: '      file: hwaccel.transcoding.yml'
+  when: immich_enable_gpu | default(false)
+
+- name: SERVER - Set service to quicksync
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\s*#?\s*service:\s*(cpu|quicksync|openvino)\s*#\s*set to one of \[nvenc.*$'
+    replace: '      service: quicksync'
+  when: immich_enable_gpu | default(false)
+
+# --- 2. CLEAN UP THE ML SECTION ---
+- name: ML - Fix machine learning file line
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\s*#?\s*file:\s*hwaccel\.ml\.yml.*$'
+    replace: '      file: hwaccel.ml.yml'
+  when: immich_enable_gpu | default(false)
+
+- name: ML - Set service to openvino
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    regexp: '^\s*#?\s*service:\s*(cpu|openvino)\s*#\s*set to one of \[armnn.*$'
+    replace: '      service: openvino'
+  when: immich_enable_gpu | default(false)
+
+# --- 3. INJECT DEVICES (THE CLEAN WAY) ---
+- name: Ensure devices section is clean and present for Server
+  ansible.builtin.blockinfile:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    marker: "# {mark} SERVER DEVICE"
+    insertafter: 'service: quicksync'
+    block: |
+      {{ ' ' * 4 }}devices:
+      {{ ' ' * 4 }}  - /dev/dri:/dev/dri
+      {{ ' ' * 4 }}group_add:
+      {{ ' ' * 4 }}  - "992"
+  when: immich_enable_gpu | default(false)
+
+- name: Ensure devices section is clean and present for ML
+  ansible.builtin.blockinfile:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    marker: "# {mark} ML DEVICE"
+    insertafter: 'service: openvino'
+    block: |
+      {{ ' ' * 4 }}devices:
+      {{ ' ' * 4 }}  - /dev/dri:/dev/dri
+      {{ ' ' * 4 }}group_add:
+      {{ ' ' * 4 }}  - "992"
+  when: immich_enable_gpu | default(false)
+
+- name: ML - Update image to OpenVINO version
+  ansible.builtin.replace:
+    path: "{{ immich_compose_dir }}/docker-compose.yml"
+    # Matches the image line only if it hasn't already been changed to -openvino
+    regexp: '(image: ghcr\.io/immich-app/immich-machine-learning:\${IMMICH_VERSION:-release})(?!-openvino)'
+    replace: '\1-openvino'
+  when: immich_enable_gpu | default(false)
+# GPU Passthrough section end
 
 - name: Create .env file for Immich
   copy:
