@@ -28,12 +28,14 @@
     # New backup and restore roles included
     # - role: install_homarr
     # - role: install_linkwarden
+    # - role: install_syncthing
     # Important ones
     # - role: install_traefik
     # - role: pangolin_newt
     # - role: install_docmost
-    - role: install_matrix_synapse
+    # - role: install_matrix_synapse
     # - role: install_immich
+    - role: install_uptimeKuma
     # - role: install_media_packages
     # - role: install_n8n
     #   vars:
@@ -41,8 +43,6 @@
     # - role: install_nextcloud
     # - role: install_portainer
     # - role: install_rclone
-    # - role: install_syncthing
-    # - role: install_uptimeKuma
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: postgresql

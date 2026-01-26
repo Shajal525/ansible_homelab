@@ -1,34 +1,55 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Ensure external networks exist
+- name: Ensure docker networks exist
   community.docker.docker_network:
-    name: "{{ item }}"
+    name: "{{ network_item }}"
     state: present
-    internal: false
-    driver: bridge
   loop:
     - traefik_proxy
     - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Create directories for UptimeKuma
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ uptimekuma_data_path }}"
+  
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
 
 - name: Deploy UptimeKuma container
   community.docker.docker_container:
     name: uptimekuma
     image: louislam/uptime-kuma:2.0.2
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
     security_opts:
       - "no-new-privileges:true"
     volumes:
