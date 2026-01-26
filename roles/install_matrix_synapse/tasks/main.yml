@@ -1,18 +1,30 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Check if networks exist
-  command: docker network inspect {{ item }}
-  register: network_check
-  failed_when: network_check.rc != 0
-  changed_when: false
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
   loop:
     - traefik_proxy
     - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Create external network
   community.docker.docker_network:
@@ -24,8 +36,9 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ matrix_data_dir }}"
@@ -46,8 +59,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
     mode: "0755"
     recurse: true
   loop:
@@ -59,7 +72,6 @@
     regexp: '(^database:\n\s+name:\s+sqlite3\n(?:\s+.*\n?){2})'
     replace: '\n'
 
-
 - name: Insert PostgreSQL configuration and other settings into homeserver.yaml
   blockinfile:
     path: "{{ matrix_data_dir }}/homeserver.yaml"
@@ -67,10 +79,19 @@
     block: "{{ lookup('template', 'templates/homeserver_additional_settings.j2') }}"
     state: present
 
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
 - name: Deploy Matrix Postgres DB container
   community.docker.docker_container:
     name: postgres_matrix
     image: postgres:18.1
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
     env:
       POSTGRES_DB: "{{ matrix_db_name }}"
       POSTGRES_USER: "{{ matrix_db_user }}"
@@ -93,12 +114,15 @@
   community.docker.docker_container:
     name: synapse
     image: matrixdotorg/synapse:latest
+    # user: "{{ target_uid }}:{{ target_gid }}"
+    # groups:
+    #   - "{{ docker_sock.stat.gid }}"
     env:
       SYNAPSE_SERVER_NAME: "{{ matrix_domain }}"
       SYNAPSE_REPORT_STATS: "yes"
       SYNAPSE_CONFIG_PATH: "/data/homeserver.yaml"
-      UID: "1000"
-      GID: "1000"
+      UID: "{{ target_uid }}"
+      GID: "{{ target_gid }}"
     volumes:
       - "{{ matrix_data_dir }}:/data"
     labels:
@@ -174,5 +198,5 @@
 
 - name: Matrix deployed
   debug:
-    msg: "Matrix is running successfully"
+    msg: "Matrix is running successfully. To check if it's working, open: https://{{ matrix_domain }}/_matrix/client/versions in your browser."
   tags: matrix

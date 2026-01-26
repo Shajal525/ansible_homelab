@@ -1,19 +1,35 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Create Pangolin network if it does not exist
+- name: Ensure docker networks exist
   community.docker.docker_network:
-    name: pangolin_network
+    name: "{{ network_item }}"
     state: present
+  loop:
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Deploy Pangolin_Newt container
   community.docker.docker_container:
     name: newt
     image: fosrl/newt
+    user: "{{ target_uid }}:{{ target_gid }}"
     env:
       PANGOLIN_ENDPOINT: "{{ pangolin_endpoint }}"
       NEWT_ID: "{{ pangolin_newt_id }}"
