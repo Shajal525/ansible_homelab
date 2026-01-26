@@ -1,25 +1,60 @@
 ---
-- name: Create proxy network if it does not exist
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
   community.docker.docker_network:
-    name: traefik_proxy
+    name: "{{ network_item }}"
     state: present
+  loop:
+    - traefik_proxy
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Create Traefik directories
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ traefik_base_path }}"
     - "{{ traefik_config }}"
+    - "{{ traefik_logs }}"
+
+- name: Create Traefik directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0700"
+  loop:
     - "{{ traefik_certs }}"
 
 - name: Create Traefik config file from template
   template:
     src: templates/traefik.yaml.j2
     dest: "{{ traefik_config }}/traefik.yaml"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
 
 - name: Install apache2-utils
   package:
@@ -36,10 +71,19 @@
   debug:
     msg: "Generated hash: {{ htpasswd_hash.stdout }}"
 
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
 - name: Deploy Traefik container
   community.docker.docker_container:
     name: traefik
     image: traefik:latest
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
     ports:
       - "80:80"
       - "443:443"
@@ -53,6 +97,7 @@
       - "{{ traefik_config }}/traefik.yaml:/etc/traefik/traefik.yaml:ro"
       - "{{ traefik_config }}:/etc/traefik/conf/"
       - "{{ traefik_certs }}:/etc/traefik/certs/"
+      - "{{ traefik_logs }}:/var/log/traefik/"
     labels:
       com.docker.compose.project: "traefik_stack"
       com.docker.compose.service: "traefik"

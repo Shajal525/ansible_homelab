@@ -1,9 +1,11 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
+- name: Ensure Docker service is running and setup user access
+  include_role:
+    name: common
+    tasks_from: setup_docker_user
+  vars:
+    target_user: "{{ docker_user }}"
+  tags: cronjob
 
 - name: Ensure docker networks exist
   community.docker.docker_network:
@@ -15,12 +17,24 @@
     loop_var: network_item
   tags: cronjob
 
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+  tags: cronjob
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+  tags: cronjob
+
 - name: Create directory
   file:
     path: "{{ directory_item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
     mode: "0755"
   loop:
     - "{{ cron_nas_base_path }}"
@@ -33,6 +47,8 @@
   template:
     src: templates/matrix_notify.py.j2
     dest: "{{ cron_nas_scripts_path }}/matrix_notify.py"
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
     mode: '0755'
   tags: cronjob
 
@@ -45,8 +61,8 @@
     create: true
     insertafter: EOF
     mode: '0644'
-    owner: root
-    group: root
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
   when: no_cron_change is not defined or no_cron_change == false
   tags: cronjob
 
@@ -55,6 +71,7 @@
     name: cron_runner
     image: ubuntu:25.10
     hostname: cron_runner
+    # user: "{{ target_uid }}:{{ target_gid }}"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones

@@ -2,6 +2,9 @@ traefik_base_path: "{{ base_app_storage_path }}/traefik"
 traefik_config: "{{ traefik_base_path }}/config"
 traefik_certs: "{{ traefik_base_path }}/certs"
 
+traefik_local_path: "{{ base_local_ssd_storage_path }}/traefik"
+traefik_logs: "{{ traefik_local_path }}/logs"
+
 traefik_cf_dns_api_token: "{{ pvehomelab_cf_dns_api_token }}"
 traefik_cloudflare_email: "{{ pvehomelab_cloudflare_email }}"
 traefik_dashboard_password: "{{ vm_password }}"

@@ -1,4 +1,35 @@
 ---
+- name: Ensure Docker service is running and setup user access
+  include_role:
+    name: common
+    tasks_from: setup_docker_user
+  vars:
+    target_user: "{{ docker_user }}"
+  tags: postgres_restore
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+  loop_control:
+    loop_var: network_item
+  tags: postgres_restore
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+  tags: postgres_restore
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+  tags: postgres_restore
+
+
 - name: Find files in backup directory
   find:
     paths: "{{ pg_backup_directory }}"
@@ -34,8 +65,8 @@
   file:
     path: "{{ directory_item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
     mode: "0755"
   loop:
     - "{{ postgres_restore_base_path }}"
@@ -47,8 +78,8 @@
   copy:
     src: "{{ newest_file }}"
     dest: "{{ postgres_restore_base_path }}/backup_file.sql.gz"
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
     mode: "0755"
     follow: true
     remote_src: true
@@ -66,6 +97,8 @@
   template:
     src: templates/restore_postgres_db.sh.j2
     dest: "{{ postgres_restore_base_path }}/restore_postgres_db.sh"
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
     mode: '0755'
   tags: postgres_restore
 
@@ -74,6 +107,7 @@
     name: postgres_restore
     image: ubuntu:24.04
     hostname: postgres_restore
+    user: "{{ target_uid }}:{{ target_gid }}"
     volumes:
       - "{{ postgres_restore_base_path }}:/scripts:rw"
     command: ["/scripts/restore_postgres_db.sh"]

@@ -33,3 +33,6 @@ pvehomelab_server_ip_addresses: "{{ server_ip_addresses }}"
 
 pvehomelab_newt_id: "{{ newt_id }}"
 pvehomelab_newt_secret: "{{ newt_secret }}"
+
+docker_user: "homelab_docker_user"
+

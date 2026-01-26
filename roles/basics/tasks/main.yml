@@ -1,4 +1,0 @@
----
-- include_tasks: upgrade.yml
-- include_tasks: install_packages.yml
-

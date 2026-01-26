@@ -1,0 +1,37 @@
+---
+- name: Make sure docker is installed properly with default user access.
+  include_role:
+    name: common
+    tasks_from: install_docker
+  tags: setup_docker_user
+
+- name: Ensure the user exists and is in the docker group
+  user:
+    name: "{{ target_user }}"
+    state: present
+    groups: docker
+    append: true
+    shell: /bin/bash
+  tags: setup_docker_user
+
+- name: Check which optional groups exist
+  getent:
+    database: group
+    key: "{{ item }}"
+  register: group_check
+  ignore_errors: true
+  loop:
+    - video
+    - render
+  tags: setup_docker_user
+
+- name: Add user to existing optional groups
+  user:
+    name: "{{ target_user }}"
+    groups: "{{ item.item }}"
+    append: yes
+  when: (item.ansible_facts.getent_group[item.item] | default(None)) is not none
+  loop: "{{ group_check.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  tags: setup_docker_user

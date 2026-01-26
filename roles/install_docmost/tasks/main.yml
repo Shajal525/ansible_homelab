@@ -1,25 +1,42 @@
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
-  tags: docmost
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+#   tags: docmost
 
-- name: Check if networks exist
-  command: docker network inspect {{ item }}
-  register: network_check
-  failed_when: network_check.rc != 0
-  changed_when: false
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
   loop:
     - traefik_proxy
     - pangolin_network
+  loop_control:
+    loop_var: network_item
+  tags: docmost
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+  tags: docmost
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+  tags: docmost
 
 - name: Create Docmost directories
   file:
     path: "{{ item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ docmost_data }}"
@@ -33,7 +50,7 @@
     name: docmost_db
     image: postgres:16-alpine
     hostname: docmost_db
-    user: "1000:1000"
+    # user: "{{ target_uid }}:{{ target_gid }}"
     env:
       POSTGRES_DB: "{{ docmost_db_name }}"
       POSTGRES_USER: "{{ docmost_db_user }}"
@@ -54,7 +71,7 @@
     name: docmost_redis
     image: "redis:7.2-alpine"
     hostname: docmost_redis
-    user: "1000:1000"
+    user: "{{ target_uid }}:{{ target_gid }}"
     volumes:
       - "{{ docmost_redis }}:/data"
     labels:
@@ -71,7 +88,7 @@
     name: docmost
     image: "docmost/docmost:latest"
     hostname: docmost
-    user: "1000:1000"
+    user: "{{ target_uid }}:{{ target_gid }}"
     env:
       APP_URL: "https://{{ docmost_domain }}"
       APP_SECRET: "{{ docmost_app_secret }}"

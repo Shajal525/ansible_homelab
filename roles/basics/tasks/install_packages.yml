@@ -1,7 +1,0 @@
----
-- name: Ensure python3 is installed
-  apt:
-    name:
-      - python3
-    state: present
-    update_cache: true
