@@ -1,11 +1,11 @@
 ---
-- name: Ensure Docker service is running and setup user access
-  include_role:
-    name: common
-    tasks_from: setup_docker_user
-  vars:
-    target_user: "{{ docker_user }}"
-  tags: cronjob
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+#   tags: cronjob
 
 - name: Ensure docker networks exist
   community.docker.docker_network:
@@ -35,6 +35,7 @@
     state: directory
     owner: "{{ target_uid }}"
     group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ cron_nas_base_path }}"
@@ -66,12 +67,20 @@
   when: no_cron_change is not defined or no_cron_change == false
   tags: cronjob
 
+# - name: Stat docker socket
+#   become: true
+#   ansible.builtin.stat:
+#     path: /var/run/docker.sock
+#   register: docker_sock
+
 - name: Deploy Cron Docker Container
   docker_container:
     name: cron_runner
     image: ubuntu:25.10
     hostname: cron_runner
     # user: "{{ target_uid }}:{{ target_gid }}"
+    # groups:
+    #   - "{{ docker_sock.stat.gid }}"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "{{ cron_nas_all_apps_path }}:/apps:rw" # Need this to store backups and remove old ones

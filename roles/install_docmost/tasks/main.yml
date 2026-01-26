@@ -45,12 +45,20 @@
     - "{{ docmost_redis }}"
   tags: docmost
 
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
 - name: Deploy PostgreSQL (db)
   community.docker.docker_container:
     name: docmost_db
     image: postgres:16-alpine
     hostname: docmost_db
-    # user: "{{ target_uid }}:{{ target_gid }}"
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
     env:
       POSTGRES_DB: "{{ docmost_db_name }}"
       POSTGRES_USER: "{{ docmost_db_user }}"
@@ -72,6 +80,8 @@
     image: "redis:7.2-alpine"
     hostname: docmost_redis
     user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
     volumes:
       - "{{ docmost_redis }}:/data"
     labels:
@@ -88,7 +98,9 @@
     name: docmost
     image: "docmost/docmost:latest"
     hostname: docmost
-    user: "{{ target_uid }}:{{ target_gid }}"
+    # user: "{{ target_uid }}:{{ target_gid }}"
+    # groups:
+    #   - "{{ docker_sock.stat.gid }}"
     env:
       APP_URL: "https://{{ docmost_domain }}"
       APP_SECRET: "{{ docmost_app_secret }}"

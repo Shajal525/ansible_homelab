@@ -1,11 +1,11 @@
 ---
-- name: Ensure Docker service is running and setup user access
-  include_role:
-    name: common
-    tasks_from: setup_docker_user
-  vars:
-    target_user: "{{ docker_user }}"
-  tags: postgres_restore
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+#   tags: postgres_restore
 
 - name: Ensure docker networks exist
   community.docker.docker_network:
@@ -67,6 +67,7 @@
     state: directory
     owner: "{{ target_uid }}"
     group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ postgres_restore_base_path }}"
@@ -107,7 +108,7 @@
     name: postgres_restore
     image: ubuntu:24.04
     hostname: postgres_restore
-    user: "{{ target_uid }}:{{ target_gid }}"
+    # user: "{{ target_uid }}:{{ target_gid }}"
     volumes:
       - "{{ postgres_restore_base_path }}:/scripts:rw"
     command: ["/scripts/restore_postgres_db.sh"]

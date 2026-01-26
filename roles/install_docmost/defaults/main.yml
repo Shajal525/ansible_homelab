@@ -15,5 +15,5 @@ docmost_port: 3000
 
 docmost_app_secret: "{{ complex_db_secret }}"
 
-docmost_backup_db: true
+docmost_backup_db: false
 docmost_restore_db: false
