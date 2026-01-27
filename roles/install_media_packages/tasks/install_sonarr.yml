@@ -3,7 +3,7 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Check if networks exist
   command: docker network inspect {{ item }}
@@ -20,6 +20,7 @@
     state: directory
     owner: "nobody"
     group: "nogroup"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ sonarr_config }}"

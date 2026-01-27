@@ -1,19 +1,30 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
-  tags: rclone
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Ensure external networks exist
+- name: Ensure docker networks exist
   community.docker.docker_network:
-    name: "{{ item }}"
+    name: "{{ network_item }}"
     state: present
-    internal: false
-    driver: bridge
   loop:
     - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Ensure FUSE is installed
   apt:
@@ -25,13 +36,13 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: "www-data"
-    group: "www-data"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ rclone_config_path }}"
-    - "{{ rclone_nas_storage_path }}"
-    - "{{ rclone_nas_app_storage_path }}"
+    - "{{ rclone_home_path }}"
   tags: rclone
 
 - name: Create RClone config file from template
@@ -40,16 +51,20 @@
     dest: "{{ rclone_config_path }}/rclone.conf"
   tags: rclone
 
+
 - name: Deploy RClone container
   community.docker.docker_container:
     name: rclone
     image: rclone/rclone:latest
+    # user: "{{ target_uid }}:{{ target_gid }}"  # This will not work because non root use cannot run crontab inside container
     env:
       PHP_TZ: "Europe/London"
+      HOME: "/data/home"
     security_opts:
       - "no-new-privileges:true"
     volumes:
       - "{{ rclone_config_path }}:/config/rclone"
+      - "{{ rclone_home_path }}:/data/home"
       - "{{ rclone_nas_storage_path }}:/datastorage"
       - "{{ rclone_nas_app_storage_path }}:/appstorage"
     devices:
@@ -78,7 +93,7 @@
       # tsdproxy.tlsvalidate: "false"
       # tsdproxy.container_port: "5572"
     networks:
-      # - name: media_network
+      - name: pangolin_network
       - name: traefik_proxy
     restart_policy: unless-stopped
     state: started

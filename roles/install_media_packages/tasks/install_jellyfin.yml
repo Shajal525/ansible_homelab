@@ -20,6 +20,7 @@
     state: directory
     owner: "nobody"
     group: "nogroup"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ jellyfin_config }}"
@@ -39,6 +40,12 @@
     user: "nobody:nogroup"
     env:
       JELLYFIN_PublishedServerUrl: "https://{{ jellyfin_domain }}"
+    devices:
+      - "/dev/dri/renderD128:/dev/dri/renderD128"
+      - "/dev/dri/card0:/dev/dri/card0"
+    groups:
+      - "44"
+      - "992"
     volumes:
       - "{{ jellyfin_logs }}:/config/log"
       - "{{ jellyfin_metadata }}:/config/metadata"

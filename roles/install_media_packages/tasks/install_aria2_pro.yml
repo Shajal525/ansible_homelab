@@ -20,6 +20,7 @@
     state: directory
     owner: "nobody"
     group: "nogroup"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ aria2_pro_config }}"
@@ -29,12 +30,15 @@
   docker_container:
     name: aria
     image: hurlenko/aria2-ariang
-    # user: "nobody:nogroup"
+    # user: "nobody:nogroup" # This will cause error.
     env:
       PUID: "65534"
       PGID: "65534"
       RPC_SECRET: "{{ aria2_pro_secret }}"
       ARIA2RPCPORT: "443"
+      XDG_CONFIG_HOME: "/aria2/conf"
+      XDG_DATA_HOME: "/aria2/conf"
+      XDG_CACHE_HOME: "/aria2/conf/cache"
     volumes:
       - "{{ aria2_pro_config }}:/aria2/conf"
       - "{{ media_data_path }}/downloads/aria:/aria2/data"

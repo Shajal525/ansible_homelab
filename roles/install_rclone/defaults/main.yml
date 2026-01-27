@@ -4,6 +4,7 @@ rclone_nas_app_storage_path: "{{ my_cloud_nas_app_storage_path }}"
 rclone_base_path: "{{ base_local_ssd_storage_path }}/rclone"
 
 rclone_config_path: "{{ rclone_base_path }}/config"
+rclone_home_path: "{{ rclone_base_path }}/home"
 
 rclone_log_path: "{{ rclone_base_path }}/log"
 rclone_cache_path: "{{ rclone_base_path }}/cache"
