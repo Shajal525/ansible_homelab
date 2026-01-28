@@ -52,11 +52,28 @@
     - "{{ snapper_settings }}"
   tags: snapraid
 
-- name: Create subvolumes to store snapraid.content file
-  command: "btrfs subvolume create {{ item.path }}/content_subvolume"
+
+- name: Gather mount facts
+  ansible.builtin.setup:
+    gather_subset:
+      - mounts
+  tags: snapraid
+
+- name: Process each disk configuration
+  include_tasks: mount_content_subvolume.yml
   loop: "{{ data_disks }}"
+  loop_control:
+    loop_var: disk_config
+  tags: snapraid
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  tags: snapraid
+
+- name: Mount all filesystems
+  ansible.builtin.command: mount -a
   changed_when: false
-  failed_when: false
   tags: snapraid
 
 - name: Clone snapraid-btrfs repository

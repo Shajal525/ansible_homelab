@@ -1,0 +1,45 @@
+---
+- name: Reset UUID fact
+  set_fact:
+    current_disk_uuid: null
+
+# Find UUID matching the path provided in disk_config.path
+- name: "Find UUID for {{ disk_config.path }}"
+  set_fact:
+    current_disk_uuid: "{{ item.uuid }}"
+  loop: "{{ ansible_mounts }}"
+  when: item.mount == disk_config.path
+  no_log: true
+
+# Validation
+- name: "Fail if UUID not found for {{ disk_config.path }}"
+  fail:
+    msg: "ERROR: Mount point '{{ disk_config.path }}' not found in system mounts!"
+  when: current_disk_uuid is none
+
+# Subvolume Creation
+- name: "Check if subvolume '{{ disk_config.subvolume_name }}' exists on {{ disk_config.path }}"
+  stat:
+    path: "{{ disk_config.path }}/{{ disk_config.subvolume_name }}"
+  register: subvol_stat
+
+- name: "Create btrfs subvolume '{{ disk_config.subvolume_name }}'"
+  command: "btrfs subvolume create {{ disk_config.path }}/{{ disk_config.subvolume_name }}"
+  when: not subvol_stat.stat.exists
+
+# Mount Point Creation
+# We use the explicit 'name' from your var for the mount point (e.g. /mnt/content_data1)
+- name: "Ensure mount point /mnt/{{ disk_config.subvolume_name }} exists"
+  file:
+    path: "/mnt/{{ disk_config.subvolume_name }}"
+    state: directory
+    mode: '0755'
+
+# Mounting
+- name: "Mount subvolume to /mnt/{{ disk_config.subvolume_name }}"
+  ansible.posix.mount:
+    path: "/mnt/{{ disk_config.subvolume_name }}"
+    src: "UUID={{ current_disk_uuid }}"
+    fstype: btrfs
+    opts: "subvol={{ disk_config.subvolume_name }},defaults,noatime"
+    state: mounted

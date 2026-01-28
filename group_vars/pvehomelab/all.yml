@@ -19,7 +19,8 @@ subdomain: "kleovate.online"
 
 matrix_url: "https://matrix.{{ subdomain}}"
 matrix_user_id: "@homelab:matrix.{{ subdomain }}"
-matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.{{ subdomain }}"
+# matrix_room_id: "!SniHUAwvmTRmVRpVTo:matrix.{{ subdomain }}"
+matrix_room_id: "!EeepdmpVgLXnFtyaBd:matrix.shajalslab.top"
 matrix_access_token: "{{ matrix_access_token }}"
 
 cloudflare_tunnel_name: "homelab_cloud_tunnel"

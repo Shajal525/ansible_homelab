@@ -16,6 +16,7 @@ parity_disk: /mnt/hdd1
 data_disks:
   - path: /mnt/samsung990pro_ssd1
     name: data1
+    subvolume_name: content_samsung990pro_ssd1
 
 snapper_settings:
   - { key: "ALLOW_USERS", value: "root" }

@@ -39,15 +39,15 @@
     # - role: install_uptimeKuma
     # - role: install_rclone
     # - role: install_media_packages
-    - role: install_nextcloud
+    # - role: install_nextcloud
     # - role: install_n8n
     #   vars:
     #     host_type: "local"  # options: local, vps
-    # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
-    # - role: mergerfs # Carefull! this will unmount and remount storage drives.
-    # - role: postgresql
     # - role: rustdesk # installed in VPS
     # - role: system_monitoring
+    - role: snapraid # Carefull! this creates subvolumes and does initial sync.
+    # - role: mergerfs # Carefull! this will unmount and remount storage drives.
+    # - role: postgresql
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

@@ -1,42 +1,106 @@
 #!/usr/bin/env python3
-from nio import AsyncClient
+from nio import AsyncClient, RoomSendError
 import asyncio
 import sys
+import uuid
+
+# ------------------------------------------------------------------------------
+# CONFIGURATION (Jinja2)
+# ------------------------------------------------------------------------------
+MATRIX_URL = "{{ matrix_url_l }}"
+USER_ID    = "{{ matrix_user_id_l }}"
+TOKEN      = "{{ matrix_access_token_l }}"
+ROOM_ID    = "{{ matrix_room_id_l }}"
+
+# Optional: Set Device ID if known to prevent "Unknown Token" errors
+# DEVICE_ID  = "" 
 
 async def send_notification(subject, exit_status, output):
-    client = AsyncClient("{{ matrix_url_l }}", "{{ matrix_user_id_l }}")
-    client.access_token = "{{ matrix_access_token_l }}"
-    room_id = "{{ matrix_room_id_l }}"
+    # Initialize Client
+    client = AsyncClient(MATRIX_URL, USER_ID)
+    client.access_token = TOKEN
+    client.user_id = USER_ID
+    # client.device_id = DEVICE_ID # Uncomment if you have this variable
+    
+    # --------------------------------------------------------------------------
+    # PAYLOAD CONSTRUCTION
+    # --------------------------------------------------------------------------
+    is_success = (exit_status == 0)
+    status_icon = "✅" if is_success else "❌"
+    status_text = "SUCCESS" if is_success else "FAILED"
+    color_hex   = "#36a436" if is_success else "#d63636" # Green / Red
 
-    status = "✅ SUCCESS" if exit_status == 0 else "❌ FAILED"
-
+    # Limit output to last 10 lines
     output_lines = output.splitlines()[-10:] if output else ['<No output>']
-    formatted_output = '\n'.join(output_lines)
-    message = (
+    log_text = '\n'.join(output_lines)
+
+    # 1. Text Body (Fallback)
+    plain_body = (
         f"**{subject}**\n"
-        f"**Status:** {status} (Exit Code: `{exit_status}`)\n"
-        f"**Output:**\n"
-        f"{formatted_output}"
+        f"Status: {status_text} (Exit Code: {exit_status})\n"
+        f"Output:\n{log_text}"
     )
 
-    await client.room_send(
-        room_id,
-        message_type="m.room.message",
-        content={"msgtype": "m.text", "body": message}
+    # 2. HTML Body (Rich Formatting)
+    html_body = (
+        f"<strong>{subject}</strong><br>"
+        f"Status: <font color='{color_hex}'><strong>{status_icon} {status_text}</strong></font> "
+        f"(Exit Code: <code>{exit_status}</code>)<br>"
+        f"Output:<br><pre><code>{log_text}</code></pre>"
     )
-    await client.close()
+
+    content = {
+        "msgtype": "m.text",  # 'm.notice' suppresses unread counts for bots
+        "body": plain_body,
+        "format": "org.matrix.custom.html",
+        "formatted_body": html_body
+    }
+
+    # --------------------------------------------------------------------------
+    # SENDING (With Error Handling)
+    # --------------------------------------------------------------------------
+    try:
+        # matrix-nio does not automatically generate UUID txn_ids for simple sends,
+        # but it handles retries internally.
+        resp = await client.room_send(
+            room_id=ROOM_ID,
+            message_type="m.room.message",
+            content=content,
+            tx_id=str(uuid.uuid4()) # Explicitly ensure unique transaction
+        )
+
+        if isinstance(resp, RoomSendError):
+            print(f"❌ FAILED to send to Matrix!", file=sys.stderr)
+            print(f"   Status: {resp.transport_response.status}", file=sys.stderr)
+            print(f"   Reason: {resp.message}", file=sys.stderr)
+            sys.exit(1)
+        else:
+            print(f"✅ Notification sent! Event ID: {resp.event_id}")
+
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
+    # Argument Handling
+    if len(sys.argv) < 2:
+        print("Usage: echo 'output' | python script.py 'Subject'")
+        sys.exit(1)
+
     subject = sys.argv[1]
     input_data = sys.stdin.read().strip()
+    
+    # Parse Exit Code
     lines = input_data.split('\n')
     exit_status = 0
     output_lines = lines
 
     if lines and lines[-1].startswith("EXIT:"):
-        exit_status = int(lines[-1].split(":")[1])
-        output_lines = lines[:-1]
+        try:
+            exit_status = int(lines[-1].split(":", 1)[1])
+            output_lines = lines[:-1]
+        except ValueError:
+            pass
 
     output = '\n'.join(output_lines).strip()
+    
     asyncio.run(send_notification(subject, exit_status, output))
-
