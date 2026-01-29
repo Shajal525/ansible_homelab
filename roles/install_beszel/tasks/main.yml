@@ -1,0 +1,110 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Create Docmost directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ beszel_hub_data }}"
+    - "{{ beszel_agent_data }}"
+    - "{{ beszel_socket }}"
+    - "{{ beszel_monitor_ssd1 }}"
+    - "{{ beszel_monitor_hdd1 }}"
+    - "{{ beszel_monitor_mergerfs }}"
+
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
+
+- name: Deploy Beszel Hub container
+  community.docker.docker_container:
+    name: beszel
+    image: henrygd/beszel:latest
+    hostname: beszel
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
+    env:
+      USER_CREATION: "true" # Enables automatic user creation for OAuth2 / OIDC.
+    volumes:
+      - "{{ beszel_hub_data }}/data:/beszel_data"
+      - "{{ beszel_socket }}:/beszel_socket"
+    labels:
+      com.docker.compose.project: "beszel_stack"
+      com.docker.compose.service: "beszel"
+      traefik.enable: "true"
+      traefik.http.routers.beszel-secure.entrypoints: "https"
+      traefik.http.routers.beszel-secure.rule: "Host(`{{ beszel_domain }}`)"
+      traefik.http.routers.beszel-secure.tls: "true"
+      traefik.http.routers.beszel.service: "beszel"
+      traefik.http.services.beszel.loadbalancer.server.port: "8090"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Beszel Agent container
+  community.docker.docker_container:
+    name: beszel-agent
+    image: henrygd/beszel-agent:latest
+    hostname: beszel-agent
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
+    env:
+      LISTEN: "/beszel_socket/beszel.sock"
+      HUB_URL: "http://localhost:8090"
+      TOKEN: "{{ beszel_token_local }}"
+      KEY: "{{ beszel_key_local }}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ beszel_agent_data }}/agent_data:/var/lib/beszel-agent"
+      - "{{ beszel_socket }}:/beszel_socket"
+      - "{{ beszel_monitor_ssd1 }}:/extra-filesystems/ssd1:ro"
+      - "{{ beszel_monitor_hdd1 }}:/extra-filesystems/hdd1:ro"
+      - "{{ beszel_monitor_mergerfs }}:/extra-filesystems/mergerfs:ro"
+    labels:
+      com.docker.compose.project: "beszel_stack"
+      com.docker.compose.service: "beszel-agent"
+    restart_policy: unless-stopped
+    state: started
+    network_mode: host
+
+- name: Beszel deployed
+  debug:
+    msg: "Beszel is running successfully"

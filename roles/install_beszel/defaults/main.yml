@@ -1,0 +1,13 @@
+beszel_base_path: "{{ base_app_storage_path }}/beszel"
+beszel_hub_data: "{{ beszel_base_path }}/hub_data"
+beszel_agent_data: "{{ beszel_base_path }}/agent_data"
+beszel_socket: "{{ beszel_base_path }}/socket"
+
+beszel_monitor_ssd1: "/mnt/samsung990pro_ssd1/.beszel"
+beszel_monitor_hdd1: "/mnt/hdd1/.beszel"
+beszel_monitor_mergerfs: "/mnt/mfstorage/.beszel"
+
+beszel_domain: "beszel.{{ subdomain }}"
+
+beszel_token_local: "{{ beszel_token }}"
+beszel_key_local: "{{ beszel_key }}"
