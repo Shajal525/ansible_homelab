@@ -33,9 +33,9 @@
     # - role: postgresql
     # - role: rustdesk # installed in VPS
     # Not in use section end
-    
+
     # - role: install_traefik 
-    # - role: install_portainer
+    - role: install_portainer
     # - role: pangolin_newt
     # - role: install_docmost
     # - role: install_matrix_synapse
@@ -44,9 +44,9 @@
     # - role: install_rclone
     # - role: install_media_packages
     # - role: install_nextcloud
-    - role: install_n8n
-      vars:
-        host_type: "local"  # options: local, vps
+    # - role: install_n8n
+    #   vars:
+    #     host_type: "local"  # options: local, vps
     
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.

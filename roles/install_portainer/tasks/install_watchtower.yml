@@ -10,8 +10,13 @@
     name: watchtower
     image: containrrr/watchtower
     command: "0 0 4 * * *"
+    env:
+      DOCKER_API_VERSION: "1.52"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      com.docker.compose.project: "portainer_stack"
+      com.docker.compose.service: "watchtower"
     restart_policy: always
 
 - name: Watchtower deployed
