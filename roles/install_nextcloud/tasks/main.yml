@@ -1,28 +1,37 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: true
-  tags: nextcloud
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Ensure external networks exist
+- name: Ensure docker networks exist
   community.docker.docker_network:
-    name: "{{ item }}"
+    name: "{{ network_item }}"
     state: present
-    internal: false
-    driver: bridge
   loop:
     - traefik_proxy
     - pangolin_network
-  tags: nextcloud
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Create Nextcloud directory
   file:
     path: "{{ item }}"
     state: directory
-    owner: "nobody"
-    group: "nogroup"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
     recurse: true
     mode: "0755"
   loop:
@@ -49,7 +58,7 @@
     name: nextcloud_db_postgres
     image: postgres:17
     hostname: nextcloud_db_postgres
-    user: "nobody:nogroup"
+    user: "{{ target_uid }}:{{ target_gid }}"
     env:
       POSTGRES_DB: "{{ nextcloud_db_name }}"
       POSTGRES_USER: "{{ nextcloud_db_user }}"
@@ -81,6 +90,7 @@
     name: nextcloud_redis
     image: redis:latest
     hostname: nextcloud_redis
+    user: "{{ target_uid }}:{{ target_gid }}"
     command: redis-server --requirepass "{{ redis_password }}"
     labels:
       com.docker.compose.project: "nextcloud_stack"
@@ -96,7 +106,10 @@
     name: nextcloud
     image: nextcloud:latest
     hostname: nextcloud
+    # user: "{{ target_uid }}:{{ target_gid }}" # This causes permission issues with www-data user inside container
     env:
+      PUID: "{{ target_uid }}"
+      PGID: "{{ target_gid }}"
       POSTGRES_HOST: "nextcloud_db_postgres"
       POSTGRES_DB: "{{ nextcloud_db_name }}"
       POSTGRES_USER: "{{ nextcloud_db_user }}"
