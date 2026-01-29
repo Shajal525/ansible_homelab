@@ -22,6 +22,7 @@
     state: directory
     owner: 1000
     group: 1000
+    recurse: true
     mode: "0755"
   loop:
     - "{{ n8n_config_dir }}"
@@ -56,7 +57,7 @@
     name: n8n
     image: docker.n8n.io/n8nio/n8n
     hostname: n8n
-    user: "1000:1000"
+    user: "1000:1000" # it needs to run as 1000. 
     env:
       N8N_ENCRYPTION_KEY: "{{ n8n_encryption_key_local }}"
       DB_TYPE: "postgresdb"
@@ -74,6 +75,7 @@
       WEBHOOK_URL: "https://{{ n8n_domain }}/"
       GENERIC_TIMEZONE: "{{ n8n_timezone}}"
       TZ: "{{ n8n_timezone }}"
+      N8N_PROXY_HOPS: "1"
       # N8N_BINARY_DATA_STORAGE_PATH: "{{ n8n_binary_data_dir }}"
     volumes:
       - "{{ n8n_config_dir }}:/home/node/.n8n"

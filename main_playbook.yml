@@ -24,12 +24,16 @@
     # Need to create an A record in Cloudflare pointing to any IP(192.168.8.3)
     # Wait until certificates are generated. command: "docker logs traefik"
     # - role: cloud_sync_cron # don't need now
-    # - role: samba_share
-    # New backup and restore roles included
+    
+    # Not in use section start
     # - role: install_homarr
     # - role: install_linkwarden
     # - role: install_syncthing
-    # Important ones
+    # - role: system_monitoring
+    # - role: postgresql
+    # - role: rustdesk # installed in VPS
+    # Not in use section end
+    
     # - role: install_traefik 
     # - role: install_portainer
     # - role: pangolin_newt
@@ -39,16 +43,14 @@
     # - role: install_uptimeKuma
     # - role: install_rclone
     # - role: install_media_packages
-    - role: install_nextcloud
-    # - role: install_n8n
-    #   vars:
-    #     host_type: "local"  # options: local, vps
-    # - role: system_monitoring
+    # - role: install_nextcloud
+    - role: install_n8n
+      vars:
+        host_type: "local"  # options: local, vps
     
-    # - role: rustdesk # installed in VPS
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
-    # - role: postgresql
+    # - role: samba_share
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
