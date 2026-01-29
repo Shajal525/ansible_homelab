@@ -23,6 +23,7 @@
     state: directory
     owner: "nobody"
     group: "nogroup"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ nextcloud_db_data_directory }}"
@@ -35,6 +36,7 @@
     state: directory
     owner: "www-data"
     group: "www-data"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ nextcloud_data_directory }}"
@@ -45,7 +47,7 @@
 - name: Deploy Postgres DB container
   community.docker.docker_container:
     name: nextcloud_db_postgres
-    image: postgres:latest
+    image: postgres:17
     hostname: nextcloud_db_postgres
     user: "nobody:nogroup"
     env:

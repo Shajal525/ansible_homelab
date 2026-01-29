@@ -106,7 +106,7 @@
 - name: Postgres database restore
   docker_container:
     name: postgres_restore
-    image: ubuntu:24.04
+    image: ubuntu:25.10
     hostname: postgres_restore
     # user: "{{ target_uid }}:{{ target_gid }}"
     volumes:

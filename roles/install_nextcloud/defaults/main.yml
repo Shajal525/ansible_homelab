@@ -7,6 +7,7 @@ nextcloud_config_directory: "{{ nextcloud_base_directory }}/config"
 nextcloud_local_ssd_path: "{{ base_local_ssd_storage_path }}/nextcloud"
 nextcloud_local_configs_directory: "{{ nextcloud_local_ssd_path }}/configs"
 nextcloud_db_data_directory: "{{ nextcloud_local_ssd_path }}/db_data"
+nextcloud_php_config_directory: "{{ nextcloud_local_ssd_path }}/php_config"
 nextcloud_backup_scripts: "{{ nextcloud_local_ssd_path }}/backup_scripts"
 
 
@@ -19,5 +20,5 @@ redis_password: "{{ db_password }}"
 nextcloud_domain: "nextcloud.{{ subdomain }}"
 nextcloud_domain2: nextcloud.tail41c751.ts.net
 
-nextcloud_backup_db: true
+nextcloud_backup_db: false
 nextcloud_restore_db: false
