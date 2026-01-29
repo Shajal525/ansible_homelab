@@ -90,7 +90,7 @@
     name: nextcloud_redis
     image: redis:latest
     hostname: nextcloud_redis
-    user: "{{ target_uid }}:{{ target_gid }}"
+    # user: "{{ target_uid }}:{{ target_gid }}" # This causes permission issues inside to access data folder in nextcloud container
     command: redis-server --requirepass "{{ redis_password }}"
     labels:
       com.docker.compose.project: "nextcloud_stack"
@@ -192,7 +192,7 @@
   loop:
     - nextcloud_db_postgres
     - nextcloud_redis
-    - nextcloud
+    # - nextcloud # This causes issues. Restart manually if needed
   when: nextcloud_restore_db | default(false)
   tags: nextcloud
 

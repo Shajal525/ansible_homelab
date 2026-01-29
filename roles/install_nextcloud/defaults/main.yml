@@ -20,4 +20,7 @@ nextcloud_domain: "nextcloud.{{ subdomain }}"
 nextcloud_domain2: nextcloud.tail41c751.ts.net
 
 nextcloud_backup_db: false
-nextcloud_restore_db: false
+
+# Need to restore DB from backup after installation
+# Otherwise nextcloud will fail with existing data folder but no DB entries
+nextcloud_restore_db: true
