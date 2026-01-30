@@ -1,0 +1,159 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+
+- name: Create Authentik directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: '0755'
+  loop:
+    - "{{ authentik_db_data }}"
+    - "{{ authentik_data_path }}"
+    - "{{ authentik_templates_path }}"
+    - "{{ authentik_certs_path }}"
+
+- name: Deploy Postgres container
+  community.docker.docker_container:
+    name: authentik_db
+    image: docker.io/library/postgres:16-alpine
+    hostname: authentik_db
+    user: "{{ target_uid }}:{{ target_gid }}"
+    env:
+      POSTGRES_DB: "{{ authentik_db_name }}"
+      POSTGRES_USER: "{{ authentik_db_user }}"
+      POSTGRES_PASSWORD: "{{ authentik_db_password }}"
+    volumes:
+      - "{{ authentik_db_data }}:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d {{ authentik_db_name }} -U {{ authentik_db_user }}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    labels:
+      com.docker.compose.project: "authentik_stack"
+      com.docker.compose.service: "authentik_db"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Wait for Postgres to be healthy
+  community.docker.docker_container_info:
+    name: authentik_db
+  register: pg_info
+  until: "pg_info.container.State.Health.Status == 'healthy'"
+  retries: 20
+  delay: 5
+
+- name: Deploy Authentik Server
+  community.docker.docker_container:
+    name: authentik_server
+    image: "ghcr.io/goauthentik/server:2025.12.1"
+    hostname: authentik_server
+    user: "{{ target_uid }}:{{ target_gid }}"
+    command: server
+    # ports:
+    #   - "{{ authentik_http_port }}:9000"
+    #   - "{{ authentik_https_port }}:9443"
+    env:
+      AUTHENTIK_POSTGRESQL__HOST: "authentik_db"
+      AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_db_name }}"
+      AUTHENTIK_POSTGRESQL__USER: "{{ authentik_db_user }}"
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ authentik_db_password }}"
+      AUTHENTIK_SECRET_KEY: "{{ authentik_app_secret }}"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_EMAIL__HOST: "smtp.gmail.com"
+      AUTHENTIK_EMAIL__PORT: "465"
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "true"
+      AUTHENTIK_EMAIL__USERNAME: "{{ authentik_email_smtp_user }}"
+      AUTHENTIK_EMAIL__PASSWORD: "{{ authentik_email_smtp_password }}"
+      AUTHENTIK_EMAIL__TIMEOUT: "10"
+      AUTHENTIK_EMAIL__FROM: "authentik@{{ authentik_domain }}"
+    volumes:
+      - "{{ authentik_data_path }}:/data"
+      - "{{ authentik_templates_path }}:/templates"
+    labels:
+      com.docker.compose.project: "authentik_stack"
+      com.docker.compose.service: "authentik_server"
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_proxy"
+      traefik.http.routers.authentik_server.entrypoints: "https"
+      traefik.http.routers.authentik_server.rule: "Host(`{{ authentik_domain }}`) || HostRegexp(`{subdomain:[A-Za-z0-9](?:[A-Za-z0-9\\-]{0,61}[A-Za-z0-9])?}.{{ authentik_domain }}`) && PathPrefix(`/outpost.goauthentik.io/`)"
+      traefik.http.routers.authentik_server.tls: "true"
+      traefik.http.routers.authentik_server.service: "authentik_server"
+      traefik.http.services.authentik_server.loadbalancer.server.port: "9000"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Authentik Worker
+  community.docker.docker_container:
+    name: worker
+    image: "ghcr.io/goauthentik/server:2025.12.1"
+    user: root
+    command: worker
+    env:
+      AUTHENTIK_POSTGRESQL__HOST: "authentik_db"
+      AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_db_name }}"
+      AUTHENTIK_POSTGRESQL__USER: "{{ authentik_db_user }}"
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ authentik_db_password }}"
+      AUTHENTIK_SECRET_KEY: "{{ authentik_app_secret }}"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_EMAIL__HOST: "smtp.gmail.com"
+      AUTHENTIK_EMAIL__PORT: "465"
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "true"
+      AUTHENTIK_EMAIL__USERNAME: "{{ authentik_email_smtp_user }}"
+      AUTHENTIK_EMAIL__PASSWORD: "{{ authentik_email_smtp_password }}"
+      AUTHENTIK_EMAIL__TIMEOUT: "10"
+      AUTHENTIK_EMAIL__FROM: "{{ authentik_email_from }}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ authentik_data_path }}:/data"
+      - "{{ authentik_certs_path }}:/certs"
+      - "{{ authentik_templates_path }}:/templates"
+    labels:
+      com.docker.compose.project: "authentik_stack"
+      com.docker.compose.service: "authentik_worker"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Authentik deployed
+  debug:
+    msg: "Authentik is running successfully"
+  tags: authentik

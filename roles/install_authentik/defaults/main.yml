@@ -1,0 +1,25 @@
+# authentik_base_path: "{{ base_app_storage_path }}/authentik"
+# authentik_data: "{{ authentik_base_path }}/data"
+
+authentik_local_path: "{{ base_local_ssd_storage_path }}/authentik"
+authentik_db_backups_sripts: "{{ authentik_local_path }}/db_backups_scripts"
+authentik_db_data: "{{ authentik_local_path }}/db"
+authentik_data_path: "{{ authentik_local_path }}/data"
+authentik_templates_path: "{{ authentik_local_path }}/templates"
+authentik_certs_path: "{{ authentik_local_path }}/certs"
+
+authentik_db_name: "{{ vm_username }}"
+authentik_db_user: "{{ vm_username }}"
+authentik_db_password: "{{ db_password }}"
+
+authentik_domain: "authentik.{{ subdomain }}"
+
+authentik_app_secret: "{{ authentik_secret }}"
+
+
+authentik_email_smtp_user: "shajal525@gmail.com"
+authentik_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
+authentik_email_from: "authentik@{{ subdomain }}"
+
+authentik_backup_db: true
+authentik_restore_db: false
