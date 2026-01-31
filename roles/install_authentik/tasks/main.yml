@@ -37,6 +37,7 @@
     mode: '0755'
   loop:
     - "{{ authentik_db_data }}"
+    - "{{ authentik_db_backups_scripts }}"
     - "{{ authentik_data_path }}"
     - "{{ authentik_templates_path }}"
     - "{{ authentik_certs_path }}"
@@ -121,8 +122,9 @@
 
 - name: Deploy Authentik Worker
   community.docker.docker_container:
-    name: worker
+    name: authentik_worker
     image: "ghcr.io/goauthentik/server:2025.12.1"
+    hostname: authentik_worker
     user: root
     command: worker
     env:
@@ -153,7 +155,57 @@
     restart_policy: unless-stopped
     state: started
 
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backup_app_name: "authentik"
+    container_name_running_postgresdb: "authentik_db"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ authentik_db_name }}"
+    db_to_backup_user: "{{ authentik_db_user }}"
+    db_to_backup_password: "{{ authentik_db_password }}"
+    backup_schedule_cron: "20 1 * * *"
+    notification_message_subject: "Authentik DB backup"
+  when: authentik_backup_db | default(false)
+  tags: authentik
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: authentik_backup_db | default(false) and authentik_restore_db | default(false)
+  tags: authentik
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ authentik_db_backups_scripts }}"
+    pg_backup_directory: "{{ authentik_base_path }}/db_backups/"
+    pg_database: "{{ authentik_db_name }}"
+    pg_host: "authentik_db"
+    pg_port: 5432
+    pg_user: "{{ authentik_db_user }}"
+    pg_password: "{{ authentik_db_password }}"
+    pg_drop_before_restore: true
+  when: authentik_restore_db | default(false)
+  tags: authentik
+
+- name: Restart containers
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - authentik_db
+    - authentik_worker
+    - authentik_server
+  when: authentik_restore_db | default(false)
+  tags: authentik
+
 - name: Authentik deployed
   debug:
-    msg: "Authentik is running successfully"
+    msg: "Authentik is running. Wail a minute and visit https://{{ authentik_domain }}/if/flow/initial-setup/ to complete the setup. Trailing slash is important."
   tags: authentik
