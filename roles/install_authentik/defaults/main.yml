@@ -21,4 +21,4 @@ authentik_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
 authentik_email_from: "authentik@{{ subdomain }}"
 
 authentik_backup_db: false
-authentik_restore_db: true
+authentik_restore_db: false

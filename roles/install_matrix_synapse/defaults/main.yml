@@ -16,6 +16,8 @@ matrix_email_smtp_user: "shajal525@gmail.com"
 matrix_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
 ip_address: "{{ vm_ip_address }}"
 
-matrix_backup_db: true
+authentik_matrix_client_id_local: "{{ authentik_matrix_client_id }}"
+authentik_matrix_client_secret_local: "{{ authentik_matrix_client_secret }}"
+
+matrix_backup_db: false
 matrix_restore_db: false
- 

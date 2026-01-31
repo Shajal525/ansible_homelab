@@ -66,3 +66,27 @@ serve_server_wellknown: true
 
 # Android issue
 public_baseurl: "https://matrix.{{ subdomain }}" 
+
+oidc_providers:
+  - idp_id: authentik
+    idp_name: authentik
+    discover: true
+    allow_existing_users: true
+    issuer: "https://authentik.kleovate.online/application/o/matrix/"
+    client_id: "{{ authentik_matrix_client_id_local }}"
+    client_secret: "{{ authentik_matrix_client_secret_local }}"
+    scopes:
+      - "openid"
+      - "profile"
+      - "email"
+    user_mapping_provider:
+      config:
+        {% raw %}
+        localpart_template: "{{ user.preferred_username }}"
+        display_name_template: "{{ user.name|capitalize }}"
+        {% endraw %}
+
+jwt_config:
+  enabled: true
+  secret: "*client_secret*"
+  algorithm: "RS256"

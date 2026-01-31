@@ -38,7 +38,7 @@
     # - role: install_portainer
     # - role: pangolin_newt
     # - role: install_docmost
-    # - role: install_matrix_synapse
+    - role: install_matrix_synapse
     # - role: install_immich
     # - role: install_uptimeKuma
     # - role: install_rclone
@@ -48,7 +48,7 @@
     #   vars:
     #     host_type: "local"  # options: local, vps
     # - role: install_beszel
-    - role: install_authentik
+    # - role: install_authentik
     
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.

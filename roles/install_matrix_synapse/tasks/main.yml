@@ -198,5 +198,5 @@
 
 - name: Matrix deployed
   debug:
-    msg: "Matrix is running successfully. To check if it's working, open: https://{{ matrix_domain }}/_matrix/client/versions in your browser."
+    msg: "Matrix is running successfully. To check if it's working, open: https://{{ matrix_domain }}/_matrix/static/ in your browser."
   tags: matrix
