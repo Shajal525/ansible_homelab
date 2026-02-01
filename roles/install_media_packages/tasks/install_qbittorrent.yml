@@ -34,6 +34,7 @@
   docker_container:
     name: qbittorrent
     image: lscr.io/linuxserver/qbittorrent:latest
+    hostname: qbittorrent
     user: "nobody:nogroup"
     env:
       PUID: "65534"

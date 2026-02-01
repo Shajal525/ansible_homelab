@@ -88,6 +88,7 @@
   community.docker.docker_container:
     name: traefik
     image: traefik:latest
+    hostname: traefik
     user: "{{ target_uid }}:{{ target_gid }}"
     groups:
       - "{{ docker_sock.stat.gid }}"
@@ -95,7 +96,7 @@
       - "80:80"
       - "443:443"
     env:
-      TRAEFIK_DASHBOARD_CREDENTIALS: "{{ htpasswd_hash.stdout }}"
+      # TRAEFIK_DASHBOARD_CREDENTIALS: "{{ htpasswd_hash.stdout }}"
       CF_API_EMAIL: "{{ traefik_cloudflare_email }}" # Cloudflare email
       CF_DNS_API_TOKEN: "{{ traefik_cf_dns_api_token }}" # Cloudflare API Token
     volumes:
@@ -111,13 +112,14 @@
       traefik.enable: "true"
       traefik.http.routers.traefik.entrypoints: "http"
       traefik.http.routers.traefik.rule: "Host(`{{ traefik_domain }}`)"
-      traefik.http.middlewares.traefik-auth.basicauth.users: "{{ htpasswd_hash.stdout }}"
+      # traefik.http.middlewares.traefik-auth.basicauth.users: "{{ htpasswd_hash.stdout }}"
       traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme: "https"
       traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto: "https"
       traefik.http.routers.traefik.middlewares: "traefik-https-redirect"
       traefik.http.routers.traefik-secure.entrypoints: "https"
       traefik.http.routers.traefik-secure.rule: "Host(`{{ traefik_domain }}`)"
-      traefik.http.routers.traefik-secure.middlewares: "traefik-auth"
+      # traefik.http.routers.traefik-secure.middlewares: "traefik-auth"
+      traefik.http.routers.traefik-secure.middlewares: "authentik@file"
       traefik.http.routers.traefik-secure.tls: "true"
       traefik.http.routers.traefik-secure.tls.certresolver: "cloudflare"
       traefik.http.routers.traefik-secure.tls.domains[0].main: "{{ traefik_subdomain }}"
