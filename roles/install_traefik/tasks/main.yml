@@ -56,6 +56,13 @@
     owner: "{{ target_uid}}"
     group: "{{ target_gid }}"
 
+- name: Create middleware file for Authentik from template
+  template:
+    src: templates/authentik_middleware.yml.j2
+    dest: "{{ traefik_config }}/authentik_middleware.yaml"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+
 - name: Install apache2-utils
   package:
     name: apache2-utils

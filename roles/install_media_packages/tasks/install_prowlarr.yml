@@ -44,6 +44,7 @@
       traefik.http.routers.prowlarr-secure.entrypoints: "https"
       traefik.http.routers.prowlarr-secure.rule: "Host(`{{ prowlarr_domain }}`)"
       traefik.http.routers.prowlarr-secure.tls: "true"
+      traefik.http.routers.prowlarr-secure.middlewares: "authentik@file"
       traefik.http.routers.prowlarr.service: "prowlarr"
       traefik.http.services.prowlarr.loadbalancer.server.port: "9696"
       traefik.docker.network: "traefik_proxy"
@@ -57,6 +58,30 @@
       - name: pangolin_network
     restart_policy: unless-stopped
     state: started
+
+- name: Install lxml library for Ansible XML module
+  ansible.builtin.apt:
+    name: python3-lxml
+    state: present
+    update_cache: true
+
+- name: Configure Prowlarr Authentication to External
+  community.general.xml:
+    path: "{{ prowlarr_config }}/config.xml"
+    xpath: "/Config/AuthenticationMethod"
+    value: "External"
+    state: present
+    pretty_print: yes
+  register: prowlarr_xml_update
+
+- name: Restart containers
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - prowlarr
+  when: prowlarr_xml_update.changed
 
 - name: Prowlarr deployed
   debug:

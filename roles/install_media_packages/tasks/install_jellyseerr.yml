@@ -29,7 +29,7 @@
 - name: Deploy Jellyseerr container
   docker_container:
     name: jellyseerr
-    image: fallenbagel/jellyseerr:latest
+    image: fallenbagel/jellyseerr:preview-OIDC
     user: "nobody:nogroup"
     env:
       LOG_LEVEL: "debug"

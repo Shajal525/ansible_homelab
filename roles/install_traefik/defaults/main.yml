@@ -11,3 +11,5 @@ traefik_dashboard_password: "{{ vm_password }}"
 
 traefik_domain: "traefik.{{ subdomain }}"
 traefik_subdomain: "{{ subdomain }}"
+
+traefik_authentik_server_name: "authentik_server"

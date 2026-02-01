@@ -37,6 +37,7 @@
   docker_container:
     name: nzbget
     image: lscr.io/linuxserver/nzbget:latest
+    hostname: nzbget
     user: "nobody:nogroup"
     env:
       PUID: "65534"
@@ -54,6 +55,7 @@
       traefik.http.routers.nzbget-secure.entrypoints: "https"
       traefik.http.routers.nzbget-secure.rule: "Host(`{{ nzbget_domain }}`)"
       traefik.http.routers.nzbget-secure.tls: "true"
+      traefik.http.routers.nzbget-secure.middlewares: "authentik@file"
       traefik.http.routers.nzbget.service: "nzbget"
       traefik.http.services.nzbget.loadbalancer.server.port: "6789"
       traefik.docker.network: "traefik_proxy"

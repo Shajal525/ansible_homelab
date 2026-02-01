@@ -34,11 +34,13 @@
   docker_container:
     name: sonarr
     image: lscr.io/linuxserver/sonarr:latest
+    hostname: sonarr
     user: "nobody:nogroup"
     env:
       PUID: "65534"
       PGID: "65534"
       TZ: "GB"
+      SONARR__AUTH__METHOD: "External"
     volumes:
       - "{{ sonarr_config }}:/config"
       - "{{ sonarr_logs }}:/config/logs"
@@ -52,6 +54,7 @@
       traefik.http.routers.sonarr-secure.entrypoints: "https"
       traefik.http.routers.sonarr-secure.rule: "Host(`{{ sonarr_domain }}`)"
       traefik.http.routers.sonarr-secure.tls: "true"
+      traefik.http.routers.sonarr-secure.middlewares: "authentik@file"
       traefik.http.routers.sonarr.service: "sonarr"
       traefik.http.services.sonarr.loadbalancer.server.port: "8989"
       traefik.docker.network: "traefik_proxy"
