@@ -1,0 +1,214 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+  
+- name: Ensure Affine directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ affine_db }}"
+    - "{{ affine_db_backups_sripts }}"
+    - "{{ affine_data_uploaded }}"
+    - "{{ affine_data_config }}"
+
+- name: Deploy Redis
+  community.docker.docker_container:
+    name: affine_redis
+    image: redis
+    hostname: affine_redis
+    # user: "{{ target_uid }}:{{ target_gid }}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      com.docker.compose.project: "affine_stack"
+      com.docker.compose.service: "affine_redis"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Postgres (pgvector)
+  community.docker.docker_container:
+    name: affine_postgres
+    image: pgvector/pgvector:pg16
+    hostname: affine_postgres
+    user: "{{ target_uid }}:{{ target_gid }}"
+    volumes:
+      - "{{ affine_db }}:/var/lib/postgresql/data"
+    env:
+      POSTGRES_USER: "{{ affine_db_user }}"
+      POSTGRES_PASSWORD: "{{ affine_db_password }}"
+      POSTGRES_DB: "{{ affine_db_name }}"
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "{{ affine_db_user }}", "-d", "{{ affine_db_name }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      com.docker.compose.project: "affine_stack"
+      com.docker.compose.service: "affine_postgres"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Wait for Postgres to be healthy
+  community.docker.docker_container_info:
+    name: affine_postgres
+  register: pg_info
+  until: "pg_info.container.State.Health.Status == 'healthy'"
+  retries: 20
+  delay: 5
+
+- name: Run Affine Migration
+  community.docker.docker_container:
+    name: affine_migration_job
+    image: "ghcr.io/toeverything/affine:stable"
+    hostname: affine_migration_job
+    user: root
+    # cleanup: yes 
+    volumes:
+      - "{{ affine_data_uploaded }}:/root/.affine/storage"
+      - "{{ affine_data_config }}:/root/.affine/config"
+    env:
+      REDIS_SERVER_HOST: "affine_redis"
+      DATABASE_URL: "postgresql://{{ affine_db_user }}:{{ affine_db_password }}@affine_postgres:5432/{{ affine_db_name }}"
+      AFFINE_INDEXER_ENABLED: "false"
+    command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
+    labels:
+      com.docker.compose.project: "affine_stack"
+      com.docker.compose.service: "affine_migration_job"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Affine Server
+  community.docker.docker_container:
+    name: affine_server
+    image: "ghcr.io/toeverything/affine:stable"
+    hostname: affine_server
+    user: root
+    # ports:
+    #   - "{{ affine_port }}:3010"
+    volumes:
+      - "{{ affine_data_uploaded }}:/root/.affine/storage"
+      - "{{ affine_data_config }}:/root/.affine/config"
+    env:
+      REDIS_SERVER_HOST: "affine_redis"
+      DATABASE_URL: "postgresql://{{ affine_db_user }}:{{ affine_db_password }}@affine_postgres:5432/{{ affine_db_name }}"
+      AFFINE_INDEXER_ENABLED: "false"
+      AFFINE_SERVER_HTTPS: "true"
+      MAILER_HOST: "smtp.gmail.com"
+      MAILER_PORT: "465"
+      MAILER_USER: "{{ affine_email_smtp_user}}"
+      MAILER_PASSWORD: "{{ affine_email_smtp_password }}"
+      MAILER_SENDER: "{{ affine_email_from }}"
+      AFFINE_SERVER_EXTERNAL_URL: "https://{{ affine_domain }}"
+    labels:
+      com.docker.compose.project: "affine_stack"
+      com.docker.compose.service: "affine_server"
+      traefik.enable: "true"
+      traefik.http.routers.affine-secure.entrypoints: "https"
+      traefik.http.routers.affine-secure.rule: "Host(`{{ affine_domain }}`)"
+      traefik.http.routers.affine-secure.tls: "true"
+      traefik.http.routers.affine.service: "affine"
+      traefik.http.services.affine.loadbalancer.server.port: "3010"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backup_app_name: "affine"
+    container_name_running_postgresdb: "affine_postgres"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ affine_db_name }}"
+    db_to_backup_user: "{{ affine_db_user }}"
+    db_to_backup_password: "{{ affine_db_password }}"
+    backup_schedule_cron: "5 2 * * *"
+    notification_message_subject: "Affine DB backup"
+  when: affine_backup_db | default(false)
+  tags: affine
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: affine_backup_db | default(false) and affine_restore_db | default(false)
+  tags: affine
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ affine_db_backups_scripts }}"
+    pg_backup_directory: "{{ affine_base_path }}/db_backups/"
+    pg_database: "{{ affine_db_name }}"
+    pg_host: "affine_postgres"
+    pg_port: 5432
+    pg_user: "{{ affine_db_user }}"
+    pg_password: "{{ affine_db_password }}"
+    pg_drop_before_restore: true
+  when: affine_restore_db | default(false)
+  tags: affine
+
+- name: Restart containers
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - affine_redis
+    - affine_postgres
+    - affine_migration_job
+    - affine_server
+  when: affine_restore_db | default(false)
+  tags: affine
+
+- name: Affine deployed
+  debug:
+    msg: "Affine is running successfully"
+  tags: affine
