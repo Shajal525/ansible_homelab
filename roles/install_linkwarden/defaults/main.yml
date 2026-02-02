@@ -3,7 +3,7 @@ linkwarden_data_dir: "{{ linkwarden_base_path }}/data"
 
 linkwarden_ssd_path: "{{ base_local_ssd_storage_path }}/linkwarden"
 linkwarden_postgres_data_dir: "{{ linkwarden_ssd_path }}/linkwardendb"
-linkwarden_db_backups_sripts: "{{ linkwarden_ssd_path }}/db_backups_scripts"
+linkwarden_db_backups_scripts: "{{ linkwarden_ssd_path }}/db_backups_scripts"
 
 nextauth_secret: "{{ vm_password }}"
 

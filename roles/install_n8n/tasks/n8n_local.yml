@@ -27,7 +27,7 @@
   loop:
     - "{{ n8n_config_dir }}"
     - "{{ n8n_db_dir }}"
-    - "{{ n8n_db_backups_sripts }}"
+    - "{{ n8n_db_backups_scripts }}"
     - "{{ n8n_files_dir }}"
   tags: n8n
 
@@ -124,7 +124,7 @@
     name: common
     tasks_from: postgresdb_restore
   vars:
-    postgres_restore_base_path: "{{ n8n_db_backups_sripts }}"
+    postgres_restore_base_path: "{{ n8n_db_backups_scripts }}"
     pg_backup_directory: "{{ n8n_base_path }}/db_backups/"
     pg_database: "{{ n8n_db_name }}"
     pg_host: "n8n_db"

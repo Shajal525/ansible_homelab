@@ -30,7 +30,7 @@
   loop:
     - "{{ linkwarden_data_dir }}"
     - "{{ linkwarden_postgres_data_dir }}"
-    - "{{ linkwarden_db_backups_sripts }}"
+    - "{{ linkwarden_db_backups_scripts }}"
 
 - name: Deploy LinkWarden Postgres DB container
   community.docker.docker_container:
@@ -110,7 +110,7 @@
     name: common
     tasks_from: postgresdb_restore
   vars:
-    postgres_restore_base_path: "{{ linkwarden_db_backups_sripts }}"
+    postgres_restore_base_path: "{{ linkwarden_db_backups_scripts }}"
     pg_backup_directory: "{{ linkwarden_base_path }}/db_backups/"
     pg_database: "{{ linkwarden_db_name }}"
     pg_host: "postgres_linkwarden"

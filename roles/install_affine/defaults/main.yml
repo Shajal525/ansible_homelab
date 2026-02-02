@@ -3,7 +3,7 @@ affine_data_uploaded: "{{ affine_base_path }}/uploaded_data"
 affine_data_config: "{{ affine_base_path }}/config"
 
 affine_db_path: "{{ base_local_ssd_storage_path }}/affine"
-affine_db_backups_sripts: "{{ affine_db_path }}/db_backups_scripts"
+affine_db_backups_scripts: "{{ affine_db_path }}/db_backups_scripts"
 affine_db: "{{ affine_db_path }}/db"
 
 affine_db_name: "{{ vm_username }}"
@@ -16,5 +16,5 @@ affine_email_smtp_user: "shajal525@gmail.com"
 affine_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
 affine_email_from: "affine@{{ subdomain }}"
 
-affine_backup_db: true
-affine_restore_db: false
+affine_backup_db: false
+affine_restore_db: true

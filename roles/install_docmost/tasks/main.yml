@@ -40,7 +40,7 @@
     mode: "0755"
   loop:
     - "{{ docmost_data }}"
-    - "{{ docmost_db_backups_sripts }}"
+    - "{{ docmost_db_backups_scripts }}"
     - "{{ docmost_db }}"
     - "{{ docmost_redis }}"
   tags: docmost
@@ -158,7 +158,7 @@
     name: common
     tasks_from: postgresdb_restore
   vars:
-    postgres_restore_base_path: "{{ docmost_db_backups_sripts }}"
+    postgres_restore_base_path: "{{ docmost_db_backups_scripts }}"
     pg_backup_directory: "{{ docmost_base_path }}/db_backups/"
     pg_database: "{{ docmost_db_name }}"
     pg_host: "docmost_db"

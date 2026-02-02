@@ -4,7 +4,7 @@ n8n_files_dir: "{{ n8n_base_path }}/files"
 n8n_local_ssd_path: "{{ base_local_ssd_storage_path }}/n8n"
 n8n_config_dir: "{{ n8n_local_ssd_path }}/config"
 n8n_db_dir: "{{ n8n_local_ssd_path }}/db"
-n8n_db_backups_sripts: "{{ n8n_local_ssd_path }}/backups_scripts"
+n8n_db_backups_scripts: "{{ n8n_local_ssd_path }}/backups_scripts"
 
 n8n_db_name: "n8n"
 n8n_db_user: "{{ vm_username}}"
