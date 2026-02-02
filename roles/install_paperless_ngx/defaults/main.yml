@@ -1,0 +1,28 @@
+paperless_ngx_base_path: "{{ base_app_storage_path }}/paperless_ngx"
+paperless_ngx_data: "{{ paperless_ngx_base_path }}/data"
+paperless_ngx_media: "{{ paperless_ngx_base_path }}/media"
+paperless_ngx_export: "{{ paperless_ngx_base_path }}/export"
+paperless_ngx_consume: "{{ paperless_ngx_base_path }}/consume"
+
+paperless_ngx_db_path: "{{ base_local_ssd_storage_path }}/paperless_ngx"
+paperless_ngx_db_backups_scripts: "{{ paperless_ngx_db_path }}/db_backups_scripts"
+paperless_ngx_db: "{{ paperless_ngx_db_path }}/db"
+paperless_ngx_redis: "{{ paperless_ngx_db_path }}/redis"
+
+paperless_ngx_db_name: "{{ vm_username }}"
+paperless_ngx_db_user: "{{ vm_username }}"
+paperless_ngx_db_password: "{{ db_password }}"
+paperless_ngx_domain: "paperless.{{ subdomain }}"
+
+
+paperless_admin_user: "{{ vm_username }}"
+paperless_admin_pass: "{{ vm_password }}"
+
+paperless_ngx_authentik_client_id_local: "XOjTjTEnMx0SzhnxuJVodKCdzbr3qJJN5qbpDKht"
+paperless_ngx_authentik_client_secret_local: "{{ paperless_ngx_authentik_client_secret }}"
+paperless_ngx_authentik_server_url: "https://authentik.kleovate.online/application/o/paperless-ngx/.well-known/openid-configuration"
+paperless_ngx_authentik_redirect_uri: "https://authentik.kleovate.online/application/o/paperless-ngx/end-session/"
+
+paperless_ngx_backup_db: true
+paperless_ngx_restore_db: false
+

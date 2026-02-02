@@ -1,0 +1,233 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+    - paperless_net
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+
+- name: Ensure Paperless directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
+    mode: "0755"
+    recurse: true
+  loop:
+    - "{{ paperless_ngx_redis }}"
+    - "{{ paperless_ngx_db_backups_scripts }}"
+    - "{{ paperless_ngx_db }}"
+    - "{{ paperless_ngx_data }}"
+    - "{{ paperless_ngx_media }}"
+    - "{{ paperless_ngx_export }}"
+    - "{{ paperless_ngx_consume }}"
+
+# --- Database Services ---
+
+- name: Deploy Redis (Broker)
+  community.docker.docker_container:
+    name: paperless_broker
+    image: "docker.io/library/redis:8"
+    hostname: paperless_broker
+    user: "{{ target_uid }}:{{ target_gid }}"
+    volumes:
+      - "{{ paperless_ngx_redis }}:/data"
+    labels:
+      com.docker.compose.project: "paperless_ngx_stack"
+      com.docker.compose.service: "paperless_ngx_broker"
+    networks:
+      - name: traefik_proxy
+      - name: paperless_net
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy PostgreSQL (DB)
+  community.docker.docker_container:
+    name: paperless_db
+    image: "docker.io/library/postgres:18.1"
+    hostname: paperless_db
+    user: "{{ target_uid }}:{{ target_gid }}"
+    volumes:
+      - "{{ paperless_ngx_db }}:/var/lib/postgresql"
+    env:
+      POSTGRES_DB: "{{ paperless_ngx_db_name }}"
+      POSTGRES_USER: "{{ paperless_ngx_db_user }}"
+      POSTGRES_PASSWORD: "{{ paperless_ngx_db_password }}"
+    labels:
+      com.docker.compose.project: "paperless_ngx_stack"
+      com.docker.compose.service: "paperless_ngx_db"
+    networks:
+      - name: traefik_proxy
+      - name: paperless_net
+    restart_policy: unless-stopped
+    state: started
+
+# --- Conversion Services ---
+
+- name: Deploy Gotenberg
+  community.docker.docker_container:
+    name: paperless_gotenberg
+    image: "docker.io/gotenberg/gotenberg:8.25"
+    hostname: paperless_gotenberg
+    user: "{{ target_uid }}:{{ target_gid }}"
+    # Security command override from your compose
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    labels:
+      com.docker.compose.project: "paperless_ngx_stack"
+      com.docker.compose.service: "paperless_ngx_gotenberg"
+    networks:
+      - name: traefik_proxy
+      - name: paperless_net
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Tika
+  community.docker.docker_container:
+    name: paperless_tika
+    image: "docker.io/apache/tika:latest"
+    hostname: paperless_tika
+    user: "{{ target_uid }}:{{ target_gid }}"
+    labels:
+      com.docker.compose.project: "paperless_ngx_stack"
+      com.docker.compose.service: "paperless_ngx_tika"
+    networks:
+      - name: traefik_proxy
+      - name: paperless_net
+    restart_policy: unless-stopped
+    state: started
+
+# --- Main Application ---
+
+- name: Deploy Paperless-ngx Webserver
+  community.docker.docker_container:
+    name: paperless_webserver
+    image: "ghcr.io/paperless-ngx/paperless-ngx:latest"
+    hostname: paperless_webserver
+    # user: "{{ target_uid }}:{{ target_gid }}"
+    volumes:
+      - "{{ paperless_ngx_data }}:/usr/src/paperless/data"
+      - "{{ paperless_ngx_media }}:/usr/src/paperless/media"
+      - "{{ paperless_ngx_export }}:/usr/src/paperless/export"
+      - "{{ paperless_ngx_consume }}:/usr/src/paperless/consume"
+    env:
+      PAPERLESS_REDIS: "redis://paperless_broker:6379"
+      PAPERLESS_DBHOST: "paperless_db"
+      PAPERLESS_DBUSER: "{{ paperless_ngx_db_user }}"
+      PAPERLESS_DBPASS: "{{ paperless_ngx_db_password }}"
+      PAPERLESS_DBNAME: "{{ paperless_ngx_db_name }}"
+      PAPERLESS_TIKA_ENABLED: "1"
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://paperless_gotenberg:3000"
+      PAPERLESS_TIKA_ENDPOINT: "http://paperless_tika:9998"
+      
+      # General
+      USERMAP_UID: "{{ target_uid }}"
+      USERMAP_GID: "{{ target_gid }}"
+      PAPERLESS_URL: "https://{{ paperless_ngx_domain }}"
+      PAPERLESS_ADMIN_USER: "{{ paperless_admin_user }}"
+      PAPERLESS_ADMIN_PASSWORD: "{{ paperless_admin_pass }}"
+      PAPERLESS_TIME_ZONE: "Europe/London"
+      # OpenID Connect
+      PAPERLESS_APPS: "allauth.socialaccount.providers.openid_connect"
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: '{"openid_connect": {"OAUTH_PKCE_ENABLED": true, "APPS": [{"provider_id": "authentik", "name": "authentik", "client_id": "{{ paperless_ngx_authentik_client_id_local }}", "secret": "{{ paperless_ngx_authentik_client_secret_local }}", "settings": {"server_url": "{{ paperless_ngx_authentik_server_url }}", "fetch_userinfo": true}}], "SCOPE": ["openid", "profile", "email"]}}'
+      PAPERLESS_LOGOUT_REDIRECT_URL: "{{ paperless_ngx_authentik_redirect_uri }}"
+      PAPERLESS_SOCIAL_AUTO_SIGNUP: "true"
+      PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS: "true"
+    labels:
+      com.docker.compose.project: "paperless_ngx_stack"
+      com.docker.compose.service: "paperless_ngx_webserver"
+      traefik.enable: "true"
+      traefik.http.routers.paperless-secure.rule: "Host(`{{ paperless_ngx_domain }}`)"
+      traefik.http.routers.paperless-secure.entrypoints: "https"
+      traefik.http.routers.paperless-secure.tls: "true"
+      traefik.http.routers.paperless.service: "paperless"
+      traefik.http.services.paperless.loadbalancer.server.port: "8000"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: paperless_net
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backup_app_name: "paperless_ngx"
+    container_name_running_postgresdb: "paperless_db"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ paperless_ngx_db_name }}"
+    db_to_backup_user: "{{ paperless_ngx_db_user }}"
+    db_to_backup_password: "{{ paperless_ngx_db_password }}"
+    backup_schedule_cron: "45 2 * * *"
+    notification_message_subject: "Paperless-NGX DB backup"
+  when: paperless_ngx_backup_db | default(false)
+  tags: paperless_ngx
+
+- name: Wait for 10 seconds for DB backup to finish before restore
+  pause:
+    seconds: 10
+  when: paperless_ngx_backup_db | default(false) and paperless_ngx_restore_db | default(false)
+  tags: paperless_ngx
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ paperless_ngx_db_backups_scripts }}"
+    pg_backup_directory: "{{ paperless_ngx_base_path }}/db_backups/"
+    pg_database: "{{ paperless_ngx_db_name }}"
+    pg_host: "paperless_db"
+    pg_port: 5432
+    pg_user: "{{ paperless_ngx_db_user }}"
+    pg_password: "{{ paperless_ngx_db_password }}"
+    pg_drop_before_restore: true
+  when: paperless_ngx_restore_db | default(false)
+  tags: paperless_ngx
+
+- name: Restart containers
+  docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - paperless_broker
+    - paperless_db
+    - paperless_gotenberg
+    - paperless_tika
+    - paperless_webserver
+  when: paperless_ngx_restore_db | default(false)
+  tags: paperless_ngx
+
+- name: Paperless NGX deployed
+  debug:
+    msg: "Paperless-ngx is running successfully"
+  tags: paperless_ngx
