@@ -1,22 +1,38 @@
 ---
-- name: Ensure Docker service is running
-  service:
-    name: docker
-    state: started
-    enabled: yes
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
 
-- name: Check if traefik_proxy network exists
-  command: docker network inspect traefik_proxy
-  register: network_check
-  failed_when: network_check.rc != 0
-  changed_when: false
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - docker_ai_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
 
 - name: Create OpenWebUI directory
   file:
     path: "{{ item }}"
     state: directory
-    owner: 1000
-    group: 1000
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
     mode: "0755"
   loop:
     - "{{ openwebui_data_dir }}"
@@ -25,12 +41,14 @@
   docker_container:
     name: openwebui
     image: ghcr.io/open-webui/open-webui:main
+    hostname: openwebui
+    # user: "{{ target_uid }}:{{ target_gid }}" # doen't work properly
     volumes:
       - "{{ openwebui_data_dir }}:/app/backend/data"
     env:
-      OLLAMA_BASE_URL: "https://{{ ollama_domain }}"
+      OLLAMA_BASE_URL: "http://ollama:11434"
     labels:
-      com.docker.compose.project: "openwebui_stack"
+      com.docker.compose.project: "AI_stack"
       com.docker.compose.service: "openwebui"
       traefik.docker.network: "traefik_proxy"
       traefik.enable: "true"
@@ -46,6 +64,7 @@
       # tsdproxy.container_port: "8080"
     networks:
       - name: traefik_proxy
+      - name: docker_ai_network
     restart_policy: unless-stopped
     state: started
 

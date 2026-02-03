@@ -13,7 +13,8 @@ base_app_storage_path: "{{ base_mergerfs_storage_path }}/Apps/CloudData/Docker"
 
 my_cloud_nas_storage_path: "{{ base_mergerfs_storage_path }}/DataStorage"
 my_non_cloud_nas_storage_path: "{{ base_mergerfs_storage_path }}/NonCloudDataStorage"
-my_cloud_nas_app_storage_path: "{{ base_mergerfs_storage_path }}/Apps/CloudData"
+my_non_cloud_nas_app_storage_path: "{{ base_mergerfs_storage_path }}/NonCloudDataStorage/Apps"
+my_cloud_nas_app_storage_path: "{{ base_mergerfs_storage_path }}/Apps/CloudData"    # only used in rclone
 
 subdomain: "kleovate.online"
 

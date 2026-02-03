@@ -1,0 +1,77 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - docker_ai_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Create Ollama directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ ollama_data_dir }}"
+
+
+# Required for Ollama to utilize Nvidia GPU
+- name: Install Nvidia Container Toolkit
+  include_role:
+    name: common
+    tasks_from: nvidia_toolkit_install
+
+- name: Deploy Ollama container
+  docker_container:
+    name: ollama
+    image: ollama/ollama:latest
+    hostname: ollama
+    user: "{{ target_uid }}:{{ target_gid }}"
+    env:
+      OLLAMA_HOST: "0.0.0.0"
+      HOME: "/data"
+    ports:
+      - "11434:11434"
+    volumes:
+      - "{{ ollama_data_dir }}:/data"
+    labels:
+      com.docker.compose.project: "AI_stack"
+      com.docker.compose.service: "ollama"
+    device_requests:
+      - driver: nvidia
+        count: -1
+        capabilities:
+          - - gpu
+    networks:
+      - name: traefik_proxy
+      - name: docker_ai_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Ollama deployed
+  debug:
+    msg: "Ollama is running successfully"
+

@@ -1,0 +1,44 @@
+---
+- name: Download Nvidia GPG key (ASCII format)
+  get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /usr/share/keyrings/nvidia-container-toolkit-keyring.asc
+    mode: '0644'
+    force: true
+
+- name: Add Nvidia Container Toolkit repository (Generic Stable)
+  copy:
+    dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /
+    mode: '0644'
+
+- name: Install Nvidia Container Toolkit
+  apt:
+    name: nvidia-container-toolkit
+    state: present
+    update_cache: true
+
+- name: Check if Docker daemon.json exists
+  stat:
+    path: /etc/docker/daemon.json
+  register: docker_daemon_file
+
+- name: Check if Nvidia runtime is already configured
+  command: grep -q '"nvidia":' /etc/docker/daemon.json
+  register: nvidia_runtime_check
+  failed_when: false
+  changed_when: false
+  when: docker_daemon_file.stat.exists
+
+- name: Configure Docker to use Nvidia driver
+  command: nvidia-ctk runtime configure --runtime=docker
+  register: nvidia_config
+  # Run ONLY if grep failed (rc != 0) OR file didn't exist
+  when: not docker_daemon_file.stat.exists or nvidia_runtime_check.rc != 0
+
+- name: Restart Docker immediately (only if config changed)
+  service:
+    name: docker
+    state: restarted
+  when: nvidia_config.changed
