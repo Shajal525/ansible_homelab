@@ -47,6 +47,16 @@
       - "{{ openwebui_data_dir }}:/app/backend/data"
     env:
       OLLAMA_BASE_URL: "http://ollama:11434"
+      # Authentik OAuth settings
+      OAUTH_CLIENT_ID: "{{ openwebui_authentik_client_id_local }}"
+      OAUTH_CLIENT_SECRET: "{{ openwebui_authentik_client_secret_local }}"
+      OAUTH_PROVIDER_NAME: "authentik"
+      OPENID_PROVIDER_URL: "https://{{ authentik_domain }}/application/o/{{ openwebui_authentik_slug }}/.well-known/openid-configuration"
+      OPENID_REDIRECT_URI: "https://{{ openwebui_domain }}/oauth/oidc/callback"
+      WEBUI_URL: "https://{{ openwebui_domain }}"
+      ENABLE_OAUTH_SIGNUP: "true"
+      ENABLE_LOGIN_FORM: "false"
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
     labels:
       com.docker.compose.project: "AI_stack"
       com.docker.compose.service: "openwebui"

@@ -7,3 +7,8 @@ openwebui_data_dir: "{{ openwebui_base_path }}/data"
 
 openwebui_domain: "openwebui.{{ subdomain }}"
 
+authentik_domain: "authentik.{{ subdomain }}"
+openwebui_authentik_client_id_local: "IEVTqfP22fCt4IRpx207WbrmN97EIFaSuWKgQe3X"
+openwebui_authentik_client_secret_local: "{{ openwebui_authentik_client_secret }}"
+openwebui_authentik_slug: "open-web-ui"
+
