@@ -2,7 +2,7 @@ ollama_base_path: "{{ my_non_cloud_nas_app_storage_path }}/ollama"
 ollama_data_dir: "{{ ollama_base_path }}/data"
 
 
-openwebui_base_path: "{{ base_app_storage_path }}/openwebui"
+openwebui_base_path: "{{ base_local_ssd_storage_path }}/openwebui"
 openwebui_data_dir: "{{ openwebui_base_path }}/data"
 
 openwebui_domain: "openwebui.{{ subdomain }}"
