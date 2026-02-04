@@ -17,4 +17,4 @@ affine_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
 affine_email_from: "affine@{{ subdomain }}"
 
 affine_backup_db: false
-affine_restore_db: true
+affine_restore_db: false

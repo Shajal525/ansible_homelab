@@ -100,7 +100,7 @@
     image: "ghcr.io/toeverything/affine:stable"
     hostname: affine_migration_job
     user: root
-    # cleanup: yes 
+    cleanup: yes 
     volumes:
       - "{{ affine_data_uploaded }}:/root/.affine/storage"
       - "{{ affine_data_config }}:/root/.affine/config"
@@ -114,7 +114,7 @@
       com.docker.compose.service: "affine_migration_job"
     networks:
       - name: traefik_proxy
-    restart_policy: unless-stopped
+    restart_policy: "no"
     state: started
 
 - name: Deploy Affine Server
