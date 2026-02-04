@@ -34,7 +34,7 @@
     # - role: rustdesk # installed in VPS
     # Not in use section end
 
-    # - role: install_authentik
+    - role: install_authentik
     # - role: install_affine
     # - role: install_docmost # Replace with Affine. But Docmost is good for commercial use. Authentik does not work. Need enterprise version for OIDC support.
     # - role: install_traefik   # Authentik needs to be installed before Traefik because of middleware setup
@@ -51,7 +51,7 @@
     # - role: install_n8n   # Authentik does not work. Need enterprise version for OIDC support.
     #   vars:
     #     host_type: "local"  # options: local, vps
-    - role: install_ollama_stack
+    # - role: install_ollama_stack
 
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.

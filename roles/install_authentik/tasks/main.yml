@@ -87,6 +87,8 @@
     #   - "{{ authentik_http_port }}:9000"
     #   - "{{ authentik_https_port }}:9443"
     env:
+      AUTHENTIK_LOG_LEVEL: "warning"
+      AUTHENTIK_WORKER__THREADS: "2"
       AUTHENTIK_POSTGRESQL__HOST: "authentik_db"
       AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_db_name }}"
       AUTHENTIK_POSTGRESQL__USER: "{{ authentik_db_user }}"
@@ -128,6 +130,8 @@
     user: root
     command: worker
     env:
+      AUTHENTIK_LOG_LEVEL: "warning"
+      AUTHENTIK_WORKER__THREADS: "2"
       AUTHENTIK_POSTGRESQL__HOST: "authentik_db"
       AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_db_name }}"
       AUTHENTIK_POSTGRESQL__USER: "{{ authentik_db_user }}"
