@@ -1,0 +1,8 @@
+searxng_db_path: "{{ base_local_ssd_storage_path }}/searxng"
+searxng_redis: "{{ searxng_db_path }}/redis"
+searxng_config_dir: "{{ searxng_db_path }}/config"
+searxng_data_dir: "{{ searxng_db_path }}/data"
+
+
+searxng_domain: "searxng.{{ subdomain }}"
+
