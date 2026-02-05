@@ -34,8 +34,8 @@
     # - role: rustdesk # installed in VPS
     # Not in use section end
 
-    # - role: install_authentik
-    - role: install_affine
+    - role: install_authentik
+    # - role: install_affine
     # - role: install_docmost # Replace with Affine. But Docmost is good for commercial use. Authentik does not work. Need enterprise version for OIDC support.
     # - role: install_traefik   # Authentik needs to be installed before Traefik because of middleware setup
     # - role: install_portainer

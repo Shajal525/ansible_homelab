@@ -103,6 +103,8 @@
       AUTHENTIK_EMAIL__PASSWORD: "{{ authentik_email_smtp_password }}"
       AUTHENTIK_EMAIL__TIMEOUT: "10"
       AUTHENTIK_EMAIL__FROM: "authentik@{{ authentik_domain }}"
+      AUTHENTIK_EVENTS__CONTEXT_PROCESSORS__GEOIP: "/tmp/non-existent-file"
+      AUTHENTIK_EVENTS__CONTEXT_PROCESSORS__ASN: "/tmp/non-existent-file"
     volumes:
       - "{{ authentik_data_path }}:/data"
       - "{{ authentik_templates_path }}:/templates"
@@ -146,6 +148,8 @@
       AUTHENTIK_EMAIL__PASSWORD: "{{ authentik_email_smtp_password }}"
       AUTHENTIK_EMAIL__TIMEOUT: "10"
       AUTHENTIK_EMAIL__FROM: "{{ authentik_email_from }}"
+      AUTHENTIK_EVENTS__CONTEXT_PROCESSORS__GEOIP: "/tmp/non-existent-file"
+      AUTHENTIK_EVENTS__CONTEXT_PROCESSORS__ASN: "/tmp/non-existent-file"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "{{ authentik_data_path }}:/data"
