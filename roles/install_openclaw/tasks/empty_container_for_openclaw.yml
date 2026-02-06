@@ -44,7 +44,7 @@
       - "✅ Container deployed successfully!"
       - "Run 'openclaw onboard' command inside the container to complete setup."
       - "After onboarding, run 'openclaw config set gateway.controlUi.allowInsecureAuth true' to disable device pairing."
-      - "Now run 'pkill -f openclaw nohup openclaw gateway --bind 0.0.0.0 > /var/log/openclaw.log 2>&1 &' to start the gateway."
+      - "Now run 'nohup openclaw gateway > /var/log/openclaw.log 2>&1 &' to start the gateway."
       - "Access OpenClaw at https://{{ openclaw_domain }} after starting the gateway. Check log in /var/log/openclaw.log"
       - "To kill the running gateway run 'pkill -f openclaw'"
       - "To connect telegram open the bot with @{{ telegram_bot_username }} and send /start command to link it with your OpenClaw instance. It will give pairing code."
