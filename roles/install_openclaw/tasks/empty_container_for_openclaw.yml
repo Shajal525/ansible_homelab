@@ -47,3 +47,5 @@
       - "Now run 'pkill -f openclaw nohup openclaw gateway --bind 0.0.0.0 > /var/log/openclaw.log 2>&1 &' to start the gateway."
       - "Access OpenClaw at https://{{ openclaw_domain }} after starting the gateway. Check log in /var/log/openclaw.log"
       - "To kill the running gateway run 'pkill -f openclaw'"
+      - "To connect telegram open the bot with @{{ telegram_bot_username }} and send /start command to link it with your OpenClaw instance. It will give pairing code."
+      - "Use 'openclaw pairing approve telegram <REQUEST_ID_OR_CODE>' command to approve the pairing request from telegram bot. You can find the request ID in the output of 'openclaw pairing list' command."
