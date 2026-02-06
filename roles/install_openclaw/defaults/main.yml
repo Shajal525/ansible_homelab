@@ -17,12 +17,13 @@ ollama_model_name: "Qwen 2.5 Coder 7B"
 traefik_enabled: true
 
 openclaw_models:
+  # - id: "qwen2.5-coder:7b"
+  #   name: "Qwen 2.5 Coder"
+  #   context_window: 32768
+  #   max_tokens: 4096
   - id: "qwen2.5:7b"
     name: "Qwen 2.5 Chat (Default)"
     context_window: 32768
     max_tokens: 4096
-  - id: "qwen2.5-coder:7b"
-    name: "Qwen 2.5 Coder"
-    context_window: 32768
-    max_tokens: 4096
 
+telegram_bot_token: "8505525201:AAGEvuRk29YXVbUZ24dypw7F2DIU-ULbB6k"

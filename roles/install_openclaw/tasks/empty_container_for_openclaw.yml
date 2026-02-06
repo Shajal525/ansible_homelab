@@ -1,0 +1,49 @@
+---
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+    - docker_ai_network
+  loop_control:
+    loop_var: network_item
+
+- name: Deploy Empty Docker Container for OpenClaw
+  docker_container:
+    name: openclaw_runner
+    image: ubuntu:25.10
+    hostname: openclaw_runner
+    user: root
+    command: >
+      /bin/bash -c "
+      apt-get update && apt-get install -y curl &&
+      curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard &&
+      sleep infinity"
+    labels:
+      com.docker.compose.project: "openclaw_stack"
+      com.docker.compose.service: "openclaw_runner"
+      traefik.enable: "true"
+      traefik.http.routers.openclaw-secure.entrypoints: "https"
+      traefik.http.routers.openclaw-secure.rule: "Host(`{{ openclaw_domain }}`)"
+      traefik.http.routers.openclaw-secure.tls: "true"
+      traefik.http.routers.openclaw.service: "openclaw"
+      traefik.http.services.openclaw.loadbalancer.server.port: "18789"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+      - name: docker_ai_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Show deployment info
+  ansible.builtin.debug:
+    msg:
+      - "✅ Container deployed successfully!"
+      - "Run 'openclaw onboard' command inside the container to complete setup."
+      - "After onboarding, run 'openclaw config set gateway.controlUi.allowInsecureAuth true' to disable device pairing."
+      - "Now run 'pkill -f openclaw nohup openclaw gateway --bind 0.0.0.0 > /var/log/openclaw.log 2>&1 &' to start the gateway."
+      - "Access OpenClaw at https://{{ openclaw_domain }} after starting the gateway. Check log in /var/log/openclaw.log"
+      - "To kill the running gateway run 'pkill -f openclaw'"
