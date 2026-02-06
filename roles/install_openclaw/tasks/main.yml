@@ -1,0 +1,204 @@
+---
+# ------------------------------------------------------------------
+# 1. PRE-CHECK
+# ------------------------------------------------------------------
+
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+    - docker_ai_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Ensure OpenClaw directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid }}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: '0755'
+  loop:
+    - "{{ openclaw_data_path }}"
+    - "{{ openclaw_config_path }}"
+    - "{{ openclaw_docker_files_path }}"
+
+# ------------------------------------------------------------------
+# 2. CLONE & CONFIGURE
+# ------------------------------------------------------------------
+- name: Configure Git safe.directory for {{ openclaw_docker_files_path }}
+  ansible.builtin.command:
+    cmd: git config --global --add safe.directory "{{ openclaw_docker_files_path }}"
+  become: true
+  changed_when: false
+  ignore_errors: true
+
+- name: Clone OpenClaw repository.
+  ansible.builtin.git:
+    repo: "https://github.com/openclaw/openclaw.git"
+    dest: "{{ openclaw_docker_files_path }}"
+    version: main
+    force: true
+    update: no
+    track_submodules: no
+  register: git_result
+
+- name: Generate config.json (Networked)
+  ansible.builtin.copy:
+    dest: "{{ openclaw_config_path }}/config.json"
+    content: |
+      {
+        "gateway": {
+          "bind": "lan",
+          "port": 18789,
+          "mode": "local",
+          "trustedProxies": [
+            "127.0.0.1",
+            "172.16.0.0/12",
+            "172.18.0.0/16",
+            "192.168.0.0/16"
+          ],
+          "controlUi": {
+            "allowInsecureAuth": true
+          }
+        },
+        "models": {
+          "providers": {
+            "ollama": {
+              "api": "openai-completions",
+              "baseUrl": "{{ ollama_api_url }}/v1",
+              "apiKey": "ollama",
+              "models": [
+                {% for model in openclaw_models %}
+                {
+                  "id": "{{ model.id }}",
+                  "name": "{{ model.name }}",
+                  "contextWindow": {{ model.context_window }},
+                  "maxTokens": {{ model.max_tokens }},
+                  "input": ["text"]
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ]
+            }
+          }
+        },
+        "agents": {
+          "defaults": {
+            "model": {
+              "primary": "ollama/{{ openclaw_models[0].id }}"
+            }
+          }
+        }
+      }
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    mode: '0644'
+
+# ------------------------------------------------------------------
+# 3. GENERATE DOCKER-COMPOSE WITH TRAEFIK LABELS
+# ------------------------------------------------------------------
+- name: Generate docker-compose.yml (Traefik-Enabled)
+  ansible.builtin.copy:
+    dest: "{{ openclaw_docker_files_path }}/docker-compose.yml"
+    content: |
+      services:
+        openclaw:
+          build: .
+          container_name: openclaw
+          user: "{{ target_uid }}:{{ target_gid }}"
+          environment:
+            - NODE_ENV=production
+            - OPENCLAW_GATEWAY_HOST=0.0.0.0
+            - OPENCLAW_GATEWAY_PORT=18789
+            - OPENCLAW_GATEWAY_TOKEN={{ openclaw_getway_token }}
+            - HOME=/app/data
+            - OPENCLAW_CONFIG_PATH=/app/config/config.json
+            - OPENCLAW_GATEWAY_CONTROL_UI_ALLOW_INSECURE_AUTH=true
+            - LOG_LEVEL=error
+            # Power Optimization Settings
+            - POLLING_INTERVAL=30000
+            - AGENT_YIELD_MS=20000
+            - DISABLE_PROACTIVE=true
+          
+          volumes:
+            - "{{ openclaw_data_path }}:/app/data"
+            - "{{ openclaw_config_path }}:/app/config"
+          
+          labels:
+            - "com.docker.compose.project=openclaw_stack"
+            - "com.docker.compose.service=openclaw"
+            
+            # {% if traefik_enabled %}
+
+            - "traefik.enable=true"
+            - "traefik.http.routers.openclaw-secure.entrypoints=https"
+            - "traefik.http.routers.openclaw-secure.rule=Host(`{{ openclaw_domain }}`)"
+            - "traefik.http.routers.openclaw-secure.tls=true"
+
+            - "traefik.http.routers.openclaw.service=openclaw"
+            - "traefik.http.services.openclaw.loadbalancer.server.port=18789"
+            - "traefik.docker.network=traefik_proxy"
+            
+            # Optional: Add middleware for Authentik/OAuth (uncomment if needed)
+            # - "traefik.http.routers.openclaw-secure.middlewares=authentik@file"
+          
+            # {% endif %}
+          restart: unless-stopped
+          networks:
+            - traefik_proxy
+            - pangolin_network
+            - docker_ai_network
+      
+      networks:
+        traefik_proxy:
+          external: true
+        pangolin_network:
+          external: true
+        docker_ai_network:
+          external: true
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    mode: '0644'
+
+# ------------------------------------------------------------------
+# 4. DEPLOY
+# ------------------------------------------------------------------
+- name: Deploy OpenClaw via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ openclaw_docker_files_path }}"
+    recreate: always
+    pull: missing
+    state: present
+    project_name: "openclaw_stack"
+    remove_orphans: true
+    build: "{{ 'always' if git_result.changed | default(false) else 'never' }}"
+
+- name: Show deployment info
+  ansible.builtin.debug:
+    msg:
+      - "✅ OpenClaw deployed successfully!"
+      - "1. Check logs: docker logs openclaw"
+      - "2. Visit: https://{{ openclaw_domain }}"
+      - "3. Add OLLAMA_KEEP_ALIVE=5m to your Ollama container for max power savings"
+

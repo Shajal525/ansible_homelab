@@ -1,0 +1,28 @@
+---
+
+openclaw_base_path: "{{ my_non_cloud_nas_app_storage_path }}/openclaw"
+openclaw_data_path: "{{ openclaw_base_path }}/data"
+openclaw_config_path: "{{ openclaw_base_path }}/config"
+openclaw_docker_files_path: "{{ openclaw_base_path }}/docker_files"
+
+openclaw_domain: "openclaw.{{ subdomain }}"
+
+openclaw_getway_token: "{{ vm_password }}"
+
+ollama_api_url: "http://ollama:11434"
+ollama_api_url_with_ip: "http://172.18.0.34:11434"
+ollama_model: "qwen2.5-coder:7b"
+ollama_model_name: "Qwen 2.5 Coder 7B"
+
+traefik_enabled: true
+
+openclaw_models:
+  - id: "qwen2.5:7b"
+    name: "Qwen 2.5 Chat (Default)"
+    context_window: 32768
+    max_tokens: 4096
+  - id: "qwen2.5-coder:7b"
+    name: "Qwen 2.5 Coder"
+    context_window: 32768
+    max_tokens: 4096
+
