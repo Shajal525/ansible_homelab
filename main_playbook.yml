@@ -51,9 +51,10 @@
     # - role: install_n8n   # Authentik does not work. Need enterprise version for OIDC support.
     #   vars:
     #     host_type: "local"  # options: local, vps
-    # - role: install_ollama_stack
-    # - role: install_searxng
     # - role: install_openclaw
+    # - role: install_searxng
+    # Need GPU for this.
+    # - role: install_ollama_stack
 
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
