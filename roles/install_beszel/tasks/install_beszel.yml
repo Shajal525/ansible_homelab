@@ -83,8 +83,8 @@
 - name: Deploy Beszel Agent container
   community.docker.docker_container:
     name: beszel-agent
-    # image: henrygd/beszel-agent:latest  # use this when no GPU monitoring is needed
-    image: henrygd/beszel-agent-nvidia:latest
+    image: henrygd/beszel-agent:latest  # use this when no GPU monitoring is needed
+    # image: henrygd/beszel-agent-nvidia:latest
     hostname: beszel-agent
     user: "{{ target_uid }}:{{ target_gid }}"
     groups:
@@ -102,11 +102,11 @@
       - "{{ beszel_monitor_hdd1 }}:/extra-filesystems/hdd1:ro"
       - "{{ beszel_monitor_mergerfs }}:/extra-filesystems/mergerfs:ro"
     # This is needed for Nvidia GPU monitoring. Ignore if no GPU monitoring is needed.
-    device_requests:
-      - driver: nvidia
-        count: -1
-        capabilities:
-          - - utility
+    # device_requests:
+    #   - driver: nvidia
+    #     count: -1
+    #     capabilities:
+    #       - - utility
     labels:
       com.docker.compose.project: "beszel_stack"
       com.docker.compose.service: "beszel-agent"

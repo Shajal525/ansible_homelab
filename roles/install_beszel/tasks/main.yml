@@ -1,9 +1,9 @@
 ---
 # Required for monitoring GPU usage within in Beszel container
-- name: Install Nvidia Container Toolkit
-  include_role:
-    name: common
-    tasks_from: nvidia_toolkit_install
+# - name: Install Nvidia Container Toolkit
+#   include_role:
+#     name: common
+#     tasks_from: nvidia_toolkit_install
 
 
 - include_tasks: install_beszel.yml

@@ -44,7 +44,7 @@
     # - role: install_immich
     # - role: install_rclone
     # - role: install_media_packages
-    # - role: install_beszel
+    - role: install_beszel
     # - role: install_nextcloud
     # - role: install_uptimeKuma
     # - role: install_paperless_ngx
@@ -53,7 +53,7 @@
     #     host_type: "local"  # options: local, vps
     # - role: install_ollama_stack
     # - role: install_searxng
-    - role: install_openclaw
+    # - role: install_openclaw
 
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
