@@ -11,5 +11,5 @@ postgres_port: "5432"
 
 adminer_domain: "adminer.{{ subdomain }}"
 
-postgres_backup_db: true
+postgres_backup_db: false
 postgres_restore_db: false

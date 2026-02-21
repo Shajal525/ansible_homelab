@@ -30,7 +30,6 @@
     # - role: install_linkwarden
     # - role: install_syncthing
     # - role: system_monitoring
-    # - role: postgresql
     # - role: rustdesk # installed in VPS
     # Not in use section end
 
@@ -44,7 +43,7 @@
     # - role: install_immich
     # - role: install_rclone
     # - role: install_media_packages
-    - role: install_beszel
+    # - role: install_beszel
     # - role: install_nextcloud
     # - role: install_uptimeKuma
     # - role: install_paperless_ngx
@@ -59,6 +58,7 @@
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: samba_share
+    - role: postgresql
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
