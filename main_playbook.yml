@@ -58,7 +58,8 @@
     # - role: snapraid # Carefull! this creates subvolumes and does initial sync.
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: samba_share
-    - role: postgresql
+    # - role: postgresql
+    - role: redis
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

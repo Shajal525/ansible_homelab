@@ -1,0 +1,14 @@
+- name: Deploy Redis
+  community.docker.docker_container:
+    name: redis
+    image: "redis:latest"
+    hostname: redis
+    ports:
+      - "6379:6379"
+    labels:
+      com.docker.compose.project: "redis_stack"
+      com.docker.compose.service: "redis"
+    networks:
+      - name: traefik_proxy
+    restart_policy: unless-stopped
+    state: started
