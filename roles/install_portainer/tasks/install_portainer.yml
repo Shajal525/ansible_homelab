@@ -74,6 +74,7 @@
       # tsdproxy.tlsvalidate: "false"
     networks:
       - name: traefik_proxy
+      - name: pangolin_network
     restart_policy: always
     state: started
 

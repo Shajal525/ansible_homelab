@@ -1,0 +1,27 @@
+github_username: "Shajal525"
+local_github_pat: "{{ github_pat }}"
+
+image_url: "ghcr.io/shajal525/kleovate.authenticator:master"
+
+host_port: "8888"
+
+authenticator_domain: "authenticator.{{ subdomain }}"
+
+
+authenticator_base_path: "{{ base_app_storage_path }}/authenticator"
+authenticator_config: "{{ authenticator_base_path }}/config"
+
+authenticator_sql_host: "postgresql"
+authenticator_sql_port: "5432"
+authenticator_sql_user: "shajal"
+authenticator_sql_password: "{{ db_password }}"
+authenticator_sql_db: "authenticator"
+
+
+authenticator_redis_host: "localhost"
+authenticator_redis_port: "6379"
+
+authenticator_smtp_user: "shajal525@gmail.com"
+authenticator_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
+authenticator_email_from: "authenticator@{{ subdomain }}"
+

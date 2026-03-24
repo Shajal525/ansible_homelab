@@ -1,0 +1,50 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host={{ authenticator_sql_host }}:{{ authenticator_sql_port }};Database={{ authenticator_sql_db }};Username={{ authenticator_sql_user }};Password={{ authenticator_sql_password }}",
+    "Redis": "{{ authenticator_redis_host }}:{{ authenticator_redis_port }}"
+  },
+  "JwtSettings": {
+    "Issuer": "Kleovate.Authenticator",
+    "Audience": "Kleovate.Apps",
+    "SecretKey": "ThisIsASecretKeyForDevelopmentOnly_ReplaceInProduction_MustBe32BytesOrLonger",
+    "ExpirationInMinutes": 60,
+    "RefreshTokenExpirationInDays": 7,
+    "VerificationTokenExpirationInHour": 1,
+    "Token2FaExpirationInMinutes": 5
+  },
+  "CacheSettings": {
+    "PasskeyExpirationInMinutes": 5
+  },
+  "RateLimitSettings": {
+    "MaxFailedAttempts": 5,
+    "WindowInMinutes": 5,
+    "BlockDurationInMinutes": 15
+  },
+  "AppDomainSettings": {
+    "Url": "{{ authenticator_domain }}",
+    "UseClientApplicationBaseUriForEmails": false,
+    "EmailVerificationPath": "/verify-email",
+    "EmailChangePath": "/email-change",
+    "PasswordResetPath": "/reset-password"
+  },
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SmtpUsername": "{{ authenticator_smtp_user }}",
+    "SmtpPassword": "{{ authenticator_smtp_password }}",
+    "FromAddress": "{{ authenticator_email_from }}",
+    "FromName": "Kleovate Authenticator"
+  },
+  "fido2": {
+    "serverDomain": "localhost",
+    "serverName": "Kleovate Authenticator",
+    "origin": "http://localhost:5105"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}

@@ -59,7 +59,8 @@
     # - role: mergerfs # Carefull! this will unmount and remount storage drives.
     # - role: samba_share
     # - role: postgresql
-    - role: redis
+    # - role: redis
+    - role: kleovate_authenticator
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost
