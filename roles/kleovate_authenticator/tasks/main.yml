@@ -67,9 +67,11 @@
     hostname: KleovateAuthenticator
     user: "{{ target_uid }}:{{ target_gid }}"
     # ports:
-    #   - "{{ host_port }}:5227"
+    #   - "{{ host_port }}:8080"
     volumes:
       - "{{ authenticator_config }}/appsettings.json:/app/appsettings.json:ro"
+    env:
+      ASPNETCORE_ENVIRONMENT: "Development"
     labels:
       com.docker.compose.project: "kleovate_stack"
       com.docker.compose.service: "KleovateAuthenticator"
@@ -78,7 +80,8 @@
       traefik.http.routers.authenticator-secure.rule: "Host(`{{ authenticator_domain }}`)"
       traefik.http.routers.authenticator-secure.tls: "true"
       traefik.http.routers.authenticator-secure.service: "authenticator"
-      traefik.http.services.authenticator.loadbalancer.server.port: "5227"
+      traefik.http.services.authenticator.loadbalancer.server.port: "8080"
+      traefik.docker.network: "traefik_proxy" 
     networks:
       - name: traefik_proxy
       - name: pangolin_network

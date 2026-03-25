@@ -3,7 +3,7 @@ local_github_pat: "{{ github_pat }}"
 
 image_url: "ghcr.io/shajal525/kleovate.authenticator:master"
 
-host_port: "8888"
+host_port: "8080"
 
 authenticator_domain: "authenticator.{{ subdomain }}"
 
