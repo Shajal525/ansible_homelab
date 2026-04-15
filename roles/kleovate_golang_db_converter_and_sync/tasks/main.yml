@@ -1,0 +1,95 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+    - kleovate_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+  
+- name: Create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ db_converter_and_sync_config }}"
+    - "{{ db_converter_and_sync_sqllite_path }}"
+
+- name: Configure python.env for Kleovate GoLang DB Converter and Sync
+  ansible.builtin.template:
+    src: python.env.j2
+    dest: "{{ db_converter_and_sync_config }}/.env"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    mode: '0644'
+
+- name: Log in to GitHub Container Registry (GHCR)
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ github_username }}"
+    password: "{{ local_github_pat }}"
+    reauthorize: true
+
+- name: Pull the Golang DB Converter and Sync Docker image from GHCR
+  community.docker.docker_image:
+    name: "{{ image_url }}"
+    source: pull
+    # Forcing pull ensures you get the latest version of the tag
+    force_source: true
+
+- name: Run the Golang DB Converter and Sync Docker container
+  community.docker.docker_container:
+    name: Kleovate_db_converter_and_sync
+    image: "{{ image_url }}"
+    hostname: Kleovate_db_converter_and_sync
+    user: "{{ target_uid }}:{{ target_gid }}"
+    # ports:
+    #   - "{{ host_port }}:8080"
+    volumes:
+      - "{{ db_converter_and_sync_sqllite_path }}:/app/sqllite_files"
+    env_file: "{{ db_converter_and_sync_config }}/.env"
+    labels:
+      com.docker.compose.project: "kleovate_stack"
+      com.docker.compose.service: "Kleovate_db_converter_and_sync"
+      traefik.enable: "true"
+      traefik.http.routers.db_converter_and_sync-secure.entrypoints: "https"
+      traefik.http.routers.db_converter_and_sync-secure.rule: "Host(`{{ db_converter_and_sync_domain }}`)"
+      traefik.http.routers.db_converter_and_sync-secure.tls: "true"
+      traefik.http.routers.db_converter_and_sync-secure.service: "db_converter_and_sync"
+      traefik.http.services.db_converter_and_sync.loadbalancer.server.port: "8080"
+      traefik.docker.network: "traefik_proxy" 
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+      - name: kleovate_network
+    restart_policy: always
+    state: started
+
+- name: Log out of GHCR (Cleanup)
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    state: absent

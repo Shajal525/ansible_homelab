@@ -60,7 +60,8 @@
     # - role: samba_share
     # - role: postgresql
     # - role: redis
-    - role: kleovate_authenticator
+    # - role: kleovate_authenticator
+    - role: kleovate_golang_db_converter_and_sync
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

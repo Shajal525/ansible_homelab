@@ -1,0 +1,30 @@
+github_username: "Shajal525"
+local_github_pat: "{{ github_pat }}"
+
+image_url: "ghcr.io/shajal525/kleovate.golangdbconverter:main"
+
+host_port: "8080"
+
+db_converter_and_sync_domain: "golangdbconverter.{{ subdomain }}"
+
+
+db_converter_and_sync_base_path: "{{ base_app_storage_path }}/db_converter_and_sync"
+db_converter_and_sync_config: "{{ db_converter_and_sync_base_path }}/config"
+db_converter_and_sync_sqllite_path: "{{ db_converter_and_sync_config }}/sqllite_files"
+
+db_converter_and_sync_sql_host: "postgresql"
+db_converter_and_sync_sql_port: "5432"
+db_converter_and_sync_sql_user: "shajal"
+db_converter_and_sync_sql_password: "{{ db_password }}"
+db_converter_and_sync_sql_db: "shajal"
+
+
+db_converter_and_sync_app_environment: "development"
+
+db_converter_and_sync_jwks_url: "https://db_converter_and_sync.{{ subdomain }}/.well-known/jwks.json"
+
+
+db_converter_tables:
+  - "quran.users,false"
+  - "quran.ayahs,true"
+  - "quran.ayahs_translation,true"
