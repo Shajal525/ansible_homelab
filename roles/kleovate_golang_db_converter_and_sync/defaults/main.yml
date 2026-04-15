@@ -21,7 +21,7 @@ db_converter_and_sync_sql_db: "shajal"
 
 db_converter_and_sync_app_environment: "development"
 
-db_converter_and_sync_jwks_url: "https://db_converter_and_sync.{{ subdomain }}/.well-known/jwks.json"
+db_converter_and_sync_jwks_url: "http://KleovateAuthenticator:8080/.well-known/jwks.json"
 
 
 db_converter_tables:
