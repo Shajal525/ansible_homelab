@@ -41,3 +41,6 @@ db_converter_tables:
   - "quran.user_favorites,false"
   - "quran.users,false"
   - "quran.word_tokens,true"
+
+
+# To run the sqlite db file, use this command: docker exec -it Kleovate_db_converter_and_sync /app/sqlitegen
