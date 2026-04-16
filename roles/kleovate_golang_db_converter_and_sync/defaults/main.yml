@@ -25,6 +25,19 @@ db_converter_and_sync_jwks_url: "http://KleovateAuthenticator:8080/.well-known/j
 
 
 db_converter_tables:
-  - "quran.users,false"
+  - "quran.ayah_words,true"
+  - "quran.ayah_words_meaning,true"
   - "quran.ayahs,true"
+  - "quran.ayahs_arabic,true"
   - "quran.ayahs_translation,true"
+  - "quran.lemma_roots,true"
+  - "quran.lemma_roots_meaning,true"
+  - "quran.lemmas,true"
+  - "quran.lemmas_meaning,true"
+  - "quran.reciters,true"
+  - "quran.surah_lemma_frequencies,true"
+  - "quran.surahs,true"
+  - "quran.user_checkpoints,false"
+  - "quran.user_favorites,false"
+  - "quran.users,false"
+  - "quran.word_tokens,true"
