@@ -36,15 +36,40 @@
     "FromName": "Kleovate Authenticator"
   },
   "fido2": {
-    "serverDomain": "localhost",
+    "serverDomain": "authenticator.kleovate.online",
     "serverName": "Kleovate Authenticator",
-    "origin": "http://localhost:5105"
+    "origin": "https://authenticator.kleovate.online"
   },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
+  },
+  "ExternalLoginSettings":{
+    "Google": {
+      "ClientIds":[
+        "492209677707-8iee3brstmnhgtps327pl6s6215frqi7.apps.googleusercontent.com",
+        "492209677707-96ee1kc4nf84ne2j1o1trsrueub40o9v.apps.googleusercontent.com",
+        "492209677707-bcdjd07cbl2akra9im1nvhu2e3htf3vk.apps.googleusercontent.com"
+      ]
+    }
+  },
+  "WellKnownSettings": {
+    "AndroidApps": [
+      {
+        "PackageName": "com.example.quran_app",
+        "Sha256Fingerprints": [
+          "90:7E:4F:A5:4A:0F:8D:DD:CA:F4:54:56:12:DC:08:1D:77:08:AD:F5:DC:20:3C:6B:CA:36:7F:93:84:A0:E0:F0"
+        ]
+      }
+    ],
+    "IosApps": [
+      {
+        "TeamId": "",
+        "BundleId": ""
+      }
+    ]
   },
   "AllowedHosts": "*"
 }
