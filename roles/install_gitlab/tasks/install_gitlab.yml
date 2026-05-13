@@ -1,0 +1,97 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Create Gitlab directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ gitlab_config_path }}"
+    - "{{ gitlab_logs_path }}"
+    - "{{ gitlab_data_path }}"
+
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
+- name: Deploy GitLab container
+  community.docker.docker_container:
+    name: gitlab
+    image: "gitlab/gitlab-ee:{{ gitlab_version }}-ee.0"
+    hostname: gitlab
+    shm_size: "256m"
+    env:
+      GITLAB_OMNIBUS_CONFIG: "{{ lookup('template', 'gitlab_omnibus.rb.j2') }}"
+    ports:
+      - "2222:22"
+    volumes:
+      - "{{ gitlab_config_path }}:/etc/gitlab"
+      - "{{ gitlab_logs_path }}:/var/log/gitlab"
+      - "{{ gitlab_data_path }}:/var/opt/gitlab"
+    labels:
+      com.docker.compose.project: "gitlab_stack"
+      com.docker.compose.service: "gitlab"
+      traefik.enable: "true"
+      traefik.http.routers.gitlab-secure.entrypoints: "https"
+      traefik.http.routers.gitlab-secure.rule: "Host(`{{ gitlab_domain }}`)"
+      traefik.http.routers.gitlab-secure.tls: "true"
+      traefik.http.routers.gitlab.service: "gitlab"
+      traefik.http.services.gitlab.loadbalancer.server.port: "80"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Add cronjob for nightly GitLab backup
+  ansible.builtin.cron:
+    name: "GitLab Nightly Backup"
+    minute: "0"
+    hour: "2"
+    # Executes the backup command inside the running container
+    job: "docker exec gitlab gitlab-backup create CRON=1"
+    state: present
+
+- name: Add cronjob to delete backups older than 7 days
+  ansible.builtin.cron:
+    name: "GitLab Backup Cleanup"
+    minute: "30"
+    hour: "2"
+    job: "find {{ gitlab_data_path }}/data/backups -type f -mtime +3 -name '*.tar' -delete"
+    state: present
+
+- name: GitLab deployed
+  debug:
+    msg: "GitLab is running successfully"

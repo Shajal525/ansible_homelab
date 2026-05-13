@@ -1,0 +1,21 @@
+---
+gitlab_version: "18.11.2"
+gitlab_domain: "gitlab.{{ subdomain }}"
+
+gitlab_base_path: "{{ base_app_storage_path }}/gitlab"
+gitlab_config_path: "{{ gitlab_base_path }}/config"
+gitlab_data_path: "{{ gitlab_base_path }}/data"
+
+gitlab_local_ssd_path: "{{ base_local_ssd_storage_path }}/gitlab"
+gitlab_logs_path: "{{ gitlab_local_ssd_path }}/logs"
+
+gitlab_root_password: "{{ vm_password }}"
+
+
+authentik_issuer_url: "https://authentik.kleovate.online/application/o/gitlab/"
+authentik_client_id: "xj572hWJUzy9R4aWo7lx0lHxk1FJoNyj5xN4fHI8"
+authentik_client_secret: "{{ gitlab_authentik_client_secret }}"
+
+
+
+

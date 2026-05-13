@@ -1,0 +1,35 @@
+external_url 'https://{{ gitlab_domain }}'
+
+# Traefik Reverse Proxy Configuration
+nginx['listen_port'] = 80
+nginx['listen_https'] = false
+nginx['proxy_set_headers'] = {
+  "X-Forwarded-Proto" => "https",
+  "X-Forwarded-Ssl" => "on"
+}
+
+# Initial Root Password
+gitlab_rails['initial_root_password'] = '{{ gitlab_root_password }}'
+
+# Authentik OIDC Configuration
+gitlab_rails['omniauth_enabled'] = true
+gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
+gitlab_rails['omniauth_block_auto_created_users'] = false
+
+gitlab_rails['omniauth_providers'] = [{
+  name: "openid_connect",
+  label: "Authentik",
+  args: {
+    name: "openid_connect",
+    scope: ["openid", "profile", "email"],
+    response_type: "code",
+    issuer: "{{ authentik_issuer_url }}",
+    discovery: true,
+    uid_field: "preferred_username",
+    client_options: {
+      identifier: "{{ authentik_client_id }}",
+      secret: "{{ authentik_client_secret }}",
+      redirect_uri: "https://{{ gitlab_domain }}/users/auth/openid_connect/callback"
+    }
+  }
+}]
