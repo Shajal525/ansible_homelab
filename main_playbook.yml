@@ -62,7 +62,8 @@
     # - role: redis
     # - role: kleovate_authenticator
     # - role: kleovate_golang_db_converter_and_sync
-    - role: install_gitlab
+    # - role: install_gitlab
+    - role: install_forgejo
 
 # - name: Install node_exporter for Proxmox host resource monitor with Grafana
 #   hosts: proxmoxhost

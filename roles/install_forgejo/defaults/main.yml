@@ -1,0 +1,15 @@
+forgejo_base_path: "{{ base_app_storage_path }}/forgejo"
+forgejo_data_dir: "{{ forgejo_base_path }}/data"
+
+forgejo_local_dir: "{{ base_local_ssd_storage_path }}/forgejo"
+postgres_data_dir: "{{ forgejo_local_dir }}/forgejodb"
+forgejo_backup_scripts: "{{ forgejo_local_dir }}/db_backup_scripts"
+
+forgejo_db_name: "forgejo_db"
+forgejo_db_user: "{{ vm_username }}"
+forgejo_db_password: "{{ vm_password }}"
+
+forgejo_domain: "forgejo.{{ subdomain }}"
+
+forgejo_backup_db: false
+forgejo_restore_db: false

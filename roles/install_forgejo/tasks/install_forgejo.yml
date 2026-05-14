@@ -1,0 +1,178 @@
+---
+# - name: Ensure Docker service is running and setup user access
+#   include_role:
+#     name: common
+#     tasks_from: setup_docker_user
+#   vars:
+#     target_user: "{{ docker_user }}"
+
+- name: Ensure docker networks exist
+  community.docker.docker_network:
+    name: "{{ network_item }}"
+    state: present
+  loop:
+    - traefik_proxy
+    - pangolin_network
+  loop_control:
+    loop_var: network_item
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Create external network
+  community.docker.docker_network:
+    name: forgejo_network
+    driver: bridge
+    state: present
+
+- name: Create Forgejo directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ forgejo_data_dir }}"
+    - "{{ forgejo_backup_scripts }}"
+    - "{{ postgres_data_dir }}"
+
+- name: Update the permission after file generation.
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    mode: "0755"
+    recurse: true
+  loop:
+    - "{{ forgejo_data_dir }}"
+
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
+- name: Deploy forgejo Postgres DB container
+  community.docker.docker_container:
+    name: postgres_forgejo
+    image: postgres:18.1
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
+    env:
+      POSTGRES_DB: "{{ forgejo_db_name }}"
+      POSTGRES_USER: "{{ forgejo_db_user }}"
+      POSTGRES_PASSWORD: "{{ forgejo_db_password }}"
+    volumes:
+      - "{{ postgres_data_dir }}:/var/lib/postgresql"
+    labels:
+      com.docker.compose.project: "forgejo_stack"
+      com.docker.compose.service: "postgres_forgejo"
+    networks:
+      - name: traefik_proxy
+      - name: forgejo_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy forgejo container
+  community.docker.docker_container:
+    name: forgejo
+    image: codeberg.org/forgejo/forgejo:15
+    hostname: forgejo
+    env:
+      USER_UID: "{{ target_uid }}"
+      USER_GID: "{{ target_gid }}"
+      FORGEJO__database__DB_TYPE: "postgres"
+      FORGEJO__database__HOST: "postgres_forgejo:5432"
+      FORGEJO__database__NAME: "{{ forgejo_db_name }}"
+      FORGEJO__database__USER: "{{ forgejo_db_user }}"
+      FORGEJO__database__PASSWD: "{{ forgejo_db_password }}"
+      FORGEJO__server__DOMAIN: "{{ forgejo_domain }}"
+      FORGEJO__server__ROOT_URL: "https://{{ forgejo_domain }}/"
+      FORGEJO__server__SSH_PORT: "222"
+    ports:
+      - "222:22"
+    volumes:
+      - "{{ forgejo_data_dir }}:/data"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    labels:
+      com.docker.compose.project: "forgejo_stack"
+      com.docker.compose.service: "forgejo"
+      traefik.enable: "true"
+      traefik.http.routers.forgejo-secure.entrypoints: "https"
+      traefik.http.routers.forgejo-secure.rule: "Host(`{{ forgejo_domain }}`)"
+      traefik.http.routers.forgejo-secure.tls: "true"
+      traefik.http.routers.forgejo-secure.service: "forgejo"
+      traefik.http.services.forgejo.loadbalancer.server.port: "3000"
+      traefik.docker.network: "traefik_proxy"
+    networks:
+      - name: traefik_proxy
+      - name: forgejo_network
+      - name: pangolin_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Include common backup task to backup postgres db
+  include_role:
+    name: common
+    tasks_from: db_backup_image
+  vars:
+    db_backup_app_name: "forgejo"
+    container_name_running_postgresdb: "postgres_forgejo"
+    db_backup_retain_for_days: "7"
+    db_to_backup_name: "{{ forgejo_db_name }}"
+    db_to_backup_user: "{{ forgejo_db_user }}"
+    db_to_backup_password: "{{ forgejo_db_password }}"
+    backup_schedule_cron: "15 2 * * *"
+    notification_message_subject: "forgejo DB backup"
+  when: forgejo_backup_db | default(false)
+  tags: forgejo
+
+- name: Wait for 10 seconds for DB backup to finish
+  pause:
+    seconds: 10
+  when: forgejo_backup_db | default(false) and forgejo_restore_db | default(false)
+  tags: forgejo
+
+- name: Restore PostgreSQL database from backup
+  include_role:
+    name: common
+    tasks_from: postgresdb_restore
+  vars:
+    postgres_restore_base_path: "{{ forgejo_backup_scripts }}"
+    pg_backup_directory: "{{ forgejo_base_path }}/db_backups/"
+    pg_database: "{{ forgejo_db_name }}"
+    pg_host: "postgres_forgejo"
+    pg_port: 5432
+    pg_user: "{{ forgejo_db_user }}"
+    pg_password: "{{ forgejo_db_password }}"
+    pg_drop_before_restore: true
+  when: forgejo_restore_db | default(false)
+  tags: forgejo
+
+- name: Restart containers
+  community.docker.docker_container:
+    name: "{{ item }}"
+    state: started
+    restart: true
+  loop:
+    - postgres_forgejo
+    - forgejo
+  when: forgejo_restore_db | default(false)
+  tags: forgejo
+
+- name: forgejo deployed
+  debug:
+    msg: "forgejo is running successfully. To check if it's working, open: https://{{ forgejo_domain }} in your browser."
+  tags: forgejo
