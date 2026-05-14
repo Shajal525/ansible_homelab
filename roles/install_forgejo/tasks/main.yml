@@ -1,3 +1,5 @@
 ---
 # - include_tasks: install_forgejo.yml
+## After installing Forgejo, we need to install the Forgejo Runner to run CI/CD pipelines.
+## To get the Token and UUID, create a runner in the Forgejo UI and copy the Token and UUID from the runner registration page.
 - include_tasks: install_forgejo_runner.yml
