@@ -45,17 +45,6 @@
     - "{{ forgejo_backup_scripts }}"
     - "{{ postgres_data_dir }}"
 
-- name: Update the permission after file generation.
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ target_uid}}"
-    group: "{{ target_gid }}"
-    mode: "0755"
-    recurse: true
-  loop:
-    - "{{ forgejo_data_dir }}"
-
 - name: Stat docker socket
   become: true
   ansible.builtin.stat:

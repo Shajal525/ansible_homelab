@@ -1,0 +1,88 @@
+---
+- name: Create external network
+  community.docker.docker_network:
+    name: forgejo_network
+    driver: bridge
+    state: present
+
+- name: Get user information
+  getent:
+    database: passwd
+    key: "{{ docker_user }}"
+
+- name: Set UID and GID facts
+  set_fact:
+    target_uid: "{{ getent_passwd[docker_user][1] }}"
+    target_gid: "{{ getent_passwd[docker_user][2] }}"
+
+- name: Create Forgejo directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
+    recurse: true
+    mode: "2775"
+  loop:
+    - "{{ forgejo_runner_data_dir }}"
+    - "{{ forgejo_runner_data_dir }}/.cache"
+
+- name: Generate config.yaml with native connection and labels
+  ansible.builtin.copy:
+    dest: "{{ forgejo_runner_data_dir }}/config.yaml"
+    owner: "1001"
+    group: "1001"
+    mode: '0644'
+    content: |
+      server:
+        connections:
+          forgejo:
+            url: "{{ forgejo_url }}"
+            uuid: "{{ forgejo_runner_uuid }}"
+            token: "{{ forgejo_runner_token }}"
+      runner:
+        file: ".runner"
+        labels:
+          - "ubuntu-22.04:docker://node:20-bookworm"
+          - "ubuntu-latest:docker://node:20-bookworm"
+          - "docker:docker://node:20-bookworm"
+
+- name: Stat docker socket
+  become: true
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_sock
+
+- name: Deploy Docker-in-Docker (dind) service
+  community.docker.docker_container:
+    name: docker_dind
+    image: docker:dind
+    privileged: true
+    command: ['dockerd', '-H', 'tcp://0.0.0.0:2375', '--tls=false']
+    labels:
+      com.docker.compose.project: "forgejo_stack"
+      com.docker.compose.service: "forgejo_runner_docker_bind"
+    networks:
+      - name: forgejo_network
+    restart_policy: unless-stopped
+    state: started
+
+- name: Deploy Forgejo Runner container for manual registration
+  community.docker.docker_container:
+    name: forgejo_runner
+    image: code.forgejo.org/forgejo/runner:12
+    user: "{{ target_uid }}:{{ target_gid }}"
+    groups:
+      - "{{ docker_sock.stat.gid }}"
+    command: /bin/sh -c "sleep 5; forgejo-runner daemon --config /data/config.yaml"
+    env:
+      DOCKER_HOST: tcp://docker_dind:2375
+    volumes:
+      - "{{ forgejo_runner_data_dir }}:/data"
+    labels:
+      com.docker.compose.project: "forgejo_stack"
+      com.docker.compose.service: "forgejo_runner"
+    networks:
+      - name: forgejo_network
+    restart_policy: unless-stopped
+    state: started
