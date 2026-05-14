@@ -64,6 +64,8 @@
     image: docker:dind
     privileged: true
     command: dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --tls=false
+    etc_hosts:
+      "forgejo.kleovate.online": "{{ server_ip_address }}"
     labels:
       com.docker.compose.project: "forgejo_stack"
       com.docker.compose.service: "forgejo_runner_docker_bind"
