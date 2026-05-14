@@ -30,8 +30,8 @@
 - name: Generate config.yaml with native connection and labels
   ansible.builtin.copy:
     dest: "{{ forgejo_runner_data_dir }}/config.yaml"
-    owner: "1001"
-    group: "1001"
+    owner: "{{ target_uid}}"
+    group: "{{ target_gid }}"
     mode: '0644'
     content: |
       server:
@@ -43,11 +43,13 @@
       runner:
         file: ".runner"
         labels:
-          - "ubuntu-22.04:docker://node:20-bookworm"
-          - "ubuntu-26.04:docker://catthehacker/ubuntu:act-26.04"
-          - "ubuntu-latest:docker://catthehacker/ubuntu:act-26.04"
-          - "docker:docker://catthehacker/ubuntu:act-26.04"
+          - "ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
+          - "ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04"
+          - "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest"
+          - "docker:docker://ghcr.io/catthehacker/ubuntu:act-24.04"
       container:
+        valid_volumes:
+          - "/var/run/docker.sock"
         options: "-v /var/run/docker.sock:/var/run/docker.sock"
 
 - name: Stat docker socket
@@ -62,7 +64,6 @@
     image: docker:dind
     privileged: true
     command: dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --tls=false
-    # command: ['dockerd', '-H', 'tcp://0.0.0.0:2375', '--tls=false']
     labels:
       com.docker.compose.project: "forgejo_stack"
       com.docker.compose.service: "forgejo_runner_docker_bind"
@@ -71,7 +72,7 @@
     restart_policy: unless-stopped
     state: started
 
-- name: Deploy Forgejo Runner container for manual registration
+- name: Deploy Forgejo Runner container
   community.docker.docker_container:
     name: forgejo_runner
     image: code.forgejo.org/forgejo/runner:12
