@@ -15,7 +15,6 @@ forgejo_url: "https://{{ forgejo_domain }}"
 
 forgejo_runner_uuid: "ad3a9dce-f651-4b4a-8ea5-566909a7ae34"
 forgejo_runner_token: "e63b1e4d6a28038734b2b56ff435899575ec74be"
-is_registered: false
 
 forgejo_backup_db: false
 forgejo_restore_db: false
