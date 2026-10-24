@@ -218,6 +218,8 @@
     name: "{{ item }}"
     state: started
     restart: true
+    comparisons: # only restart; otherwise image-default mismatches recreate the container bare
+      "*": ignore
   loop:
     - paperless_broker
     - paperless_db

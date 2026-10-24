@@ -106,7 +106,7 @@
 - name: Postgres database restore
   docker_container:
     name: postgres_restore
-    image: ubuntu:25.10
+    image: ubuntu:26.04 # LTS; ships postgresql-client-18 to match the postgres:18 DBs
     hostname: postgres_restore
     # user: "{{ target_uid }}:{{ target_gid }}"
     volumes:

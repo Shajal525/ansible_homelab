@@ -76,7 +76,7 @@
 - name: Deploy Cron Docker Container
   docker_container:
     name: cron_runner
-    image: ubuntu:25.10
+    image: ubuntu:26.04 # LTS; 25.10 is EOL and apt.postgresql.org dropped questing-pgdg
     hostname: cron_runner
     # user: "{{ target_uid }}:{{ target_gid }}"
     # groups:

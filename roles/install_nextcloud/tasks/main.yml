@@ -189,6 +189,8 @@
     name: "{{ item }}"
     state: started
     restart: true
+    comparisons: # only restart; otherwise image-default mismatches recreate the container bare
+      "*": ignore
   loop:
     - nextcloud_db_postgres
     - nextcloud_redis

@@ -1,7 +1,7 @@
 ---
 ssh_directory: "/home/shajal/.ssh/"
-ssh_public_key: "{{ ssh_directory }}id_rsa.pub"
-ssh_key_path: "{{ ssh_directory }}id_rsa"
+ssh_public_key: "{{ ssh_directory }}id_ed25519.pub"
+ssh_key_path: "{{ ssh_directory }}id_ed25519"
 ssh_port: 22
 shell: /bin/bash
 

@@ -1,0 +1,22 @@
+vaultwarden_base_path: "{{ base_app_storage_path }}/vaultwarden"
+vaultwarden_data_dir: "{{ vaultwarden_base_path }}/data"
+
+vaultwarden_local_dir: "{{ base_local_ssd_storage_path }}/vaultwarden"
+vaultwarden_postgres_data_dir: "{{ vaultwarden_local_dir }}/vaultwardendb"
+vaultwarden_backup_scripts: "{{ vaultwarden_local_dir }}/db_backup_scripts"
+
+vaultwarden_db_name: "vaultwarden_db"
+vaultwarden_db_user: "{{ vm_username }}"
+vaultwarden_db_password: "{{ db_password }}"
+
+vaultwarden_domain: "shonduk.{{ subdomain }}"
+vaultwarden_url: "https://{{ vaultwarden_domain }}"
+# Argon2 hash. Generate with: docker run --rm -it vaultwarden/server:1.37.4 /vaultwarden hash
+vaultwarden_admin_token: "{{ vaultwarden_admin_token_hash }}"
+
+vaultwarden_email_smtp_user: "shajal525@gmail.com"
+vaultwarden_email_smtp_password: "{{ pvehomelab_gmail_smtp_password }}"
+vaultwarden_email_from: "vaultwarden@{{ subdomain }}"
+
+vaultwarden_backup_db: true
+vaultwarden_restore_db: false

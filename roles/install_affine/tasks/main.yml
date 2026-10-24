@@ -200,6 +200,8 @@
     name: "{{ item }}"
     state: started
     restart: true
+    comparisons: # only restart; otherwise image-default mismatches recreate the container bare
+      "*": ignore
   loop:
     - affine_redis
     - affine_postgres
